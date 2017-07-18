@@ -2,15 +2,18 @@ If you appreciate this project, support me on Patreon !
 
 [![Patreon !](https://raw.githubusercontent.com/Miouyouyou/RockMyy/master/.img/button-patreon.png)](https://www.patreon.com/Miouyouyou)
 
+Warning
+-------
+
+**THIS IS THE TINKERING BRANCH, RESERVED FOR SPECIAL (POSSIBLY BROKEN) PATCHES FOR TINKERBOARDS**
+
+If you're there for standard kernel builds, usable on Tinkerboards, use
+the [master branch](https://github.com/Miouyouyou/RockMyy)
+
 Prebuilt kernels
 ----------------
 
-If you're looking for prebuilt RK3288 kernels for MiQi, Tinkerboard,
-Firefly boards and various RK3288 boards supported by mainline kernels,
-see [RockMyy-Build](https://github.com/Miouyouyou/RockMyy-Build).
-
-Armbian provide premade Debian packages of kernels for Rockchip systems
-including most of the patches included here.
+There are no builds for this branch, currently.
 
 About
 -----

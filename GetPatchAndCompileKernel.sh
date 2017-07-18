@@ -8,7 +8,7 @@ export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
 
 export GITHUB_REPO=Miouyouyou/RockMyy
-export GIT_BRANCH=master
+export GIT_BRANCH=Tinkering
 
 export DTB_FILES="
 rk3288-evb-act8846.dtb
@@ -48,6 +48,7 @@ export KERNEL_PATCHES="
 0002-Readaptation-of-Rockchip-DRM-patches-provided-by-ARM.patch
 0003-clk-rockchip-add-all-known-operating-points-to-the-a.patch
 0004-clk-rockchip-rk3288-prefer-vdpu-for-vcodec-clock-sou.patch
+0005-Ugly-MMC-hack-trying-to-resolve-Tinkerboard-s-reboot.patch
 "
 
 export KERNEL_DTS_PATCHES="
