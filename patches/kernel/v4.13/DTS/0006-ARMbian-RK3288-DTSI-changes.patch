@@ -1,0 +1,69 @@
+From 3bea35f5623734b8259dc501fb20e77bddcf4254 Mon Sep 17 00:00:00 2001
+From: Myy <myy@miouyouyou.fr>
+Date: Mon, 5 Jun 2017 12:31:46 +0000
+Subject: [PATCH 2/4] ARMbian RK3288 DTSI changes
+
+* Adds missing GRF handles
+* Change some SPI related pin settings
+
+Signed-off-by: Myy <myy@miouyouyou.fr>
+---
+ arch/arm/boot/dts/rk3288.dtsi | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/rk3288.dtsi b/arch/arm/boot/dts/rk3288.dtsi
+index ad5d602..176000d 100644
+--- a/arch/arm/boot/dts/rk3288.dtsi
++++ b/arch/arm/boot/dts/rk3288.dtsi
+@@ -333,7 +333,7 @@
+ 		dma-names = "tx", "rx";
+ 		interrupts = <GIC_SPI 46 IRQ_TYPE_LEVEL_HIGH>;
+ 		pinctrl-names = "default";
+-		pinctrl-0 = <&spi2_clk &spi2_tx &spi2_rx &spi2_cs0>;
++		pinctrl-0 = <&spi2_clk &spi2_tx &spi2_rx &spi2_cs0 &spi2_cs1>;
+ 		reg = <0xff130000 0x1000>;
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+@@ -546,6 +546,7 @@
+ 		pinctrl-2 = <&otp_gpio>;
+ 		#thermal-sensor-cells = <1>;
+ 		rockchip,hw-tshut-temp = <95000>;
++		rockchip,grf = <&grf>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -654,6 +655,7 @@
+ 		pinctrl-0 = <&pwm0_pin>;
+ 		clocks = <&cru PCLK_PWM>;
+ 		clock-names = "pwm";
++		rockchip,grf = <&grf>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -665,6 +667,7 @@
+ 		pinctrl-0 = <&pwm1_pin>;
+ 		clocks = <&cru PCLK_PWM>;
+ 		clock-names = "pwm";
++		rockchip,grf = <&grf>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -676,6 +679,7 @@
+ 		pinctrl-0 = <&pwm2_pin>;
+ 		clocks = <&cru PCLK_PWM>;
+ 		clock-names = "pwm";
++		rockchip,grf = <&grf>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -687,6 +691,7 @@
+ 		pinctrl-0 = <&pwm3_pin>;
+ 		clocks = <&cru PCLK_PWM>;
+ 		clock-names = "pwm";
++		rockchip,grf = <&grf>;
+ 		status = "disabled";
+ 	};
+ 
+-- 
+2.10.2
+
