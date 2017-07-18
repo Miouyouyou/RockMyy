@@ -60,12 +60,14 @@ export KERNEL_DTS_PATCHES="
 0007-Enabling-Tinkerboard-s-Wifi-Third-tentative.patch
 0008-Added-support-for-Tinkerboard-s-SPI-interface.patch
 0009-Define-VPU-services-in-the-Rockchip-3288-DTS-files.patch
+0010-Add-the-clk_mali-property-to-the-gpu-mali-node.patch
 "
 
 export MALI_PATCHES="
 0001-Mali-midgard-r19p0-fixes-for-4.13-kernels.patch
 0002-Using-the-new-header-on-4.12-kernels-for-copy_-_user.patch
 0003-Adapt-get_user_pages-calls-to-use-the-new-calling-pr.patch
+0004-Don-t-be-TOO-severe-when-looking-for-the-IRQ-names.patch
 "
 
 # -- Helper functions

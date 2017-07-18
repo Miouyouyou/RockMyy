@@ -1,0 +1,33 @@
+From 3858b56d3f1d3c3d660352b616f541f325caf54c Mon Sep 17 00:00:00 2001
+From: Myy <myy@miouyouyou.fr>
+Date: Tue, 18 Jul 2017 17:29:04 +0000
+Subject: [PATCH 1/2] Add the clk_mali property to the gpu@mali node
+
+Without this, the Mali driver will display the following warning :
+
+"Failed to get clock"
+"Continuing without Mali clock control"
+
+See power_control_init in
+drivers/gpu/arm/midgard/mali_kbase_core_linux.c
+
+Signed-off-by: Myy <myy@miouyouyou.fr>
+---
+ arch/arm/boot/dts/rk3288.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/boot/dts/rk3288.dtsi b/arch/arm/boot/dts/rk3288.dtsi
+index 83be112..bf40995 100644
+--- a/arch/arm/boot/dts/rk3288.dtsi
++++ b/arch/arm/boot/dts/rk3288.dtsi
+@@ -1236,6 +1236,7 @@
+ 			     <GIC_SPI 8 IRQ_TYPE_LEVEL_HIGH>;
+ 		interrupt-names = "job", "mmu", "gpu";
+ 		clocks = <&cru ACLK_GPU>;
++		clock-names = "clk_mali";
+ 		operating-points-v2 = <&gpu_opp_table>;
+ 		power-domains = <&power RK3288_PD_GPU>;
+ 		status = "disabled";
+-- 
+2.10.2
+
