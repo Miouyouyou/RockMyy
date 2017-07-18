@@ -7,7 +7,7 @@ Prebuilt kernels
 
 If you're looking for prebuilt RK3288 kernels for MiQi, Tinkerboard,
 Firefly boards and various RK3288 boards supported by mainline kernels,
-see [RockMyy-Build](../RockMyy-Build).
+see [RockMyy-Build](https://github.com/Miouyouyou/RockMyy-Build).
 
 Armbian provide premade Debian packages of kernels for Rockchip systems
 including most of the patches included here.
