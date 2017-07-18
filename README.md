@@ -1,6 +1,6 @@
 If you appreciate this project, support me on Patreon !
 
-[![Patreon !](https://raw.githubusercontent.com/Miouyouyou/RockMyy/.img/button-patreon.png)](https://www.patreon.com/Miouyouyou)
+[![Patreon !](https://raw.githubusercontent.com/Miouyouyou/RockMyy/master/.img/button-patreon.png)](https://www.patreon.com/Miouyouyou)
 
 Prebuilt kernels
 ----------------
