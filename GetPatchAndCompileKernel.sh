@@ -40,7 +40,7 @@ export CONFIG_FILE_PATH=config/$KERNEL_SERIES/config-latest
 export BASE_FILES_URL=https://raw.githubusercontent.com/$GITHUB_REPO/$GIT_BRANCH
 export KERNEL_PATCHES_DIR_URL=$BASE_FILES_URL/$KERNEL_PATCHES_DIR
 export KERNEL_DTS_PATCHES_DIR_URL=$BASE_FILES_URL/$KERNEL_PATCHES_DTS_DIR
-export MALI_PATCHES_FOLDER=$BASE_FILES_URL/$MALI_PATCHES_DIR
+export MALI_PATCHES_DIR_URL=$BASE_FILES_URL/$MALI_PATCHES_DIR
 export CONFIG_FILE_URL=$BASE_FILES_URL/config/$KERNEL_SERIES/config-latest
 
 export KERNEL_PATCHES="
@@ -154,9 +154,9 @@ if [ ! -e "PATCHED" ]; then
   
   # Download and apply the various kernel and Mali kernel-space driver patches
   if [ ! -d "../patches" ]; then
-    download_and_apply_patches $KERNEL_PATCHES_FOLDER_URL $KERNEL_PATCHES
-    download_and_apply_patches $KERNEL_DTS_PATCHES_FOLDER_URL $KERNEL_DTS_PATCHES
-    download_and_apply_patches $MALI_PATCHES_FOLDER $MALI_PATCHES
+    download_and_apply_patches $KERNEL_PATCHES_DIR_URL $KERNEL_PATCHES
+    download_and_apply_patches $KERNEL_DTS_PATCHES_DIR_URL $KERNEL_DTS_PATCHES
+    download_and_apply_patches $MALI_PATCHES_DIR_URL $MALI_PATCHES
   else
     copy_and_apply_patches ../$KERNEL_PATCHES_DIR $KERNEL_PATCHES
     copy_and_apply_patches ../$KERNEL_PATCHES_DTS_DIR $KERNEL_DTS_PATCHES

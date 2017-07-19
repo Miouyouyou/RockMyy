@@ -10,10 +10,19 @@ Warning
 If you're there for standard kernel builds, usable on Tinkerboards, use
 the [master branch](https://github.com/Miouyouyou/RockMyy)
 
+Using the main script
+---------------------
+
+```bash
+sh GetPatchAndCompileKernel.sh
+```
+
 Prebuilt kernels
 ----------------
 
-There are no builds for this branch, currently.
+See [the Tinkering branch of RockMyy-Build](https://github.com/Miouyouyou/RockMyy-Build/tree/Tinkering).
+These builds might not be up to date with the latest patches pushed
+here, though.
 
 About
 -----
