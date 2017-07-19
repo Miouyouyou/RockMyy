@@ -48,6 +48,7 @@ export KERNEL_PATCHES="
 0002-Readaptation-of-Rockchip-DRM-patches-provided-by-ARM.patch
 0003-clk-rockchip-add-all-known-operating-points-to-the-a.patch
 0004-clk-rockchip-rk3288-prefer-vdpu-for-vcodec-clock-sou.patch
+0005-Remove-the-dependency-to-the-clk_mali-symbol.patch
 "
 
 export KERNEL_DTS_PATCHES="
@@ -60,7 +61,6 @@ export KERNEL_DTS_PATCHES="
 0007-Enabling-Tinkerboard-s-Wifi-Third-tentative.patch
 0008-Added-support-for-Tinkerboard-s-SPI-interface.patch
 0009-Define-VPU-services-in-the-Rockchip-3288-DTS-files.patch
-0010-Add-the-clk_mali-property-to-the-gpu-mali-node.patch
 "
 
 export MALI_PATCHES="
