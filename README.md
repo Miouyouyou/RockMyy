@@ -2,6 +2,27 @@ If you appreciate this project, support me on Patreon !
 
 [![Patreon !](https://raw.githubusercontent.com/Miouyouyou/RockMyy/master/.img/button-patreon.png)](https://www.patreon.com/Miouyouyou)
 
+Using the main script
+---------------------
+
+```bash
+sh GetPatchAndCompileKernel.sh
+```
+
+This works whether you cloned this whole repository or just downloaded
+the script alone.
+
+Don't hesitate to edit the script and replace the `CROSS_COMPILE` value
+in the script, in order to match your cross-compiling toolset prefix.
+
+If you'd like to reconfigure the kernel using **menuconfig**, 
+**nconfig**, **qtconfig**, ... do it like this :
+
+```bash
+# Assuming that you want to use menuconfig
+MAKE_CONFIG=menuconfig sh GetPatchAndCompileKernel.sh
+```
+
 Prebuilt kernels
 ----------------
 
@@ -25,5 +46,4 @@ The [main cross-compiling script](./GetPatchAndCompileKernel.sh) will :
 * Copy and use this repository configuration file;
 * Cross-compile the patched kernel;
 * Create the folder /tmp/Rockmyy-Build and install the cross-compiled kernel in that folder.
-
 
