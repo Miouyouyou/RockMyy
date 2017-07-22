@@ -48,7 +48,7 @@ export KERNEL_PATCHES="
 0002-Readaptation-of-Rockchip-DRM-patches-provided-by-ARM.patch
 0003-clk-rockchip-add-all-known-operating-points-to-the-a.patch
 0004-clk-rockchip-rk3288-prefer-vdpu-for-vcodec-clock-sou.patch
-0005-Ugly-MMC-hack-trying-to-resolve-Tinkerboard-s-reboot.patch
+0005-Fugly-MMC-hack-trying-to-resolve-Tinkerboard-s-reboo.patch
 "
 
 export KERNEL_DTS_PATCHES="
