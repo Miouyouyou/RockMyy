@@ -2,6 +2,8 @@
 *.bak
 *~
 *.kswp
+*.kate-swp
 *.swp
 *#
 \#*
+linux/
