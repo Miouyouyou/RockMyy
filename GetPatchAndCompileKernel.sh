@@ -49,6 +49,7 @@ export KERNEL_PATCHES="
 0003-clk-rockchip-add-all-known-operating-points-to-the-a.patch
 0004-clk-rockchip-rk3288-prefer-vdpu-for-vcodec-clock-sou.patch
 0005-Remove-the-dependency-to-the-clk_mali-symbol.patch
+0006-Rockchip-DTSI-Fixed-a-few-typos-in-Rockchip-DTSI-fil.patch
 "
 
 export KERNEL_DTS_PATCHES="
