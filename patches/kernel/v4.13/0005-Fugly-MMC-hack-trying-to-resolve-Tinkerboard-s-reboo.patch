@@ -1,75 +1,100 @@
-From 7a88fd911e3a423257b4453fb20374ed0f58d26e Mon Sep 17 00:00:00 2001
+From 2a209b559e9ee099fede8eac3f8d9e23a65a75a4 Mon Sep 17 00:00:00 2001
 From: Myy <myy@miouyouyou.fr>
-Date: Sat, 22 Jul 2017 02:46:14 +0000
+Date: Sat, 22 Jul 2017 02:54:32 +0000
 Subject: [PATCH] Fugly MMC hack, trying to resolve Tinkerboard's reboot issue
 
 We can do uglier !
 
 Signed-off-by: Myy <myy@miouyouyou.fr>
 ---
- drivers/mmc/host/dw_mmc-rockchip.c | 22 +++++++++++++++++-----
- drivers/mmc/host/dw_mmc.c          | 25 +++++++++++++++++++++++++
- include/linux/reboot.h             |  4 ++++
+ drivers/mmc/host/dw_mmc-rockchip.c | 64 ++++++++++++++++++++++++++++++++++++++
+ drivers/mmc/host/dw_mmc.c          | 25 +++++++++++++++
+ include/linux/reboot.h             |  4 +++
  kernel/reboot.c                    |  1 +
- 4 files changed, 47 insertions(+), 5 deletions(-)
+ 4 files changed, 94 insertions(+)
 
 diff --git a/drivers/mmc/host/dw_mmc-rockchip.c b/drivers/mmc/host/dw_mmc-rockchip.c
-index 57ffb6a..04fdbf9 100644
+index a3f1c2b..04fdbf9 100644
 --- a/drivers/mmc/host/dw_mmc-rockchip.c
 +++ b/drivers/mmc/host/dw_mmc-rockchip.c
-@@ -407,23 +407,35 @@ static void dw_mci_rockchip_platfm_shutdown(struct platform_device *pdev)
- 	struct mmc_host *mmc = host->slot->mmc;
+@@ -19,6 +19,11 @@
+ #include "dw_mmc.h"
+ #include "dw_mmc-pltfm.h"
  
- 	int ret;
--	
++// For the hack
++#include <linux/regulator/consumer.h>
++#include <linux/string.h>
++#include "../core/core.h"
 +
- 	printk(
- 		KERN_ERR "( Myy ) Powering the MMC hardware OFF ! (Hack)\n"
- 	);
+ #define RK3288_CLKGEN_DIV       2
+ 
+ struct dw_mci_rockchip_priv_data {
+@@ -392,6 +397,65 @@ static struct platform_driver dw_mci_rockchip_pltfm_driver = {
+ 	},
+ };
+ 
++/* A weird reboot hack
++ * Discussed here :
++ * https://github.com/Miouyouyou/MyyQi/issues/8
++ */
++static void dw_mci_rockchip_platfm_shutdown(struct platform_device *pdev)
++{
++	struct dw_mci *host = platform_get_drvdata(pdev);
++	struct mmc_host *mmc = host->slot->mmc;
++
++	int ret;
++
++	printk(
++		KERN_ERR "( Myy ) Powering the MMC hardware OFF ! (Hack)\n"
++	);
 +	printk(
 +		KERN_ERR "( Myy ) Node name : %s\n",
 +		host->dev->of_node->full_name
 +	);
- 	mmc_power_off(mmc);
- 	mdelay(20);
--	
++	mmc_power_off(mmc);
++	mdelay(20);
 +
- 	if (!IS_ERR(mmc->supply.vmmc)) {
- 		ret = regulator_enable(mmc->supply.vmmc);
- 		printk(
- 			KERN_ERR "( Myy ) Re-enabling the MMC regulator -> %d\n", ret
- 		);
++	if (!IS_ERR(mmc->supply.vmmc)) {
++		ret = regulator_enable(mmc->supply.vmmc);
++		printk(
++			KERN_ERR "( Myy ) Re-enabling the MMC regulator -> %d\n", ret
++		);
 +		printk(
 +			KERN_ERR "( Myy ) Regulator enabled !? %d\n",
 +			mmc->regulator_enabled
 +		);
- 	}
--	
++	}
 +
- 	if (!IS_ERR(mmc->supply.vqmmc)) {
- 		ret = regulator_set_voltage(mmc->supply.vqmmc, 3000000, 3300000);
- 		printk(KERN_ERR "( Myy ) Modified the MMC Voltage -> %d\n", ret);
++	if (!IS_ERR(mmc->supply.vqmmc)) {
++		ret = regulator_set_voltage(mmc->supply.vqmmc, 3000000, 3300000);
++		printk(KERN_ERR "( Myy ) Modified the MMC Voltage -> %d\n", ret);
 +		printk(
 +			KERN_ERR "( Myy ) Current voltage -> %d\n",
 +			regulator_get_voltage(mmc->supply.vqmmc)
 +		);
- 	}
- }
- 
-@@ -434,11 +446,11 @@ static int dw_mci_rockchip_setup_tinker_reboot_fix(char *str)
- 		dw_mci_rockchip_pltfm_driver.shutdown = 
- 			dw_mci_rockchip_platfm_shutdown;
- 	}
--	else 
-+	else
- 		printk(
- 			KERN_INFO "( Myy ) Not enabling Tinkerboard's reboot fix\n"
- 		);
--	
++	}
++}
 +
- 	return 0;
- }
++static int dw_mci_rockchip_setup_tinker_reboot_fix(char *str)
++{
++	if (strstr(str, "on")) {
++		printk(KERN_ERR "( Myy ) Enabling Tinkerboard's reboot fix !\n");
++		dw_mci_rockchip_pltfm_driver.shutdown = 
++			dw_mci_rockchip_platfm_shutdown;
++	}
++	else
++		printk(
++			KERN_INFO "( Myy ) Not enabling Tinkerboard's reboot fix\n"
++		);
++
++	return 0;
++}
++
++__setup("rockchip_tinkerrebootfix=", dw_mci_rockchip_setup_tinker_reboot_fix);
++
+ module_platform_driver(dw_mci_rockchip_pltfm_driver);
  
+ MODULE_AUTHOR("Addy Ke <addy.ke@rock-chips.com>");
 diff --git a/drivers/mmc/host/dw_mmc.c b/drivers/mmc/host/dw_mmc.c
 index a9dfb26..121bc0a 100644
 --- a/drivers/mmc/host/dw_mmc.c
