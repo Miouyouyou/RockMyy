@@ -3,7 +3,7 @@ export CROSS_COMPILE=armv7a-hardfloat-linux-gnueabi-
 
 export KERNEL_SERIES=v4.13
 export KERNEL_BRANCH=v4.13-rc1
-export LOCALVERSION=-RockMyy-XIII
+export LOCALVERSION=-RockMyy-XIII-T
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
 
