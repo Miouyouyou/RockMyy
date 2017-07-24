@@ -1,7 +1,7 @@
-From 730ad58a43d4e88acd42324dbc1d2a22306a9f13 Mon Sep 17 00:00:00 2001
+From e60645c43e05a3f68f989259fe2f5e2b3837f784 Mon Sep 17 00:00:00 2001
 From: Myy <myy@miouyouyou.fr>
-Date: Mon, 24 Jul 2017 02:13:01 +0000
-Subject: [PATCH 1/5] Reboot patch 1 : The Beginning !
+Date: Mon, 24 Jul 2017 17:04:03 +0000
+Subject: [PATCH] Reboot patch 2 : The Return !
 
 This time, the shutdown member of the MMC platform driver is set
 directly. However, the procedure will only do something if the
@@ -10,19 +10,22 @@ platform is an ASUS Tinkerboard.
 Logs have been added since it seems to *still* not work on some ASUS
 Tinkerboard.
 
+Turns out that calling regulator_get_voltage after setting it threw
+a kernel panic... Wonderful...
+
 Still, this patch is wrong on so many levels... There must be another
 way to deal with this stupid issue.
 
 Signed-off-by: Myy <myy@miouyouyou.fr>
 ---
- drivers/mmc/host/dw_mmc-rockchip.c | 35 +++++++++++++++++++++++++++++++++++
- drivers/mmc/host/dw_mmc.c          | 31 +++++++++++++++++++++++++++++++
+ drivers/mmc/host/dw_mmc-rockchip.c | 33 +++++++++++++++++++++++++++++++++
+ drivers/mmc/host/dw_mmc.c          | 30 ++++++++++++++++++++++++++++++
  include/linux/reboot.h             |  3 +++
  kernel/reboot.c                    |  1 +
- 4 files changed, 70 insertions(+)
+ 4 files changed, 67 insertions(+)
 
 diff --git a/drivers/mmc/host/dw_mmc-rockchip.c b/drivers/mmc/host/dw_mmc-rockchip.c
-index aaed6f9b..37f8b19f 100644
+index aaed6f9b..8039128c 100644
 --- a/drivers/mmc/host/dw_mmc-rockchip.c
 +++ b/drivers/mmc/host/dw_mmc-rockchip.c
 @@ -19,6 +19,10 @@
@@ -36,7 +39,7 @@ index aaed6f9b..37f8b19f 100644
  #define RK3288_CLKGEN_DIV       2
  
  struct dw_mci_rockchip_priv_data {
-@@ -365,6 +369,36 @@ static int dw_mci_rockchip_probe(struct platform_device *pdev)
+@@ -365,6 +369,34 @@ static int dw_mci_rockchip_probe(struct platform_device *pdev)
  	return 0;
  }
  
@@ -55,17 +58,15 @@ index aaed6f9b..37f8b19f 100644
 +
 +		mdelay(20);
 +
-+		if (!IS_ERR(mmc->supply.vmmc))
++		if (!IS_ERR(mmc->supply.vmmc))  {
 +			ret = regulator_enable(mmc->supply.vmmc);
++			printk(KERN_ERR "( Myy ) regulator_enable : %d\n", ret);
++		}
 +
-+		if (!IS_ERR(mmc->supply.vqmmc))
++		if (!IS_ERR(mmc->supply.vqmmc)) {
 +			regulator_set_voltage(mmc->supply.vqmmc, 3000000, 3300000);
-+		printk(
-+			KERN_ERR
-+			"( Myy ) Asus Reboot patch ended !\n"
-+			"Voltage set to %d\n",
-+			regulator_get_voltage(mmc->supply.vqmmc)
-+		);
++			printk(KERN_ERR "( Myy ) Supposedly set the voltage\n");
++		}
 +	}
 +}
 +
@@ -73,7 +74,7 @@ index aaed6f9b..37f8b19f 100644
  static int dw_mci_rockchip_remove(struct platform_device *pdev)
  {
  	pm_runtime_get_sync(&pdev->dev);
-@@ -385,6 +419,7 @@ static const struct dev_pm_ops dw_mci_rockchip_dev_pm_ops = {
+@@ -385,6 +417,7 @@ static const struct dev_pm_ops dw_mci_rockchip_dev_pm_ops = {
  static struct platform_driver dw_mci_rockchip_pltfm_driver = {
  	.probe		= dw_mci_rockchip_probe,
  	.remove		= dw_mci_rockchip_remove,
@@ -82,7 +83,7 @@ index aaed6f9b..37f8b19f 100644
  		.name		= "dwmmc_rockchip",
  		.of_match_table	= dw_mci_rockchip_match,
 diff --git a/drivers/mmc/host/dw_mmc.c b/drivers/mmc/host/dw_mmc.c
-index a9dfb269..3947a524 100644
+index a9dfb269..bc5da376 100644
 --- a/drivers/mmc/host/dw_mmc.c
 +++ b/drivers/mmc/host/dw_mmc.c
 @@ -42,6 +42,10 @@
@@ -96,7 +97,7 @@ index a9dfb269..3947a524 100644
  /* Common flag combinations */
  #define DW_MCI_DATA_ERROR_FLAGS	(SDMMC_INT_DRTO | SDMMC_INT_DCRC | \
  				 SDMMC_INT_HTO | SDMMC_INT_SBE  | \
-@@ -2687,6 +2691,31 @@ static irqreturn_t dw_mci_interrupt(int irq, void *dev_id)
+@@ -2687,6 +2691,30 @@ static irqreturn_t dw_mci_interrupt(int irq, void *dev_id)
  	return IRQ_HANDLED;
  }
  
@@ -113,14 +114,13 @@ index a9dfb269..3947a524 100644
 +
 +		if (!IS_ERR(mmc->supply.vmmc))  {
 +			ret = regulator_enable(mmc->supply.vmmc);
++			printk(KERN_ERR "( Myy ) regulator_enable : %d\n", ret);
 +		}
 +
-+		if (!IS_ERR(mmc->supply.vqmmc))
++		if (!IS_ERR(mmc->supply.vqmmc)) {
 +			regulator_set_voltage(mmc->supply.vqmmc, 3000000, 3300000);
-+		printk(
-+			KERN_ERR "( Myy ) Asus Reboot patch ended !\n"
-+			"Voltage set to %d\n", regulator_get_voltage(mmc->supply.vqmmc)
-+		);
++			printk(KERN_ERR "( Myy ) Supposedly set the voltage\n");
++		}
 +	}
 +}
 +EXPORT_SYMBOL(setmmcEmergency);
@@ -128,7 +128,7 @@ index a9dfb269..3947a524 100644
  static int dw_mci_init_slot(struct dw_mci *host)
  {
  	struct mmc_host *mmc;
-@@ -2718,6 +2747,8 @@ static int dw_mci_init_slot(struct dw_mci *host)
+@@ -2718,6 +2746,8 @@ static int dw_mci_init_slot(struct dw_mci *host)
  		mmc->f_max = freq[1];
  	}
  

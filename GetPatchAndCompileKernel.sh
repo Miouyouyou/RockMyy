@@ -50,7 +50,7 @@ export KERNEL_PATCHES="
 0004-clk-rockchip-rk3288-prefer-vdpu-for-vcodec-clock-sou.patch
 0005-Remove-the-dependency-to-the-clk_mali-symbol.patch
 0006-Rockchip-DTSI-Fixed-a-few-typos-in-Rockchip-DTSI-fil.patch
-0007-Reboot-patch-1-The-Beginning.patch
+0007-Reboot-patch-2-The-Return.patch
 "
 
 export KERNEL_DTS_PATCHES="
