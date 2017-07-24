@@ -1,0 +1,64 @@
+From f2a836be92c23dbfe4307d560bb55ed520e8167e Mon Sep 17 00:00:00 2001
+From: Myy <myy@miouyouyou.fr>
+Date: Mon, 24 Jul 2017 02:24:50 +0000
+Subject: [PATCH 3/5] Fixes imported from and tested by the ARMbian team
+
+Fixes :
+* The memory node address (?)
+
+Defines :
+* The SD Input Output to be always on and started on boot.
+* The EEPROM attached to the i2c2 node. Seems to be used to read and
+  save the randomly generated Ethernet MAC Address.
+* Which pins controls the CTS / RTS signals on the first serial port.
+
+Signed-off-by: Myy <myy@miouyouyou.fr>
+---
+ arch/arm/boot/dts/rk3288-tinker.dts | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/rk3288-tinker.dts b/arch/arm/boot/dts/rk3288-tinker.dts
+index e65cb1fc..2b0109bd 100644
+--- a/arch/arm/boot/dts/rk3288-tinker.dts
++++ b/arch/arm/boot/dts/rk3288-tinker.dts
+@@ -50,7 +50,7 @@
+ 	model = "Rockchip RK3288 Tinker Board";
+ 	compatible = "asus,rk3288-tinker", "rockchip,rk3288";
+ 
+-	memory {
++	memory@0 {
+ 		reg = <0x0 0x80000000>;
+ 		device_type = "memory";
+ 	};
+@@ -323,6 +323,8 @@
+ 			};
+ 
+ 			vccio_sd: LDO_REG5 {
++				regulator-always-on;
++				regulator-boot-on;
+ 				regulator-min-microvolt = <1800000>;
+ 				regulator-max-microvolt = <3300000>;
+ 				regulator-name = "vccio_sd";
+@@ -394,6 +396,10 @@
+ 
+ &i2c2 {
+ 	status = "okay";
++	eeprom:m24c08@50 {
++		compatible = "at,24c08";
++		reg = <0x50>;
++	};
+ };
+ 
+ &i2c3 {
+@@ -586,6 +592,8 @@
+ 
+ &uart0 {
+ 	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&uart0_xfer>, <&uart0_cts>;
+ };
+ 
+ &uart1 {
+-- 
+2.13.0
+

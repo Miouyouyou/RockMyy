@@ -1,0 +1,37 @@
+From f096a6a7fc8bed3700c14958dfd34a221d786a18 Mon Sep 17 00:00:00 2001
+From: Myy <myy@miouyouyou.fr>
+Date: Mon, 24 Jul 2017 02:39:27 +0000
+Subject: [PATCH 4/5] Tinkerboard DTS : Define the Bluetooth node
+
+Signed-off-by: Myy <myy@miouyouyou.fr>
+---
+ arch/arm/boot/dts/rk3288-tinker.dts | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/arch/arm/boot/dts/rk3288-tinker.dts b/arch/arm/boot/dts/rk3288-tinker.dts
+index 2b0109bd..ec703356 100644
+--- a/arch/arm/boot/dts/rk3288-tinker.dts
++++ b/arch/arm/boot/dts/rk3288-tinker.dts
+@@ -66,6 +66,19 @@
+ 		WIFI,host_wake_irq = <&gpio4 30 GPIO_ACTIVE_HIGH>;
+ 		status = "okay";
+ 	};
++
++	/* Same thing for bluetooth-platdata. We'll try to do without it. */
++	wireless-bluetooth {
++		compatible = "bluetooth-platdata";
++		uart_rts_gpios = <&gpio4 19 GPIO_ACTIVE_LOW>;
++		pinctrl-names = "default","rts_gpio";
++		pinctrl-0 = <&uart0_rts>;
++		pinctrl-1 = <&uart0_gpios>;
++		BT,reset_gpio    = <&gpio4 29 GPIO_ACTIVE_HIGH>;
++		BT,wake_gpio     = <&gpio4 26 GPIO_ACTIVE_HIGH>;
++		BT,wake_host_irq = <&gpio4 31 GPIO_ACTIVE_HIGH>;
++		status = "okay";
++	};
+ 	
+ 	ext_gmac: external-gmac-clock {
+ 		compatible = "fixed-clock";
+-- 
+2.13.0
+

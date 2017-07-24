@@ -2,7 +2,7 @@ export ARCH=arm
 export CROSS_COMPILE=armv7a-hardfloat-linux-gnueabi-
 
 export KERNEL_SERIES=v4.13
-export KERNEL_BRANCH=v4.13-rc1
+export KERNEL_BRANCH=v4.13-rc2
 export LOCALVERSION=-RockMyy-XIII
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
@@ -50,6 +50,7 @@ export KERNEL_PATCHES="
 0004-clk-rockchip-rk3288-prefer-vdpu-for-vcodec-clock-sou.patch
 0005-Remove-the-dependency-to-the-clk_mali-symbol.patch
 0006-Rockchip-DTSI-Fixed-a-few-typos-in-Rockchip-DTSI-fil.patch
+0007-Reboot-patch-1-The-Beginning.patch
 "
 
 export KERNEL_DTS_PATCHES="
@@ -62,6 +63,9 @@ export KERNEL_DTS_PATCHES="
 0007-Enabling-Tinkerboard-s-Wifi-Third-tentative.patch
 0008-Added-support-for-Tinkerboard-s-SPI-interface.patch
 0009-Define-VPU-services-in-the-Rockchip-3288-DTS-files.patch
+0010-Common-RK3288-DTSI-additions-by-ARMbian.patch
+0011-Fixes-imported-from-and-tested-by-the-ARMbian-team.patch
+0012-Tinkerboard-DTS-Define-the-Bluetooth-node.patch
 "
 
 export MALI_PATCHES="
@@ -120,6 +124,7 @@ function copy_and_apply_patches {
 # into the linux folder created during the cloning.
 if [ ! -d "linux" ]; then
   git clone --depth 1 --branch $KERNEL_BRANCH 'git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
+  die_on_error "Could not git the kernel"
 fi
 cd linux
 export SRC_DIR=$PWD
@@ -178,10 +183,7 @@ if [ ! -e ".config" ]; then
   else
     cp "../$CONFIG_FILE_PATH" .config
   fi
-  if [ ! $? = 0 ]; then
-    echo "Could not get the configuration file..."
-    exit 1
-  fi
+  die_on_error "Could not get the configuration file..."
 fi
 
 if [ -z ${MAKE_CONFIG+x} ]; then
@@ -190,6 +192,7 @@ fi
 
 make $MAKE_CONFIG
 make $DTB_FILES zImage modules -j5
+die_on_error "Compilation failed"
 
 if [ -z ${DONT_INSTALL_IN_TMP+x} ]; then
 	# Kernel compiled
