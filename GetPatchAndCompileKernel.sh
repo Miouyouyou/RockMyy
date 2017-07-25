@@ -78,10 +78,8 @@ export MALI_PATCHES="
 # -- Helper functions
 
 function die_on_error {
-	error_message=$1
-	
 	if [ ! $? = 0 ]; then
-		echo $error_message
+		echo $1
 		exit 1
 	fi
 }
