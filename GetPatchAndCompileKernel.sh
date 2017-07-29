@@ -1,6 +1,8 @@
 export ARCH=arm
 export CROSS_COMPILE=armv7a-hardfloat-linux-gnueabi-
 
+export KERNEL_GIT_URL='git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
+
 export KERNEL_SERIES=v4.13
 export KERNEL_BRANCH=v4.13-rc2
 export LOCALVERSION=-RockMyy-XIII
@@ -49,7 +51,7 @@ export KERNEL_PATCHES="
 0003-clk-rockchip-add-all-known-operating-points-to-the-a.patch
 0004-clk-rockchip-rk3288-prefer-vdpu-for-vcodec-clock-sou.patch
 0005-Remove-the-dependency-to-the-clk_mali-symbol.patch
-0006-Rockchip-DTSI-Fixed-a-few-typos-in-Rockchip-DTSI-fil.patch
+0006-Export-rockchip_pmu_set_idle_request-for-out-of-tree.patch
 0007-Reboot-patch-2-The-Return.patch
 "
 
@@ -66,6 +68,7 @@ export KERNEL_DTS_PATCHES="
 0010-Common-RK3288-DTSI-additions-by-ARMbian.patch
 0011-Fixes-imported-from-and-tested-by-the-ARMbian-team.patch
 0012-Tinkerboard-DTS-Define-the-Bluetooth-node.patch
+0013-Rockchip-DTSI-Fixed-a-few-typos-in-Rockchip-DTSI-fil.patch
 "
 
 export MALI_PATCHES="
@@ -121,7 +124,7 @@ function copy_and_apply_patches {
 # If we haven't already clone the Linux Kernel tree, clone it and move
 # into the linux folder created during the cloning.
 if [ ! -d "linux" ]; then
-  git clone --depth 1 --branch $KERNEL_BRANCH 'git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
+  git clone --depth 1 --branch $KERNEL_BRANCH $KERNEL_GIT_URL linux
   die_on_error "Could not git the kernel"
 fi
 cd linux
