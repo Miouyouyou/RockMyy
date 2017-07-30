@@ -56,19 +56,18 @@ export KERNEL_PATCHES="
 "
 
 export KERNEL_DTS_PATCHES="
-0001-Enabling-the-Mali-GPU-nodes-in-the-MiQi-and-Tinkerbo.patch
-0002-ARM-dts-rockchip-fix-the-regulator-s-voltage-range-o.patch
-0003-Adaptation-ARM-dts-rockchip-add-the-MiQi-board-s-fan.patch
-0004-ARM-dts-rockchip-add-support-for-1800-MHz-operation-.patch
-0005-Readapt-ARM-dts-rockchip-miqi-add-turbo-mode-operati.patch
-0006-ARMbian-RK3288-DTSI-changes.patch
-0007-Enabling-Tinkerboard-s-Wifi-Third-tentative.patch
-0008-Added-support-for-Tinkerboard-s-SPI-interface.patch
-0009-Define-VPU-services-in-the-Rockchip-3288-DTS-files.patch
-0010-Common-RK3288-DTSI-additions-by-ARMbian.patch
-0011-Fixes-imported-from-and-tested-by-the-ARMbian-team.patch
-0012-Tinkerboard-DTS-Define-the-Bluetooth-node.patch
-0013-Rockchip-DTSI-Fixed-a-few-typos-in-Rockchip-DTSI-fil.patch
+0001-Integrating-the-Mali-drivers.patch
+0002-fbdev-Mali-Add-the-FBIOGET_DMABUF-interface.patch
+0003-clk-rockchip-add-all-known-operating-points-to-the-a.patch
+0004-clk-rockchip-rk3288-prefer-vdpu-for-vcodec-clock-sou.patch
+0005-Remove-the-dependency-to-the-clk_mali-symbol.patch
+0006-soc-rockchip-power-domain-export-idle-request.patch
+0007-Reboot-patch-2-The-Return.patch
+0008-rockchip-rga-v4l2-m2m-support.patch
+0009-dt-bindings-Document-the-Rockchip-RGA-bindings.patch
+0010-Rockchip-DRM-GEM-Prime-import-SG-Table-Support.patch
+0011-drm_fourcc-Add-new-P010-P016-video-format.patch
+0012-Rockchip-10-bits-video-support-adapted-from-ayaka-pa.patch
 "
 
 export MALI_PATCHES="
