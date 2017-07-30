@@ -47,16 +47,6 @@ export CONFIG_FILE_URL=$BASE_FILES_URL/config/$KERNEL_SERIES/config-latest
 
 export KERNEL_PATCHES="
 0001-Integrating-the-Mali-drivers.patch
-0002-Readaptation-of-Rockchip-DRM-patches-provided-by-ARM.patch
-0003-clk-rockchip-add-all-known-operating-points-to-the-a.patch
-0004-clk-rockchip-rk3288-prefer-vdpu-for-vcodec-clock-sou.patch
-0005-Remove-the-dependency-to-the-clk_mali-symbol.patch
-0006-Export-rockchip_pmu_set_idle_request-for-out-of-tree.patch
-0007-Reboot-patch-2-The-Return.patch
-"
-
-export KERNEL_DTS_PATCHES="
-0001-Integrating-the-Mali-drivers.patch
 0002-fbdev-Mali-Add-the-FBIOGET_DMABUF-interface.patch
 0003-clk-rockchip-add-all-known-operating-points-to-the-a.patch
 0004-clk-rockchip-rk3288-prefer-vdpu-for-vcodec-clock-sou.patch
@@ -68,6 +58,22 @@ export KERNEL_DTS_PATCHES="
 0010-Rockchip-DRM-GEM-Prime-import-SG-Table-Support.patch
 0011-drm_fourcc-Add-new-P010-P016-video-format.patch
 0012-Rockchip-10-bits-video-support-adapted-from-ayaka-pa.patch
+"
+
+export KERNEL_DTS_PATCHES="
+0001-Enabling-the-Mali-GPU-nodes-in-the-MiQi-and-Tinkerbo.patch
+0002-ARM-dts-rockchip-fix-the-regulator-s-voltage-range-o.patch
+0003-Adaptation-ARM-dts-rockchip-add-the-MiQi-board-s-fan.patch
+0004-ARM-dts-rockchip-add-support-for-1800-MHz-operation-.patch
+0005-Readapt-ARM-dts-rockchip-miqi-add-turbo-mode-operati.patch
+0006-ARMbian-RK3288-DTSI-changes.patch
+0007-Enabling-Tinkerboard-s-Wifi-Third-tentative.patch
+0008-Added-support-for-Tinkerboard-s-SPI-interface.patch
+0009-Define-VPU-services-in-the-Rockchip-3288-DTS-files.patch
+0010-Common-RK3288-DTSI-additions-by-ARMbian.patch
+0011-Fixes-imported-from-and-tested-by-the-ARMbian-team.patch
+0012-Tinkerboard-DTS-Define-the-Bluetooth-node.patch
+0013-Rockchip-DTSI-Fixed-a-few-typos-in-Rockchip-DTSI-fil.patch
 "
 
 export MALI_PATCHES="
