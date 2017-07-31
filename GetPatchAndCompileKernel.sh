@@ -5,7 +5,7 @@ export KERNEL_GIT_URL='git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/li
 
 export KERNEL_SERIES=v4.13
 export KERNEL_BRANCH=v4.13-rc3
-export LOCALVERSION=-RockMyy-XIII
+export LOCALVERSION=-RockMyy-XIII-VPU-Test
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
 
@@ -58,6 +58,7 @@ export KERNEL_PATCHES="
 0010-Rockchip-DRM-GEM-Prime-import-SG-Table-Support.patch
 0011-drm_fourcc-Add-new-P010-P016-video-format.patch
 0012-Rockchip-10-bits-video-support-adapted-from-ayaka-pa.patch
+0013-FIXME-Remove-DRM-security-for-testing-purposes.patch
 "
 
 export KERNEL_DTS_PATCHES="
