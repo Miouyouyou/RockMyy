@@ -1,0 +1,54 @@
+From ea63a3323f0d43cac7477acee8a6c76ff1d0d0a9 Mon Sep 17 00:00:00 2001
+From: Myy <myy@miouyouyou.fr>
+Date: Mon, 31 Jul 2017 10:29:27 +0000
+Subject: [PATCH] rk3288-tinker.dts: Few additions copied on @TonyMac32
+
+Enabling the MIPI DSI node and defining an additional audio output.
+
+The "no-relinquish-port" was not added, as this property does not
+exist in mainline kernels.
+As stated here :
+http://lkml.iu.edu/hypermail/linux/kernel/1701.2/04050.html
+
+Signed-off-by: Myy <myy@miouyouyou.fr>
+---
+ arch/arm/boot/dts/rk3288-tinker.dts | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/arch/arm/boot/dts/rk3288-tinker.dts b/arch/arm/boot/dts/rk3288-tinker.dts
+index ec703356..a0bc2e02 100644
+--- a/arch/arm/boot/dts/rk3288-tinker.dts
++++ b/arch/arm/boot/dts/rk3288-tinker.dts
+@@ -409,6 +409,13 @@
+ 
+ &i2c2 {
+ 	status = "okay";
++
++	afc0:af-controller@0 {
++		status = "okay";
++		compatible = "silicon touch,vm149C-v4l2-i2c-subdev";
++		reg = < 0x0c >;
++	};
++
+ 	eeprom:m24c08@50 {
+ 		compatible = "at,24c08";
+ 		reg = <0x50>;
+@@ -569,6 +576,15 @@
+ 	};
+ };
+ 
++&mipi_dsi {
++	status = "okay";
++	mipi_panel: mipi-panel {
++		compatible ="asus,tc358762";
++		reg = <0>;
++		status = "okay";
++	};
++};
++
+ &pwm0 {
+ 	status = "okay";
+ };
+-- 
+2.13.0
+
