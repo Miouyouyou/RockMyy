@@ -4,7 +4,7 @@ export CROSS_COMPILE=armv7a-hardfloat-linux-gnueabi-
 export KERNEL_GIT_URL='git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
 
 export KERNEL_SERIES=v4.13
-export KERNEL_BRANCH=v4.13-rc3
+export KERNEL_BRANCH=v4.13-rc4
 export LOCALVERSION=-RockMyy-XIII
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
@@ -74,8 +74,7 @@ export KERNEL_DTS_PATCHES="
 0011-Fixes-imported-from-and-tested-by-the-ARMbian-team.patch
 0012-Tinkerboard-DTS-Define-the-Bluetooth-node.patch
 0013-Rockchip-DTSI-Fixed-a-few-typos-in-Rockchip-DTSI-fil.patch
-0014-Add-VPU-MMU-clock-names.patch
-0015-rk3288-tinker.dts-Few-additions-copied-on-TonyMac32.patch
+0014-rk3288-tinker.dts-Few-additions-copied-on-TonyMac32.patch
 "
 
 export MALI_PATCHES="
