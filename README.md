@@ -2,6 +2,17 @@ If you appreciate this project, support me on Patreon !
 
 [![Patreon !](https://raw.githubusercontent.com/Miouyouyou/RockMyy/master/.img/button-patreon.png)](https://www.patreon.com/Miouyouyou)
 
+About
+-----
+
+This branch goal is to include specific test patches for the VPU driver,
+but the VPU driver itself is
+[currently broken](https://github.com/Miouyouyou/rockchip-vcodec/wiki).
+
+Until it gets repaired, this branch will be on hold. The
+[**master branch**](https://github.com/Miouyouyou/RockMyy) still
+includes the appropriate DTS definitions used by the VPU driver anyway.
+
 Using the main script
 ---------------------
 
