@@ -82,6 +82,7 @@ export MALI_PATCHES="
 0002-Using-the-new-header-on-4.12-kernels-for-copy_-_user.patch
 0003-Adapt-get_user_pages-calls-to-use-the-new-calling-pr.patch
 0004-Don-t-be-TOO-severe-when-looking-for-the-IRQ-names.patch
+0005-Added-the-new-compatible-list-mainly-used-by-Rockchi.patch
 "
 
 # -- Helper functions
