@@ -4,7 +4,7 @@ export CROSS_COMPILE=armv7a-hardfloat-linux-gnueabi-
 export KERNEL_GIT_URL='git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
 
 export KERNEL_SERIES=v4.13
-export KERNEL_BRANCH=v4.13-rc5
+export KERNEL_BRANCH=v4.13-rc6
 export LOCALVERSION=-RockMyy-XIII
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
@@ -57,6 +57,7 @@ export KERNEL_PATCHES="
 0009-dt-bindings-Document-the-Rockchip-RGA-bindings.patch
 0010-Rockchip-DRM-GEM-Prime-import-SG-Table-Support.patch
 0011-drm_fourcc-Add-new-P010-P016-video-format.patch
+0012-net-stmmac-Reverting-a-part-of-Use-the-right-logging.patch
 "
 
 export KERNEL_DTS_PATCHES="
