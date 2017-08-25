@@ -57,7 +57,7 @@ export KERNEL_PATCHES="
 0009-dt-bindings-Document-the-Rockchip-RGA-bindings.patch
 0010-Rockchip-DRM-GEM-Prime-import-SG-Table-Support.patch
 0011-drm_fourcc-Add-new-P010-P016-video-format.patch
-0012-net-stmmac-Reverting-a-part-of-Use-the-right-logging.patch
+0012-net-phy-Deal-with-unbound-phy-driver-in-phy_attached.patch
 "
 
 export KERNEL_DTS_PATCHES="
