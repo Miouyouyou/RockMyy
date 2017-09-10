@@ -57,6 +57,7 @@ export KERNEL_PATCHES="
 0009-dt-bindings-Document-the-Rockchip-RGA-bindings.patch
 0010-Rockchip-DRM-GEM-Prime-import-SG-Table-Support.patch
 0011-drm_fourcc-Add-new-P010-P016-video-format.patch
+0012-Slight-butchering-to-test-the-VPU-driver.patch
 "
 
 export KERNEL_DTS_PATCHES="

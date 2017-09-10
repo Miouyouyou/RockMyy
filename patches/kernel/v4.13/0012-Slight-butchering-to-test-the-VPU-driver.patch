@@ -1,0 +1,323 @@
+From 981b3c1b139daafff1317de9a6d61e1b32a10280 Mon Sep 17 00:00:00 2001
+From: Myy <myy@miouyouyou.fr>
+Date: Sun, 10 Sep 2017 20:31:39 +0000
+Subject: [PATCH] Slight butchering to test the VPU driver
+
+This patch must NOT be applied if you're not testing the VPU driver.
+
+This enable the IOMMU_DMA_API for Rockchip boards and redefine some
+functions in that API, in order to use them in the VPU code.
+Turns out that iommu_get_domain_for(dev) fails miserably every time
+on Rockchip (aka returns NULL everytime). I'll try to understand why.
+
+Meanwhile new functions for mapping and unmapping DMA Scatter Gather
+DMA lists have been added. These take the IOMMU domain as argument
+directly, instead of retrieving it from the device structure.
+
+At last, a lot of noisy printk functions were added to the IOVA
+code in order to understand what's going on. Thanks to these
+functions, I understood that the iommu_domain address that was
+passed to these functions was offseted by 4 bytes actually !
+
+The reason being dubious
+(struct iova_domain *) iommu_domain->iova_cookie
+casts that could not work since that cookie structure is
+basically :
+
+struct iommu_dma_cookie {
+	enum iommu_dma_cookie_type	type;
+	union {
+		/* Full allocator for IOMMU_DMA_IOVA_COOKIE */
+		struct iova_domain	iovad;
+		/* Trivial linear page allocator for IOMMU_DMA_MSI_COOKIE */
+		dma_addr_t		msi_iova;
+	};
+	struct list_head		msi_page_list;
+	spinlock_t			msi_lock;
+};
+
+So those casts missed the real address by 4 bytes
+(size of the enum field).
+
+Signed-off-by: Myy <myy@miouyouyou.fr>
+---
+ drivers/iommu/Kconfig     |  1 +
+ drivers/iommu/dma-iommu.c | 28 +++++++++++++++-----
+ drivers/iommu/iova.c      | 67 ++++++++++++++++++++++++++++++++++++++++-------
+ include/linux/dma-iommu.h |  5 ++++
+ 4 files changed, 86 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/iommu/Kconfig b/drivers/iommu/Kconfig
+index f73ff28f..cebe9502 100644
+--- a/drivers/iommu/Kconfig
++++ b/drivers/iommu/Kconfig
+@@ -222,6 +222,7 @@ config ROCKCHIP_IOMMU
+ 	depends on ARM || ARM64
+ 	depends on ARCH_ROCKCHIP || COMPILE_TEST
+ 	select IOMMU_API
++	select IOMMU_DMA
+ 	select ARM_DMA_USE_IOMMU
+ 	help
+ 	  Support for IOMMUs found on Rockchip rk32xx SOCs.
+diff --git a/drivers/iommu/dma-iommu.c b/drivers/iommu/dma-iommu.c
+index 9d1cebe7..009604e9 100644
+--- a/drivers/iommu/dma-iommu.c
++++ b/drivers/iommu/dma-iommu.c
+@@ -80,6 +80,7 @@ int iommu_dma_init(void)
+ {
+ 	return iova_cache_get();
+ }
++EXPORT_SYMBOL(iommu_dma_init);
+ 
+ /**
+  * iommu_get_dma_cookie - Acquire DMA-API resources for a domain
+@@ -732,10 +733,10 @@ static void __invalidate_sg(struct scatterlist *sg, int nents)
+  * impedance-matching, to be able to hand off a suitably-aligned list,
+  * but still preserve the original offsets and sizes for the caller.
+  */
+-int iommu_dma_map_sg(struct device *dev, struct scatterlist *sg,
+-		int nents, int prot)
++int iommu_myy_dma_map_sg(struct iommu_domain *domain,
++		struct device *dev,
++		struct scatterlist *sg, int nents, int prot)
+ {
+-	struct iommu_domain *domain = iommu_get_domain_for_dev(dev);
+ 	struct iommu_dma_cookie *cookie = domain->iova_cookie;
+ 	struct iova_domain *iovad = &cookie->iovad;
+ 	struct scatterlist *s, *prev = NULL;
+@@ -802,9 +803,17 @@ int iommu_dma_map_sg(struct device *dev, struct scatterlist *sg,
+ 	__invalidate_sg(sg, nents);
+ 	return 0;
+ }
++EXPORT_SYMBOL(iommu_myy_dma_map_sg);
+ 
+-void iommu_dma_unmap_sg(struct device *dev, struct scatterlist *sg, int nents,
+-		enum dma_data_direction dir, unsigned long attrs)
++int iommu_dma_map_sg(struct device *dev, struct scatterlist *sg,
++		int nents, int prot)
++{
++	struct iommu_domain *domain = iommu_get_domain_for_dev(dev);
++	return iommu_myy_dma_map_sg(domain, dev, sg, nents, prot);
++}
++
++void iommu_myy_dma_unmap_sg(struct iommu_domain *domain,
++		struct scatterlist *sg, int nents)
+ {
+ 	dma_addr_t start, end;
+ 	struct scatterlist *tmp;
+@@ -820,7 +829,14 @@ void iommu_dma_unmap_sg(struct device *dev, struct scatterlist *sg, int nents,
+ 		sg = tmp;
+ 	}
+ 	end = sg_dma_address(sg) + sg_dma_len(sg);
+-	__iommu_dma_unmap(iommu_get_domain_for_dev(dev), start, end - start);
++	__iommu_dma_unmap(domain, start, end - start);
++}
++EXPORT_SYMBOL(iommu_myy_dma_unmap_sg);
++
++void iommu_dma_unmap_sg(struct device *dev, struct scatterlist *sg, int nents,
++		enum dma_data_direction dir, unsigned long attrs)
++{
++	iommu_myy_dma_unmap_sg(iommu_get_domain_for_dev(dev), sg, nents);
+ }
+ 
+ dma_addr_t iommu_dma_map_resource(struct device *dev, phys_addr_t phys,
+diff --git a/drivers/iommu/iova.c b/drivers/iommu/iova.c
+index 246f14c8..cf146f97 100644
+--- a/drivers/iommu/iova.c
++++ b/drivers/iommu/iova.c
+@@ -33,6 +33,28 @@ static unsigned long iova_rcache_get(struct iova_domain *iovad,
+ static void init_iova_rcaches(struct iova_domain *iovad);
+ static void free_iova_rcaches(struct iova_domain *iovad);
+ 
++static void print_iovad
++(char const * __restrict const caller_name,
++ struct iova_domain *iovad) {
++	printk(
++		KERN_ERR
++		"[%s]\n"
++		"  iovad : %p\n"
++		"  iovad->rb_root       = %p\n"
++		"  iovad->cached32_node = %p\n"
++		"  iovad->granule       = %lu\n"
++		"  iovad->start_pfn     = %lu\n"
++		"  iovad->dma_32bit_pfn = %lu\n",
++		caller_name,
++		iovad,
++		iovad->rbroot.rb_node,
++		iovad->cached32_node,
++		iovad->granule,
++		iovad->start_pfn,
++		iovad->dma_32bit_pfn
++	);
++}
++
+ void
+ init_iova_domain(struct iova_domain *iovad, unsigned long granule,
+ 	unsigned long start_pfn, unsigned long pfn_32bit)
+@@ -49,14 +71,30 @@ init_iova_domain(struct iova_domain *iovad, unsigned long granule,
+ 	iovad->cached32_node = NULL;
+ 	iovad->granule = granule;
+ 	iovad->start_pfn = start_pfn;
+-	iovad->dma_32bit_pfn = pfn_32bit + 1;
++	iovad->dma_32bit_pfn = pfn_32bit;
++	print_iovad("init_iova_domain", iovad);
+ 	init_iova_rcaches(iovad);
++	print_iovad("init_iova_domain", iovad);
+ }
+ EXPORT_SYMBOL_GPL(init_iova_domain);
+ 
+ static struct rb_node *
+ __get_cached_rbnode(struct iova_domain *iovad, unsigned long *limit_pfn)
+ {
++	printk(
++		KERN_ERR
++		"[__get_cached_rbnode (Updated)]  \n"
++		"  limit_pfn            : (%lu) %p\n"
++		"  iovad->dma_32bit_pfn : %lu\n"
++		"  iovad->rbroot        : (%p)\n"
++		"  iovad->cached_node   : (%p)\n",
++		(limit_pfn ? *limit_pfn : 0), limit_pfn,
++		iovad->dma_32bit_pfn,
++		iovad->rbroot.rb_node,
++		iovad->cached32_node
++	);
++
++	print_iovad("__get_cached_rbnode", iovad);
+ 	if ((*limit_pfn > iovad->dma_32bit_pfn) ||
+ 		(iovad->cached32_node == NULL))
+ 		return rb_last(&iovad->rbroot);
+@@ -64,7 +102,7 @@ __get_cached_rbnode(struct iova_domain *iovad, unsigned long *limit_pfn)
+ 		struct rb_node *prev_node = rb_prev(iovad->cached32_node);
+ 		struct iova *curr_iova =
+ 			rb_entry(iovad->cached32_node, struct iova, node);
+-		*limit_pfn = curr_iova->pfn_lo;
++		*limit_pfn = curr_iova->pfn_lo - 1;
+ 		return prev_node;
+ 	}
+ }
+@@ -136,7 +174,7 @@ iova_insert_rbtree(struct rb_root *root, struct iova *iova,
+ static unsigned int
+ iova_get_pad_size(unsigned int size, unsigned int limit_pfn)
+ {
+-	return (limit_pfn - size) & (__roundup_pow_of_two(size) - 1);
++	return (limit_pfn + 1 - size) & (__roundup_pow_of_two(size) - 1);
+ }
+ 
+ static int __alloc_and_insert_iova_range(struct iova_domain *iovad,
+@@ -148,6 +186,8 @@ static int __alloc_and_insert_iova_range(struct iova_domain *iovad,
+ 	unsigned long saved_pfn;
+ 	unsigned int pad_size = 0;
+ 
++	printk(KERN_ERR "__alloc_and_insert_iova_range called !\n");
++	print_iovad("__alloc_and_insert_iova_range", iovad);
+ 	/* Walk the tree backwards */
+ 	spin_lock_irqsave(&iovad->iova_rbtree_lock, flags);
+ 	saved_pfn = limit_pfn;
+@@ -156,15 +196,18 @@ static int __alloc_and_insert_iova_range(struct iova_domain *iovad,
+ 	while (curr) {
+ 		struct iova *curr_iova = rb_entry(curr, struct iova, node);
+ 
+-		if (limit_pfn <= curr_iova->pfn_lo) {
++		if (limit_pfn < curr_iova->pfn_lo)
+ 			goto move_left;
+-		} else if (limit_pfn > curr_iova->pfn_hi) {
++		else if (limit_pfn < curr_iova->pfn_hi)
++			goto adjust_limit_pfn;
++		else {
+ 			if (size_aligned)
+ 				pad_size = iova_get_pad_size(size, limit_pfn);
+-			if ((curr_iova->pfn_hi + size + pad_size) < limit_pfn)
++			if ((curr_iova->pfn_hi + size + pad_size) <= limit_pfn)
+ 				break;	/* found a free slot */
+ 		}
+-		limit_pfn = curr_iova->pfn_lo;
++adjust_limit_pfn:
++		limit_pfn = curr_iova->pfn_lo ? (curr_iova->pfn_lo - 1) : 0;
+ move_left:
+ 		prev = curr;
+ 		curr = rb_prev(curr);
+@@ -180,7 +223,7 @@ static int __alloc_and_insert_iova_range(struct iova_domain *iovad,
+ 	}
+ 
+ 	/* pfn_lo will point to size aligned address if size_aligned is set */
+-	new->pfn_lo = limit_pfn - (size + pad_size);
++	new->pfn_lo = limit_pfn - (size + pad_size) + 1;
+ 	new->pfn_hi = new->pfn_lo + size - 1;
+ 
+ 	/* If we have 'prev', it's a valid place to start the insertion. */
+@@ -267,7 +310,7 @@ alloc_iova(struct iova_domain *iovad, unsigned long size,
+ 	if (!new_iova)
+ 		return NULL;
+ 
+-	ret = __alloc_and_insert_iova_range(iovad, size, limit_pfn + 1,
++	ret = __alloc_and_insert_iova_range(iovad, size, limit_pfn,
+ 			new_iova, size_aligned);
+ 
+ 	if (ret) {
+@@ -286,6 +329,7 @@ private_find_iova(struct iova_domain *iovad, unsigned long pfn)
+ 
+ 	assert_spin_locked(&iovad->iova_rbtree_lock);
+ 
++	printk(KERN_ERR "[private_find_iova] Called !\n");
+ 	while (node) {
+ 		struct iova *iova = rb_entry(node, struct iova, node);
+ 
+@@ -305,6 +349,7 @@ private_find_iova(struct iova_domain *iovad, unsigned long pfn)
+ 
+ static void private_free_iova(struct iova_domain *iovad, struct iova *iova)
+ {
++	printk(KERN_ERR "[private_free_iova] Called !\n");
+ 	assert_spin_locked(&iovad->iova_rbtree_lock);
+ 	__cached_rbnode_delete_update(iovad, iova);
+ 	rb_erase(&iova->node, &iovad->rbroot);
+@@ -433,6 +478,7 @@ void put_iova_domain(struct iova_domain *iovad)
+ 	struct rb_node *node;
+ 	unsigned long flags;
+ 
++	printk(KERN_ERR "[put_iova_domain] Called !\n");
+ 	free_iova_rcaches(iovad);
+ 	spin_lock_irqsave(&iovad->iova_rbtree_lock, flags);
+ 	node = rb_first(&iovad->rbroot);
+@@ -512,6 +558,7 @@ reserve_iova(struct iova_domain *iovad,
+ 	struct iova *iova;
+ 	unsigned int overlap = 0;
+ 
++	printk(KERN_ERR "[reserve_iova] Called !\n");
+ 	spin_lock_irqsave(&iovad->iova_rbtree_lock, flags);
+ 	for (node = rb_first(&iovad->rbroot); node; node = rb_next(node)) {
+ 		if (__is_range_overlap(node, pfn_lo, pfn_hi)) {
+@@ -550,6 +597,7 @@ copy_reserved_iova(struct iova_domain *from, struct iova_domain *to)
+ 	unsigned long flags;
+ 	struct rb_node *node;
+ 
++	printk(KERN_ERR "[copy_reserved_iova] Called !\n");
+ 	spin_lock_irqsave(&from->iova_rbtree_lock, flags);
+ 	for (node = rb_first(&from->rbroot); node; node = rb_next(node)) {
+ 		struct iova *iova = rb_entry(node, struct iova, node);
+@@ -571,6 +619,7 @@ split_and_remove_iova(struct iova_domain *iovad, struct iova *iova,
+ 	unsigned long flags;
+ 	struct iova *prev = NULL, *next = NULL;
+ 
++	printk(KERN_ERR "split_and_remove_iova\n");
+ 	spin_lock_irqsave(&iovad->iova_rbtree_lock, flags);
+ 	if (iova->pfn_lo < pfn_lo) {
+ 		prev = alloc_and_init_iova(iova->pfn_lo, pfn_lo - 1);
+diff --git a/include/linux/dma-iommu.h b/include/linux/dma-iommu.h
+index 92f20832..7a49bb30 100644
+--- a/include/linux/dma-iommu.h
++++ b/include/linux/dma-iommu.h
+@@ -55,6 +55,11 @@ dma_addr_t iommu_dma_map_page(struct device *dev, struct page *page,
+ 		unsigned long offset, size_t size, int prot);
+ int iommu_dma_map_sg(struct device *dev, struct scatterlist *sg,
+ 		int nents, int prot);
++int iommu_myy_dma_map_sg(struct iommu_domain *domain,
++		struct device *dev,
++		struct scatterlist *sg, int nents, int prot);
++void iommu_myy_dma_unmap_sg(struct iommu_domain *domain,
++		struct scatterlist *sg, int nents);
+ 
+ /*
+  * Arch code with no special attribute handling may use these
+-- 
+2.13.0
+

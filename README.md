@@ -1,5 +1,6 @@
-If you appreciate this project, support me on Patreon !
+If you appreciate this project, support me through Patreon or Pledgie !
 
+[![Pledgie !](https://pledgie.com/campaigns/32702.png)](https://pledgie.com/campaigns/32702)
 [![Patreon !](https://raw.githubusercontent.com/Miouyouyou/RockMyy/master/.img/button-patreon.png)](https://www.patreon.com/Miouyouyou)
 
 Using the main script
