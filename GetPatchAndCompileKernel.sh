@@ -1,12 +1,12 @@
 export ARCH=arm
-export CROSS_COMPILE=armv7a-hardfloat-linux-gnueabi-
+export CROSS_COMPILE=arm-linux-gnueabihf-
 
 export KERNEL_GIT_URL='git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
 
-export KERNEL_SERIES=v4.13
-export KERNEL_BRANCH=v4.13
-export LOCALVERSION=-RockMyy-XIII
-export MALI_VERSION=r19p0-01rel0
+export KERNEL_SERIES=v4.14
+export KERNEL_BRANCH=v4.14-rc4
+export LOCALVERSION=-RockMyy-XIV-A-Myy-Reborn
+export MALI_VERSION=r20p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
 
 export GITHUB_REPO=Miouyouyou/RockMyy
@@ -47,37 +47,40 @@ export CONFIG_FILE_URL=$BASE_FILES_URL/config/$KERNEL_SERIES/config-latest
 
 export KERNEL_PATCHES="
 0001-Integrating-the-Mali-drivers.patch
-0002-fbdev-Mali-Add-the-FBIOGET_DMABUF-interface.patch
-0003-clk-rockchip-add-all-known-operating-points-to-the-a.patch
-0004-clk-rockchip-rk3288-prefer-vdpu-for-vcodec-clock-sou.patch
-0005-Remove-the-dependency-to-the-clk_mali-symbol.patch
-0006-soc-rockchip-power-domain-export-idle-request.patch
-0007-Reboot-patch-2-The-Return.patch
-0008-rockchip-rga-v4l2-m2m-support.patch
-0009-dt-bindings-Document-the-Rockchip-RGA-bindings.patch
-0010-Rockchip-DRM-GEM-Prime-import-SG-Table-Support.patch
-0011-drm_fourcc-Add-new-P010-P016-video-format.patch
+0002-clk-rockchip-add-all-known-operating-points-to-the-a.patch
+0003-clk-rockchip-rk3288-prefer-vdpu-for-vcodec-clock-sou.patch
+0004-Remove-the-dependency-to-the-clk_mali-symbol.patch
+0005-Reboot-patch-2-The-Return.patch
+0006-rockchip-rga-v4l2-m2m-support.patch
+0007-dt-bindings-Document-the-Rockchip-RGA-bindings.patch
 "
 
 export KERNEL_DTS_PATCHES="
-0001-Enabling-the-Mali-GPU-nodes-in-the-MiQi-and-Tinkerbo.patch
+0001-dts-rk3288-miqi-Enabling-the-Mali-GPU-node.patch
 0002-ARM-dts-rockchip-fix-the-regulator-s-voltage-range-o.patch
-0003-Adaptation-ARM-dts-rockchip-add-the-MiQi-board-s-fan.patch
+0003-ARM-dts-rockchip-add-the-MiQi-board-s-fan-definition.patch
 0004-ARM-dts-rockchip-add-support-for-1800-MHz-operation-.patch
 0005-Readapt-ARM-dts-rockchip-miqi-add-turbo-mode-operati.patch
-0006-ARMbian-RK3288-DTSI-changes.patch
-0007-Enabling-Tinkerboard-s-Wifi-Third-tentative.patch
+0006-ARM-DTSI-rk3288.dtsi-Missing-GRF-handles.patch
+0007-RK3288-DTSI-rk3288.dtsi-Add-missing-SPI2-pinctrl.patch
 0008-Added-support-for-Tinkerboard-s-SPI-interface.patch
-0009-Define-VPU-services-in-the-Rockchip-3288-DTS-files.patch
-0010-Common-RK3288-DTSI-additions-by-ARMbian.patch
-0011-Fixes-imported-from-and-tested-by-the-ARMbian-team.patch
-0012-Tinkerboard-DTS-Define-the-Bluetooth-node.patch
-0013-Rockchip-DTSI-Fixed-a-few-typos-in-Rockchip-DTSI-fil.patch
-0014-rk3288-tinker.dts-Few-additions-copied-on-TonyMac32.patch
+0009-ARM-DTSI-rk3288.dtsi-Define-the-VPU-services.patch
+0010-ARM-DTSI-rk3288.dtsi-Adding-cells-addresses-and-size.patch
+0011-ARM-DTSI-rk3288.dtsi-Adding-missing-EDP-power-domain.patch
+0012-ARM-DTSI-rk3288.dtsi-Add-the-RGA-node.patch
+0013-ARM-DTSI-rk3288.dtsi-Adding-missing-VOPB-registers.patch
+0014-ARM-DTSI-rk3288.dtsi-Fixed-the-SPDIF-node-address.patch
+0015-ARM-DTS-rk3288-tinker.dts-Enabling-SDIO-Wireless-and.patch
+0016-ARM-DTS-rk3288-tinker.dts-Improving-the-CPU-max-volt.patch
+0017-ARM-DTS-rk3288-tinker.dts-Setting-up-the-SD-regulato.patch
+0018-ARM-DTS-rk3288-tinker.dts-Defined-the-I2C-interfaces.patch
+0019-ARM-DTS-rk3288-tinker.dts-Add-the-MIPI-DSI-node.patch
+0020-ARM-DTS-rk3288-tinker.dts-Defining-the-SPI-interface.patch
+0021-ARM-DTS-rk3288-tinker.dts-Defining-SDMMC-properties.patch
 "
 
 export MALI_PATCHES="
-0001-Mali-midgard-r19p0-fixes-for-4.13-kernels.patch
+0001-midgard-mali_kbase-include-linux-sched-task_stack.h.patch
 0002-Using-the-new-header-on-4.12-kernels-for-copy_-_user.patch
 0003-Adapt-get_user_pages-calls-to-use-the-new-calling-pr.patch
 0004-Don-t-be-TOO-severe-when-looking-for-the-IRQ-names.patch
