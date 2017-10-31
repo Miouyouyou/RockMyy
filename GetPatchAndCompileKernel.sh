@@ -4,7 +4,7 @@ export CROSS_COMPILE=arm-linux-gnueabihf-
 export KERNEL_GIT_URL='git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
 
 export KERNEL_SERIES=v4.14
-export KERNEL_BRANCH=v4.14-rc4
+export KERNEL_BRANCH=v4.14-rc7
 export LOCALVERSION=-RockMyy-XIV-A-Myy-Reborn
 export MALI_VERSION=r20p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
