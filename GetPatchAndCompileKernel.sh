@@ -4,7 +4,7 @@ export CROSS_COMPILE=arm-linux-gnueabihf-
 export KERNEL_GIT_URL='git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
 
 export KERNEL_SERIES=v4.14
-export KERNEL_BRANCH=v4.14-rc7
+export KERNEL_BRANCH=v4.14-rc8
 export LOCALVERSION=-RockMyy-XIV-A-Myy-Reborn
 export MALI_VERSION=r20p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
@@ -67,6 +67,7 @@ export KERNEL_DTS_PATCHES="
 0010-ARM-DTSI-rk3288.dtsi-Adding-cells-addresses-and-size.patch
 0011-ARM-DTSI-rk3288.dtsi-Adding-missing-EDP-power-domain.patch
 0012-ARM-DTSI-rk3288.dtsi-Add-the-RGA-node.patch
+0013-ARM-DTSI-rk3288.dtsi-Adding-missing-VOPB-registers.patch
 0014-ARM-DTSI-rk3288.dtsi-Fixed-the-SPDIF-node-address.patch
 0015-ARM-DTS-rk3288-tinker.dts-Enabling-SDIO-Wireless-and.patch
 0016-ARM-DTS-rk3288-tinker.dts-Improving-the-CPU-max-volt.patch
