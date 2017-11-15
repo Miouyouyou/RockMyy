@@ -41,7 +41,7 @@ scripts tailored towards Rockchip 3288 boards.
 
 The [main cross-compiling script](./GetPatchAndCompileKernel.sh) will :
 * Clone the latest release or release candidate branch of the mainline kernel;
-* Integrate the Mali Midgard r19p0 drivers to the cloned kernel;
+* Integrate the Mali Midgard r20p0 drivers to the cloned kernel;
 * Apply various RK3288 specific patches for MiQi, Tinkerboard and Firefly boards;
 * Copy and use this repository configuration file;
 * Cross-compile the patched kernel;
