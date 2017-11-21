@@ -1,12 +1,20 @@
-From 33b5e7dd58acfa823fac962925b65acf98602191 Mon Sep 17 00:00:00 2001
+From f4480cb8198085607c15e523b49aa21bc38cf62c Mon Sep 17 00:00:00 2001
 From: Myy Miouyouyou <myy@miouyouyou.fr>
-Date: Thu, 19 Oct 2017 21:34:43 +0200
-Subject: [PATCH 12/28] ARM: DTSI: rk3288.dtsi: Define the VPU services
+Date: Tue, 21 Nov 2017 21:47:33 +0100
+Subject: [PATCH 1/5] ARM: DTSI: rk3288.dtsi: Define the VPU services
 
-Automatically enabled by default.
+Still, you will need appropriate drivers to use them.
 
-Still, you will need appropriate drivers to use them. These drivers
-might not be included in the kernel.
+Contrary to the previous versions of this patch, these services are :
+* NOT enabled by default;
+* MUST be activated in each individual DTS;
+
+I currently do not own enough RK3288 boards to ensure that the
+VPU and HEVC MMU + services can be activated without issues.
+
+Still this patch does not generate issues like the previous one AND
+still enable these services on boot, when activated properly in
+individual DTS files.
 
 Signed-off-by: Myy Miouyouyou <myy@miouyouyou.fr>
 ---
@@ -14,10 +22,10 @@ Signed-off-by: Myy Miouyouyou <myy@miouyouyou.fr>
  1 file changed, 63 insertions(+)
 
 diff --git a/arch/arm/boot/dts/rk3288.dtsi b/arch/arm/boot/dts/rk3288.dtsi
-index 9ed532cc..be985f02 100644
+index 30b04257..bc3601ac 100644
 --- a/arch/arm/boot/dts/rk3288.dtsi
 +++ b/arch/arm/boot/dts/rk3288.dtsi
-@@ -1159,6 +1159,27 @@
+@@ -1182,6 +1182,27 @@
  		status = "disabled";
  	};
  
@@ -37,7 +45,7 @@ index 9ed532cc..be985f02 100644
 +		iommus = <&vpu_mmu>;
 +		iommu_enabled = <1>;
 +		dev_mode = <0>;
-+		status = "okay";
++		status = "disabled";
 +		/* 0 means ion, 1 means drm */
 +		allocator = <1>;
 +	};
@@ -45,7 +53,7 @@ index 9ed532cc..be985f02 100644
  	hevc_mmu: iommu@ff9c0440 {
  		compatible = "rockchip,iommu";
  		reg = <0x0 0xff9c0440 0x0 0x40>, <0x0 0xff9c0480 0x0 0x40>;
-@@ -1168,6 +1189,48 @@
+@@ -1191,6 +1212,48 @@
  		status = "disabled";
  	};
  
@@ -86,7 +94,7 @@ index 9ed532cc..be985f02 100644
 +		dev_mode = <1>;
 +		iommus = <&hevc_mmu>;
 +		iommu_enabled = <1>;
-+		status = "okay";
++		status = "disabled";
 +		/* 0 means ion, 1 means drm */
 +		allocator = <1>;
 +	};
@@ -95,5 +103,5 @@ index 9ed532cc..be985f02 100644
  		compatible = "rockchip,rk3288-mali", "arm,mali-t760";
  		reg = <0x0 0xffa30000 0x0 0x10000>;
 -- 
-2.11.0
+2.14.1
 
