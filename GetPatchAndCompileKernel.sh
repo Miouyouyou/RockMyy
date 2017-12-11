@@ -3,10 +3,10 @@ export CROSS_COMPILE=arm-linux-gnueabihf-
 
 export KERNEL_GIT_URL='git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
 
-export KERNEL_SERIES=v4.14
-export KERNEL_BRANCH=v4.14
-export LOCALVERSION=-RockMyy-XIV-A-Myy-Reborn
-export MALI_VERSION=r20p0-01rel0
+export KERNEL_SERIES=v4.15
+export KERNEL_BRANCH=v4.15-rc3
+export LOCALVERSION=-Kernel-Maker-XV
+export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
 
 export GITHUB_REPO=Miouyouyou/RockMyy
@@ -46,13 +46,11 @@ export MALI_PATCHES_DIR_URL=$BASE_FILES_URL/$MALI_PATCHES_DIR
 export CONFIG_FILE_URL=$BASE_FILES_URL/config/$KERNEL_SERIES/config-latest
 
 export KERNEL_PATCHES="
-0001-Integrating-the-Mali-drivers.patch
+0001-drivers-Integrating-Mali-Midgard-video-and-gpu-drive.patch
 0002-clk-rockchip-add-all-known-operating-points-to-the-a.patch
 0003-clk-rockchip-rk3288-prefer-vdpu-for-vcodec-clock-sou.patch
 0004-Remove-the-dependency-to-the-clk_mali-symbol.patch
-0005-Reboot-patch-2-The-Return.patch
-0006-rockchip-rga-v4l2-m2m-support.patch
-0007-dt-bindings-Document-the-Rockchip-RGA-bindings.patch
+0006-soc-rockchip-power-domain-export-idle-request.patch
 "
 
 export KERNEL_DTS_PATCHES="
@@ -66,7 +64,6 @@ export KERNEL_DTS_PATCHES="
 0008-Added-support-for-Tinkerboard-s-SPI-interface.patch
 0010-ARM-DTSI-rk3288-Adding-cells-addresses-and-size.patch
 0011-ARM-DTSI-rk3288-Adding-missing-EDP-power-domain.patch
-0012-ARM-DTSI-rk3288-Add-the-RGA-node.patch
 0013-ARM-DTSI-rk3288-Adding-missing-VOPB-registers.patch
 0014-ARM-DTSI-rk3288-Fixed-the-SPDIF-node-address.patch
 0015-ARM-DTS-rk3288-tinker-Enabling-SDIO-Wireless-and.patch
@@ -81,14 +78,14 @@ export KERNEL_DTS_PATCHES="
 0024-ARM-DTS-rk3288-tinker-Enable-the-Video-encoding-MMU-.patch
 0025-ARM-DTSI-rk3288-firefly-Enable-the-Video-encoding-MM.patch
 0026-ARM-DTSI-rk3288-veyron-Enable-the-Video-encoding-MMU.patch
+0027-ARM-DTSI-rk3288-fix-errors-in-IOMMU-interrupts-prope.patch
 "
 
 export MALI_PATCHES="
-0001-midgard-mali_kbase-include-linux-sched-task_stack.h.patch
-0002-Using-the-new-header-on-4.12-kernels-for-copy_-_user.patch
-0003-Adapt-get_user_pages-calls-to-use-the-new-calling-pr.patch
+0001-Mali-midgard-r19p0-fixes-for-4.13-kernels.patch
 0004-Don-t-be-TOO-severe-when-looking-for-the-IRQ-names.patch
 0005-Added-the-new-compatible-list-mainly-used-by-Rockchi.patch
+0006-gpu-arm-Midgard-setup_timer-timer_setup.patch
 "
 
 # -- Helper functions
@@ -163,11 +160,7 @@ if [ ! -e "PATCHED" ]; then
   find . -type 'd' -exec chmod 0755 {} ';' && # Every folder should have drwxr-xr-x rights
   find . -name 'sconscript' -exec rm {} ';' && # Remove sconscript files. Useless.
   cd driver/product/kernel &&
-  rm -r 'patches' 'license.txt' && # Remove the patches and GPL license file.
   cp -r drivers/gpu/arm  $SRC_DIR/drivers/gpu/ && # Copy the Midgard code
-  cp -r drivers/base/ump $SRC_DIR/drivers/base/ && # Copy the Unified Memory Provider code
-  cp include/linux/ump*  $SRC_DIR/include/linux/ && # Copy the Unified Memory Provider headers.
-  cp include/linux/kds.h $SRC_DIR/include/linux/ && # Copy the Kernel Dependency System header ↑ (dependency)
   cd $SRC_DIR &&
   rm -r TX011-SW-99002-$MALI_VERSION TX011-SW-99002-$MALI_VERSION.tgz
   
