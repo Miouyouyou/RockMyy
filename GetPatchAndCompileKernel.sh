@@ -50,6 +50,7 @@ export KERNEL_PATCHES="
 0002-clk-rockchip-add-all-known-operating-points-to-the-a.patch
 0003-clk-rockchip-rk3288-prefer-vdpu-for-vcodec-clock-sou.patch
 0004-Remove-the-dependency-to-the-clk_mali-symbol.patch
+0005-ASUS-Tinkerboard-Stupid-reboot.patch
 0006-soc-rockchip-power-domain-export-idle-request.patch
 "
 

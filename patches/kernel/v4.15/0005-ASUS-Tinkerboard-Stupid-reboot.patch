@@ -1,32 +1,38 @@
-From 1aeeeeaf10ad5888c1a5b3ab9b780be91c7dada9 Mon Sep 17 00:00:00 2001
-From: Myy <myy@miouyouyou.fr>
-Date: Mon, 24 Jul 2017 23:09:31 +0000
-Subject: [PATCH] Last try for the reboot hack
+From bf9b932f6ae506baf5b79c8407089448ed77fc56 Mon Sep 17 00:00:00 2001
+From: Myy Miouyouyou <myy@miouyouyou.fr>
+Date: Sun, 17 Dec 2017 16:15:03 +0100
+Subject: [PATCH] ASUS Tinkerboard: Stupid reboot patch
 
-If this one does not work, get a refund for your CantRebootBoard.
+This patch is ugly as shit and will be reworked when possible.
 
-Signed-off-by: Myy <myy@miouyouyou.fr>
+Meanwhile, this fixes an issue with the ASUS Tinkerboard which
+cannot reboot correctly. The issue is that the MMC hardware is
+shutdown during the reboot phase and is not powered again after
+the power cycle, leading to a dead board awaiting a hard power
+cycle.
+
+Signed-off-by: Myy Miouyouyou <myy@miouyouyou.fr>
 ---
  drivers/mmc/host/dw_mmc-rockchip.c | 24 ++++++++++++++++++++++++
- drivers/mmc/host/dw_mmc.c          | 26 ++++++++++++++++++++++++++
- include/linux/reboot.h             |  3 +++
+ drivers/mmc/host/dw_mmc.c          | 28 ++++++++++++++++++++++++++++
+ include/linux/reboot.h             |  2 ++
  kernel/reboot.c                    |  1 +
- 4 files changed, 54 insertions(+)
+ 4 files changed, 55 insertions(+)
 
 diff --git a/drivers/mmc/host/dw_mmc-rockchip.c b/drivers/mmc/host/dw_mmc-rockchip.c
-index aaed6f9b..71131020 100644
+index a3f1c2b30..52c13733f 100644
 --- a/drivers/mmc/host/dw_mmc-rockchip.c
 +++ b/drivers/mmc/host/dw_mmc-rockchip.c
 @@ -14,10 +14,12 @@
  #include <linux/of_address.h>
  #include <linux/mmc/slot-gpio.h>
  #include <linux/pm_runtime.h>
-+#include <linux/regulator/consumer.h> // Hack
++#include <linux/regulator/consumer.h> // Stupid Tinkerboard Hack
  #include <linux/slab.h>
  
  #include "dw_mmc.h"
  #include "dw_mmc-pltfm.h"
-+#include "../core/core.h" // Hack
++#include "../core/core.h" // Stupid Tinkerboard Hack
  
  #define RK3288_CLKGEN_DIV       2
  
@@ -34,6 +40,7 @@ index aaed6f9b..71131020 100644
  	return 0;
  }
  
++/* Stupid Tinkerboard Hack */
 +static void dw_mci_rockchip_platfm_shutdown(struct platform_device *pdev)
 +{
 +	struct dw_mci *host = platform_get_drvdata(pdev);
@@ -54,7 +61,6 @@ index aaed6f9b..71131020 100644
 +	}
 +}
 +
-+
  static int dw_mci_rockchip_remove(struct platform_device *pdev)
  {
  	pm_runtime_get_sync(&pdev->dev);
@@ -62,29 +68,30 @@ index aaed6f9b..71131020 100644
  static struct platform_driver dw_mci_rockchip_pltfm_driver = {
  	.probe		= dw_mci_rockchip_probe,
  	.remove		= dw_mci_rockchip_remove,
-+	.shutdown	= dw_mci_rockchip_platfm_shutdown,
++	.shutdown	= dw_mci_rockchip_platfm_shutdown, // Stupid Tinkerboard Hack
  	.driver		= {
  		.name		= "dwmmc_rockchip",
  		.of_match_table	= dw_mci_rockchip_match,
 diff --git a/drivers/mmc/host/dw_mmc.c b/drivers/mmc/host/dw_mmc.c
-index a9dfb269..ee956a57 100644
+index 0aa39975f..70f7ce21b 100644
 --- a/drivers/mmc/host/dw_mmc.c
 +++ b/drivers/mmc/host/dw_mmc.c
 @@ -39,8 +39,10 @@
  #include <linux/of.h>
  #include <linux/of_gpio.h>
  #include <linux/mmc/slot-gpio.h>
-+#include <linux/reboot.h> // Hack
++#include <linux/reboot.h> // Stupid Tinkerboard Hack
  
  #include "dw_mmc.h"
-+#include "../core/core.h" // Hack
++#include "../core/core.h" // Stupid Tinkerboard Hack
  
  /* Common flag combinations */
  #define DW_MCI_DATA_ERROR_FLAGS	(SDMMC_INT_DRTO | SDMMC_INT_DCRC | \
-@@ -2687,6 +2689,28 @@ static irqreturn_t dw_mci_interrupt(int irq, void *dev_id)
+@@ -2778,6 +2780,29 @@ static irqreturn_t dw_mci_interrupt(int irq, void *dev_id)
  	return IRQ_HANDLED;
  }
  
++/* Stupid Tinkerboard Hack */
 +struct dw_mci *mSdhost;
 +void setmmcEmergency() {
 +	struct mmc_host *mmc;
@@ -110,47 +117,41 @@ index a9dfb269..ee956a57 100644
  static int dw_mci_init_slot(struct dw_mci *host)
  {
  	struct mmc_host *mmc;
-@@ -2718,6 +2742,8 @@ static int dw_mci_init_slot(struct dw_mci *host)
+@@ -2809,6 +2834,9 @@ static int dw_mci_init_slot(struct dw_mci *host)
  		mmc->f_max = freq[1];
  	}
  
++	/* Stupid Tinkerboard Hack */
 +	if (of_find_property(host->dev->of_node, "supports-sd", NULL))
 +		mSdhost = host;
  	/*if there are external regulators, get them*/
  	ret = mmc_regulator_get_supply(mmc);
- 	if (ret == -EPROBE_DEFER)
+ 	if (ret)
 diff --git a/include/linux/reboot.h b/include/linux/reboot.h
-index a7ff409f..586e4504 100644
+index e63799a6e..057d3ce0c 100644
 --- a/include/linux/reboot.h
 +++ b/include/linux/reboot.h
-@@ -72,12 +72,15 @@ extern char poweroff_cmd[POWEROFF_CMD_PATH_LEN];
+@@ -77,6 +77,8 @@ extern char poweroff_cmd[POWEROFF_CMD_PATH_LEN];
  
  extern void orderly_poweroff(bool force);
  extern void orderly_reboot(void);
-+// Wonderful ASUS hack
++/* Stupid Tinkerboard Hack */
 +extern void setmmcEmergency(void);
  
  /*
   * Emergency restart, callable from an interrupt handler.
-  */
- 
- extern void emergency_restart(void);
-+
- #include <asm/emergency-restart.h>
- 
- #endif /* _LINUX_REBOOT_H */
 diff --git a/kernel/reboot.c b/kernel/reboot.c
-index bd30a973..9f99488f 100644
+index e4ced883d..c8e678ce6 100644
 --- a/kernel/reboot.c
 +++ b/kernel/reboot.c
 @@ -61,6 +61,7 @@ void (*pm_power_off_prepare)(void);
  void emergency_restart(void)
  {
  	kmsg_dump(KMSG_DUMP_EMERG);
-+	setmmcEmergency();
++	setmmcEmergency(); // Stupid Tinkerboard Hack
  	machine_emergency_restart();
  }
  EXPORT_SYMBOL_GPL(emergency_restart);
 -- 
-2.13.0
+2.14.1
 
