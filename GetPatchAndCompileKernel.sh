@@ -4,13 +4,13 @@ export CROSS_COMPILE=arm-linux-gnueabihf-
 export KERNEL_GIT_URL='git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
 
 export KERNEL_SERIES=v4.15
-export KERNEL_BRANCH=v4.15-rc3
+export KERNEL_BRANCH=v4.15-rc5
 export LOCALVERSION=-Kernel-Maker-XV
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
 
 export GITHUB_REPO=Miouyouyou/RockMyy
-export GIT_BRANCH=GotNotScreenToTest
+export GIT_BRANCH=master
 
 export DTB_FILES="
 rk3288-evb-act8846.dtb
@@ -71,7 +71,6 @@ export KERNEL_DTS_PATCHES="
 0016-ARM-DTS-rk3288-tinker-Improving-the-CPU-max-volt.patch
 0017-ARM-DTS-rk3288-tinker-Setting-up-the-SD-regulato.patch
 0018-ARM-DTS-rk3288-tinker-Defined-the-I2C-interfaces.patch
-0019-ARM-DTS-rk3288-tinker-Add-the-MIPI-DSI-node.patch
 0020-ARM-DTS-rk3288-tinker-Defining-the-SPI-interface.patch
 0021-ARM-DTS-rk3288-tinker-Defining-SDMMC-properties.patch
 0022-ARM-DTSI-rk3288-Define-the-VPU-services.patch
@@ -87,6 +86,7 @@ export MALI_PATCHES="
 0004-Don-t-be-TOO-severe-when-looking-for-the-IRQ-names.patch
 0005-Added-the-new-compatible-list-mainly-used-by-Rockchi.patch
 0006-gpu-arm-Midgard-setup_timer-timer_setup.patch
+0007-drivers-gpu-Arm-Midgard-Replace-ACCESS_ONCE-by-READ_.patch
 "
 
 # -- Helper functions
