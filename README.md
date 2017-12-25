@@ -1,7 +1,7 @@
 If you appreciate this project, support me on Patreon or Liberapay !
 
 [![Patreon !](https://raw.githubusercontent.com/Miouyouyou/RockMyy/master/.img/button-patreon.png)](https://www.patreon.com/Miouyouyou) 
-[![Liberapay !](https://raw.githubusercontent.com/Miouyouyou/RockMyy/master/.img/button-liberapay.svg)](https://liberapay.com/Myy/donate) 
+[![Liberapay !](https://raw.githubusercontent.com/Miouyouyou/RockMyy/master/.img/button-liberapay.png)](https://liberapay.com/Myy/donate) 
 [![Tip with Altcoins](https://raw.githubusercontent.com/Miouyouyou/Shapeshift-Tip-button/9e13666e9d0ecc68982fdfdf3625cd24dd2fb789/Tip-with-altcoin.png)](https://shapeshift.io/shifty.html?destination=16zwQUkG29D49G6C7pzch18HjfJqMXFNrW&output=BTC)
 
 Using the main script
