@@ -1,7 +1,7 @@
 If you appreciate this project, support me on Patreon or Liberapay !
 
-[![Patreon !](https://raw.githubusercontent.com/Miouyouyou/RockMyy/master/.img/button-patreon.png)](https://www.patreon.com/Miouyouyou)  
-[![Liberapay !](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/Myy/donate)  
+[![Patreon !](https://raw.githubusercontent.com/Miouyouyou/RockMyy/master/.img/button-patreon.png)](https://www.patreon.com/Miouyouyou) 
+[![Liberapay !](https://raw.githubusercontent.com/Miouyouyou/RockMyy/master/.img/button-liberapay.png)](https://liberapay.com/Myy/donate) 
 [![Tip with Altcoins](https://raw.githubusercontent.com/Miouyouyou/Shapeshift-Tip-button/9e13666e9d0ecc68982fdfdf3625cd24dd2fb789/Tip-with-altcoin.png)](https://shapeshift.io/shifty.html?destination=16zwQUkG29D49G6C7pzch18HjfJqMXFNrW&output=BTC)
 
 Using the main script
@@ -43,9 +43,9 @@ scripts tailored towards Rockchip 3288 boards.
 
 The [main cross-compiling script](./GetPatchAndCompileKernel.sh) will :
 * Clone the latest release or release candidate branch of the mainline kernel;
-* Integrate the Mali Midgard r20p0 drivers to the cloned kernel;
+* Integrate the Mali Midgard r19p0 drivers to the cloned kernel;
 * Apply various RK3288 specific patches for MiQi, Tinkerboard and Firefly boards;
 * Copy and use this repository configuration file;
 * Cross-compile the patched kernel;
-* Create the folder /tmp/Rockmyy-Build and install the cross-compiled kernel in that folder.
+* Create the folder `/tmp/Rockmyy-Build` and install the cross-compiled kernel in that folder.
 
