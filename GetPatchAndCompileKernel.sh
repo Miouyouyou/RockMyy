@@ -4,7 +4,7 @@ export CROSS_COMPILE=arm-linux-gnueabihf-
 export KERNEL_GIT_URL='git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
 
 export KERNEL_SERIES=v4.15
-export KERNEL_BRANCH=v4.15-rc6
+export KERNEL_BRANCH=v4.15-rc7
 export LOCALVERSION=-Kernel-Maker-XV
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
@@ -50,7 +50,7 @@ export KERNEL_PATCHES="
 0002-clk-rockchip-add-all-known-operating-points-to-the-a.patch
 0003-clk-rockchip-rk3288-prefer-vdpu-for-vcodec-clock-sou.patch
 0004-Remove-the-dependency-to-the-clk_mali-symbol.patch
-0005-ASUS-Tinkerboard-Stupid-reboot.patch
+0005-drivers-mmc-dw-mci-rockchip-Handle-ASUS-Tinkerboard.patch
 0006-soc-rockchip-power-domain-export-idle-request.patch
 "
 
@@ -78,7 +78,6 @@ export KERNEL_DTS_PATCHES="
 0024-ARM-DTS-rk3288-tinker-Enable-the-Video-encoding-MMU-.patch
 0025-ARM-DTSI-rk3288-firefly-Enable-the-Video-encoding-MM.patch
 0026-ARM-DTSI-rk3288-veyron-Enable-the-Video-encoding-MMU.patch
-0027-ARM-DTSI-rk3288-fix-errors-in-IOMMU-interrupts-prope.patch
 "
 
 export MALI_PATCHES="
@@ -119,10 +118,10 @@ function download_and_apply_patches {
 function copy_and_apply_patches {
 	patch_base_dir=$1
 	patches=${@:2}
-	
+
 	apply_dir=$PWD
 	cd $patch_base_dir
-	cp $patches $apply_dir || 
+	cp $patches $apply_dir ||
 	{ echo "Could not copy $patch"; exit 1; }
 	cd $apply_dir
 	git apply $patches
@@ -143,55 +142,55 @@ export SRC_DIR=$PWD
 
 # Check if the tree is patched
 if [ ! -e "PATCHED" ]; then
-  # If not, cleanup, apply the patches, commit and mark the tree as 
-  # patched
-  
-  # Remove all untracked files. These are residues from failed runs
-  git clean -fdx &&
-  # Rewind modified files to their initial state.
-  git checkout -- .
+	# If not, cleanup, apply the patches, commit and mark the tree as
+	# patched
 
-  # Download, prepare and copy the Mali Kernel-Space drivers. 
-  # Some TGZ are AWFULLY packaged with everything having 0777 rights.
-  
-  wget "$MALI_BASE_URL/TX011-SW-99002-$MALI_VERSION.tgz" &&
-  tar zxvf TX011-SW-99002-$MALI_VERSION.tgz &&
-  cd TX011-SW-99002-$MALI_VERSION &&
-  find . -type 'f' -exec chmod 0644 {} ';' && # Every file   should have -rw-r--r-- rights
-  find . -type 'd' -exec chmod 0755 {} ';' && # Every folder should have drwxr-xr-x rights
-  find . -name 'sconscript' -exec rm {} ';' && # Remove sconscript files. Useless.
-  cd driver/product/kernel &&
-  cp -r drivers/gpu/arm  $SRC_DIR/drivers/gpu/ && # Copy the Midgard code
-  cd $SRC_DIR &&
-  rm -r TX011-SW-99002-$MALI_VERSION TX011-SW-99002-$MALI_VERSION.tgz
-  
-  # Download and apply the various kernel and Mali kernel-space driver patches
-  if [ ! -d "../patches" ]; then
-    download_and_apply_patches $KERNEL_PATCHES_DIR_URL $KERNEL_PATCHES
-    download_and_apply_patches $KERNEL_DTS_PATCHES_DIR_URL $KERNEL_DTS_PATCHES
-    download_and_apply_patches $MALI_PATCHES_DIR_URL $MALI_PATCHES
-  else
-    copy_and_apply_patches ../$KERNEL_PATCHES_DIR $KERNEL_PATCHES
-    copy_and_apply_patches ../$KERNEL_PATCHES_DTS_DIR $KERNEL_DTS_PATCHES
-    copy_and_apply_patches ../$MALI_PATCHES_DIR $MALI_PATCHES
-  fi
+	# Remove all untracked files. These are residues from failed runs
+	git clean -fdx &&
+	# Rewind modified files to their initial state.
+	git checkout -- .
+
+	# Download, prepare and copy the Mali Kernel-Space drivers.
+	# Some TGZ are AWFULLY packaged with everything having 0777 rights.
+
+	wget "$MALI_BASE_URL/TX011-SW-99002-$MALI_VERSION.tgz" &&
+	tar zxvf TX011-SW-99002-$MALI_VERSION.tgz &&
+	cd TX011-SW-99002-$MALI_VERSION &&
+	find . -type 'f' -exec chmod 0644 {} ';' && # Every file   should have -rw-r--r-- rights
+	find . -type 'd' -exec chmod 0755 {} ';' && # Every folder should have drwxr-xr-x rights
+	find . -name 'sconscript' -exec rm {} ';' && # Remove sconscript files. Useless.
+	cd driver/product/kernel &&
+	cp -r drivers/gpu/arm  $SRC_DIR/drivers/gpu/ && # Copy the Midgard code
+	cd $SRC_DIR &&
+	rm -r TX011-SW-99002-$MALI_VERSION TX011-SW-99002-$MALI_VERSION.tgz
+
+	# Download and apply the various kernel and Mali kernel-space driver patches
+	if [ ! -d "../patches" ]; then
+		download_and_apply_patches $KERNEL_PATCHES_DIR_URL $KERNEL_PATCHES
+		download_and_apply_patches $KERNEL_DTS_PATCHES_DIR_URL $KERNEL_DTS_PATCHES
+		download_and_apply_patches $MALI_PATCHES_DIR_URL $MALI_PATCHES
+	else
+		copy_and_apply_patches ../$KERNEL_PATCHES_DIR $KERNEL_PATCHES
+		copy_and_apply_patches ../$KERNEL_PATCHES_DTS_DIR $KERNEL_DTS_PATCHES
+		copy_and_apply_patches ../$MALI_PATCHES_DIR $MALI_PATCHES
+	fi
 
 
-  # Cleanup, get the configuration file and mark the tree as patched
-  echo "RockMyy" > PATCHED &&
-  git add . &&
-  git commit -m "Apply ALL THE PATCHES !"
+	# Cleanup, get the configuration file and mark the tree as patched
+	echo "RockMyy" > PATCHED &&
+	git add . &&
+	git commit -m "Apply ALL THE PATCHES !"
 fi
 
 # Download a .config file if none present
 if [ ! -e ".config" ]; then
-  make mrproper
-  if [ ! -f "../$CONFIG_FILE_PATH" ]; then
-    wget -O .config $CONFIG_FILE_URL
-  else
-    cp "../$CONFIG_FILE_PATH" .config
-  fi
-  die_on_error "Could not get the configuration file..."
+	make mrproper
+	if [ ! -f "../$CONFIG_FILE_PATH" ]; then
+		wget -O .config $CONFIG_FILE_URL
+	else
+		cp "../$CONFIG_FILE_PATH" .config
+	fi
+	die_on_error "Could not get the configuration file..."
 fi
 
 if [ -z ${MAKE_CONFIG+x} ]; then

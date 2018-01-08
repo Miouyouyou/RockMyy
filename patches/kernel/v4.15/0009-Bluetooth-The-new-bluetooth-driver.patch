@@ -1,0 +1,1283 @@
+From 67780049414e57d0d441d846ad89a3ce511dfc12 Mon Sep 17 00:00:00 2001
+From: Myy Miouyouyou <myy@miouyouyou.fr>
+Date: Mon, 8 Jan 2018 18:58:10 +0100
+Subject: [PATCH] Bluetooth: The new bluetooth driver
+
+---
+ .../devicetree/bindings/net/realtek-bluetooth.txt  |  41 ++
+ drivers/bluetooth/Kconfig                          |   1 +
+ drivers/bluetooth/btrtl.c                          | 461 ++++++++++++++++-----
+ drivers/bluetooth/btrtl.h                          |  46 ++
+ drivers/bluetooth/hci_h5.c                         | 206 ++++++++-
+ drivers/bluetooth/hci_ldisc.c                      |  38 --
+ drivers/bluetooth/hci_serdev.c                     |   3 -
+ drivers/bluetooth/hci_uart.h                       |   4 +-
+ drivers/tty/serdev/core.c                          |  12 +
+ drivers/tty/serdev/serdev-ttyport.c                |  21 +
+ include/linux/serdev.h                             |   5 +
+ 11 files changed, 678 insertions(+), 160 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/net/realtek-bluetooth.txt
+
+diff --git a/Documentation/devicetree/bindings/net/realtek-bluetooth.txt b/Documentation/devicetree/bindings/net/realtek-bluetooth.txt
+new file mode 100644
+index 000000000..1491329c4
+--- /dev/null
++++ b/Documentation/devicetree/bindings/net/realtek-bluetooth.txt
+@@ -0,0 +1,41 @@
++Realtek Bluetooth Chips
++-----------------------
++
++This documents the binding structure and common properties for serial
++attached Realtek devices.
++
++Serial attached Realtek devices shall be a child node of the host UART
++device the slave device is attached to. See ../serial/slave-device.txt
++for more information
++
++Required properties:
++- compatible: should contain one of the following:
++    * "realtek,rtl8723bs-bluetooth"
++    * "realtek,rtl8723ds-bluetooth"
++
++Optional properties:
++- realtek,config-data: Bluetooth chipset configuration data which is
++			needed for communication (it typically contains
++			board specific settings like the baudrate and
++			whether flow-control is used).
++			This is an array of u8 values.
++- enable-gpios: GPIO specifier, used to enable/disable the BT module
++- reset-gpios: GPIO specifier, used to reset the BT module
++
++
++Example:
++
++&uart {
++	...
++
++	bluetooth {
++		compatible = "realtek,rtl8723bs-bluetooth";
++		enable-gpios = <&gpio 20 GPIO_ACTIVE_HIGH>;
++		reset-gpios = <&gpio 11 GPIO_ACTIVE_HIGH>;
++		realtek,config-data = /bits/ 8 <
++			0x55 0xab 0x23 0x87 0x29 0x00 0xf4 0x00 0x01 0x01 0xf6 0x00
++			0x02 0x81 0x00 0xfa 0x00 0x02 0x12 0x80 0x0c 0x00 0x10 0x02
++			0x80 0x92 0x04 0x50 0xc5 0xea 0x19 0xe1 0x1b 0xfd 0xaf 0x5f
++			0x01 0xa4 0x0b 0xd9 0x00 0x01 0x0f 0xe4 0x00 0x01 0x08>;
++	};
++};
+diff --git a/drivers/bluetooth/Kconfig b/drivers/bluetooth/Kconfig
+index 60e1c7d69..3001f1200 100644
+--- a/drivers/bluetooth/Kconfig
++++ b/drivers/bluetooth/Kconfig
+@@ -146,6 +146,7 @@ config BT_HCIUART_LL
+ config BT_HCIUART_3WIRE
+ 	bool "Three-wire UART (H5) protocol support"
+ 	depends on BT_HCIUART
++	select BT_RTL if SERIAL_DEV_BUS
+ 	help
+ 	  The HCI Three-wire UART Transport Layer makes it possible to
+ 	  user the Bluetooth HCI over a serial port interface. The HCI
+diff --git a/drivers/bluetooth/btrtl.c b/drivers/bluetooth/btrtl.c
+index 6e2ad748a..1494269cf 100644
+--- a/drivers/bluetooth/btrtl.c
++++ b/drivers/bluetooth/btrtl.c
+@@ -18,6 +18,7 @@
+ #include <linux/module.h>
+ #include <linux/firmware.h>
+ #include <asm/unaligned.h>
++#include <linux/of.h>
+ #include <linux/usb.h>
+ 
+ #include <net/bluetooth/bluetooth.h>
+@@ -34,6 +35,16 @@
+ #define RTL_ROM_LMP_8821A	0x8821
+ #define RTL_ROM_LMP_8761A	0x8761
+ #define RTL_ROM_LMP_8822B	0x8822
++#define RTL_CONFIG_MAGIC	0x8723ab55
++
++struct btrtl_device_info {
++	u16 lmp_subver;
++	u8 rom_version;
++	u8 *fw_data;
++	int fw_len;
++	u8 *cfg_data;
++	int cfg_len;
++};
+ 
+ static int rtl_read_rom_version(struct hci_dev *hdev, u8 *version)
+ {
+@@ -64,16 +75,16 @@ static int rtl_read_rom_version(struct hci_dev *hdev, u8 *version)
+ 	return 0;
+ }
+ 
+-static int rtl8723b_parse_firmware(struct hci_dev *hdev, u16 lmp_subver,
+-				   const struct firmware *fw,
++static int rtl8723b_parse_firmware(struct hci_dev *hdev,
++				   struct btrtl_device_info *btrtl_dev,
+ 				   unsigned char **_buf)
+ {
+ 	const u8 extension_sig[] = { 0x51, 0x04, 0xfd, 0x77 };
+ 	struct rtl_epatch_header *epatch_info;
+ 	unsigned char *buf;
+-	int i, ret, len;
++	int i, len;
+ 	size_t min_size;
+-	u8 opcode, length, data, rom_version = 0;
++	u8 opcode, length, data;
+ 	int project_id = -1;
+ 	const unsigned char *fwptr, *chip_id_base;
+ 	const unsigned char *patch_length_base, *patch_offset_base;
+@@ -90,15 +101,11 @@ static int rtl8723b_parse_firmware(struct hci_dev *hdev, u16 lmp_subver,
+ 		{ RTL_ROM_LMP_8822B, 8 },
+ 	};
+ 
+-	ret = rtl_read_rom_version(hdev, &rom_version);
+-	if (ret)
+-		return ret;
+-
+ 	min_size = sizeof(struct rtl_epatch_header) + sizeof(extension_sig) + 3;
+-	if (fw->size < min_size)
++	if (btrtl_dev->fw_len < min_size)
+ 		return -EINVAL;
+ 
+-	fwptr = fw->data + fw->size - sizeof(extension_sig);
++	fwptr = btrtl_dev->fw_data + btrtl_dev->fw_len - sizeof(extension_sig);
+ 	if (memcmp(fwptr, extension_sig, sizeof(extension_sig)) != 0) {
+ 		BT_ERR("%s: extension section signature mismatch", hdev->name);
+ 		return -EINVAL;
+@@ -110,7 +117,7 @@ static int rtl8723b_parse_firmware(struct hci_dev *hdev, u16 lmp_subver,
+ 	 * Once we have that, we double-check that that project_id is suitable
+ 	 * for the hardware we are working with.
+ 	 */
+-	while (fwptr >= fw->data + (sizeof(struct rtl_epatch_header) + 3)) {
++	while (fwptr >= btrtl_dev->fw_data + (sizeof(*epatch_info) + 3)) {
+ 		opcode = *--fwptr;
+ 		length = *--fwptr;
+ 		data = *--fwptr;
+@@ -150,13 +157,14 @@ static int rtl8723b_parse_firmware(struct hci_dev *hdev, u16 lmp_subver,
+ 		return -EINVAL;
+ 	}
+ 
+-	if (lmp_subver != project_id_to_lmp_subver[i].lmp_subver) {
++	if (btrtl_dev->lmp_subver != project_id_to_lmp_subver[i].lmp_subver) {
+ 		BT_ERR("%s: firmware is for %x but this is a %x", hdev->name,
+-		       project_id_to_lmp_subver[i].lmp_subver, lmp_subver);
++		       project_id_to_lmp_subver[i].lmp_subver,
++		       btrtl_dev->lmp_subver);
+ 		return -EINVAL;
+ 	}
+ 
+-	epatch_info = (struct rtl_epatch_header *)fw->data;
++	epatch_info = (struct rtl_epatch_header *)btrtl_dev->fw_data;
+ 	if (memcmp(epatch_info->signature, RTL_EPATCH_SIGNATURE, 8) != 0) {
+ 		BT_ERR("%s: bad EPATCH signature", hdev->name);
+ 		return -EINVAL;
+@@ -173,16 +181,16 @@ static int rtl8723b_parse_firmware(struct hci_dev *hdev, u16 lmp_subver,
+ 	 * Find the right patch for this chip.
+ 	 */
+ 	min_size += 8 * num_patches;
+-	if (fw->size < min_size)
++	if (btrtl_dev->fw_len < min_size)
+ 		return -EINVAL;
+ 
+-	chip_id_base = fw->data + sizeof(struct rtl_epatch_header);
++	chip_id_base = btrtl_dev->fw_data + sizeof(struct rtl_epatch_header);
+ 	patch_length_base = chip_id_base + (sizeof(u16) * num_patches);
+ 	patch_offset_base = patch_length_base + (sizeof(u16) * num_patches);
+ 	for (i = 0; i < num_patches; i++) {
+ 		u16 chip_id = get_unaligned_le16(chip_id_base +
+ 						 (i * sizeof(u16)));
+-		if (chip_id == rom_version + 1) {
++		if (chip_id == btrtl_dev->rom_version + 1) {
+ 			patch_length = get_unaligned_le16(patch_length_base +
+ 							  (i * sizeof(u16)));
+ 			patch_offset = get_unaligned_le32(patch_offset_base +
+@@ -193,20 +201,21 @@ static int rtl8723b_parse_firmware(struct hci_dev *hdev, u16 lmp_subver,
+ 
+ 	if (!patch_offset) {
+ 		BT_ERR("%s: didn't find patch for chip id %d",
+-		       hdev->name, rom_version);
++		       hdev->name, btrtl_dev->rom_version);
+ 		return -EINVAL;
+ 	}
+ 
+ 	BT_DBG("length=%x offset=%x index %d", patch_length, patch_offset, i);
+ 	min_size = patch_offset + patch_length;
+-	if (fw->size < min_size)
++	if (btrtl_dev->fw_len < min_size)
+ 		return -EINVAL;
+ 
+ 	/* Copy the firmware into a new buffer and write the version at
+ 	 * the end.
+ 	 */
+ 	len = patch_length;
+-	buf = kmemdup(fw->data + patch_offset, patch_length, GFP_KERNEL);
++	buf = kmemdup(btrtl_dev->fw_data + patch_offset, patch_length,
++		      GFP_KERNEL);
+ 	if (!buf)
+ 		return -ENOMEM;
+ 
+@@ -268,7 +277,7 @@ static int rtl_download_firmware(struct hci_dev *hdev,
+ 	return ret;
+ }
+ 
+-static int rtl_load_config(struct hci_dev *hdev, const char *name, u8 **buff)
++static int rtl_load_file(struct hci_dev *hdev, const char *name, u8 **buff)
+ {
+ 	const struct firmware *fw;
+ 	int ret;
+@@ -287,95 +296,37 @@ static int rtl_load_config(struct hci_dev *hdev, const char *name, u8 **buff)
+ 	return ret;
+ }
+ 
+-static int btrtl_setup_rtl8723a(struct hci_dev *hdev)
++static int btrtl_setup_rtl8723a(struct hci_dev *hdev,
++				struct btrtl_device_info *btrtl_dev)
+ {
+-	const struct firmware *fw;
+-	int ret;
+-
+-	bt_dev_info(hdev, "rtl: loading rtl_bt/rtl8723a_fw.bin");
+-	ret = request_firmware(&fw, "rtl_bt/rtl8723a_fw.bin", &hdev->dev);
+-	if (ret < 0) {
+-		BT_ERR("%s: Failed to load rtl_bt/rtl8723a_fw.bin", hdev->name);
+-		return ret;
+-	}
+-
+-	if (fw->size < 8) {
+-		ret = -EINVAL;
+-		goto out;
+-	}
++	if (btrtl_dev->fw_len < 8)
++		return -EINVAL;
+ 
+ 	/* Check that the firmware doesn't have the epatch signature
+ 	 * (which is only for RTL8723B and newer).
+ 	 */
+-	if (!memcmp(fw->data, RTL_EPATCH_SIGNATURE, 8)) {
++	if (!memcmp(btrtl_dev->fw_data, RTL_EPATCH_SIGNATURE, 8)) {
+ 		BT_ERR("%s: unexpected EPATCH signature!", hdev->name);
+-		ret = -EINVAL;
+-		goto out;
++		return -EINVAL;
+ 	}
+ 
+-	ret = rtl_download_firmware(hdev, fw->data, fw->size);
+-
+-out:
+-	release_firmware(fw);
+-	return ret;
++	return rtl_download_firmware(hdev, btrtl_dev->fw_data,
++				     btrtl_dev->fw_len);
+ }
+ 
+-static int btrtl_setup_rtl8723b(struct hci_dev *hdev, u16 lmp_subver,
+-				const char *fw_name)
++static int btrtl_setup_rtl8723b(struct hci_dev *hdev,
++				struct btrtl_device_info *btrtl_dev)
+ {
+ 	unsigned char *fw_data = NULL;
+-	const struct firmware *fw;
+ 	int ret;
+-	int cfg_sz;
+-	u8 *cfg_buff = NULL;
+ 	u8 *tbuff;
+-	char *cfg_name = NULL;
+-	bool config_needed = false;
+-
+-	switch (lmp_subver) {
+-	case RTL_ROM_LMP_8723B:
+-		cfg_name = "rtl_bt/rtl8723b_config.bin";
+-		break;
+-	case RTL_ROM_LMP_8821A:
+-		cfg_name = "rtl_bt/rtl8821a_config.bin";
+-		break;
+-	case RTL_ROM_LMP_8761A:
+-		cfg_name = "rtl_bt/rtl8761a_config.bin";
+-		break;
+-	case RTL_ROM_LMP_8822B:
+-		cfg_name = "rtl_bt/rtl8822b_config.bin";
+-		config_needed = true;
+-		break;
+-	default:
+-		BT_ERR("%s: rtl: no config according to lmp_subver %04x",
+-		       hdev->name, lmp_subver);
+-		break;
+-	}
+ 
+-	if (cfg_name) {
+-		cfg_sz = rtl_load_config(hdev, cfg_name, &cfg_buff);
+-		if (cfg_sz < 0) {
+-			cfg_sz = 0;
+-			if (config_needed)
+-				BT_ERR("Necessary config file %s not found\n",
+-				       cfg_name);
+-		}
+-	} else
+-		cfg_sz = 0;
+-
+-	bt_dev_info(hdev, "rtl: loading %s", fw_name);
+-	ret = request_firmware(&fw, fw_name, &hdev->dev);
+-	if (ret < 0) {
+-		BT_ERR("%s: Failed to load %s", hdev->name, fw_name);
+-		goto err_req_fw;
+-	}
+-
+-	ret = rtl8723b_parse_firmware(hdev, lmp_subver, fw, &fw_data);
++	ret = rtl8723b_parse_firmware(hdev, btrtl_dev, &fw_data);
+ 	if (ret < 0)
+ 		goto out;
+ 
+-	if (cfg_sz) {
+-		tbuff = kzalloc(ret + cfg_sz, GFP_KERNEL);
++	if (btrtl_dev->cfg_len > 0) {
++		tbuff = kzalloc(ret + btrtl_dev->cfg_len, GFP_KERNEL);
+ 		if (!tbuff) {
+ 			ret = -ENOMEM;
+ 			goto out;
+@@ -384,22 +335,18 @@ static int btrtl_setup_rtl8723b(struct hci_dev *hdev, u16 lmp_subver,
+ 		memcpy(tbuff, fw_data, ret);
+ 		kfree(fw_data);
+ 
+-		memcpy(tbuff + ret, cfg_buff, cfg_sz);
+-		ret += cfg_sz;
++		memcpy(tbuff + ret, btrtl_dev->cfg_data, btrtl_dev->cfg_len);
++		ret += btrtl_dev->cfg_len;
+ 
+ 		fw_data = tbuff;
+ 	}
+ 
+-	bt_dev_info(hdev, "cfg_sz %d, total size %d", cfg_sz, ret);
++	bt_dev_info(hdev, "cfg_sz %d, total size %d", btrtl_dev->cfg_len, ret);
+ 
+ 	ret = rtl_download_firmware(hdev, fw_data, ret);
+ 
+ out:
+-	release_firmware(fw);
+ 	kfree(fw_data);
+-err_req_fw:
+-	if (cfg_sz)
+-		kfree(cfg_buff);
+ 	return ret;
+ }
+ 
+@@ -425,15 +372,69 @@ static struct sk_buff *btrtl_read_local_version(struct hci_dev *hdev)
+ 	return skb;
+ }
+ 
+-int btrtl_setup_realtek(struct hci_dev *hdev)
++void btrtl_free(struct btrtl_device_info *btrtl_dev)
++{
++	kfree(btrtl_dev->fw_data);
++	kfree(btrtl_dev->cfg_data);
++	kfree(btrtl_dev);
++}
++EXPORT_SYMBOL_GPL(btrtl_free);
++
++static int rtl_load_config_from_dt(struct hci_dev *hdev,
++				   struct btrtl_device_info *btrtl_dev)
++{
++	struct device_node *np = hdev->dev.parent->of_node;
++	int ret, config_len;
++
++	if (!of_device_is_available(np))
++		return -ENOENT;
++
++	if (!of_find_property(np, "realtek,config-data", NULL))
++		return -ENOENT;
++
++	config_len = of_property_count_u8_elems(np, "realtek,config-data");
++	if (config_len <= 0)
++		return -ENOENT;
++
++	btrtl_dev->cfg_data = kzalloc(config_len, GFP_KERNEL);
++	if (!btrtl_dev->cfg_data)
++		return -ENOMEM;
++
++	ret = of_property_read_u8_array(np, "realtek,config-data",
++					btrtl_dev->cfg_data, config_len);
++	if (ret) {
++		kfree(btrtl_dev->cfg_data);
++		return ret;
++	}
++
++	btrtl_dev->cfg_len = config_len;
++
++	bt_dev_dbg(hdev, "rtl: using config data with len %d from DT",
++		   config_len);
++
++	return 0;
++}
++
++struct btrtl_device_info *btrtl_initialize(struct hci_dev *hdev)
+ {
++	struct btrtl_device_info *btrtl_dev;
+ 	struct sk_buff *skb;
+ 	struct hci_rp_read_local_version *resp;
+-	u16 lmp_subver;
++	bool cfg_needed = false, has_rom_version;
++	const char *cfg_name, *fw_name;
++	int ret;
++
++	btrtl_dev = kzalloc(sizeof(*btrtl_dev), GFP_KERNEL);
++	if (!btrtl_dev) {
++		ret = -ENOMEM;
++		goto err_alloc;
++	}
+ 
+ 	skb = btrtl_read_local_version(hdev);
+-	if (IS_ERR(skb))
+-		return -PTR_ERR(skb);
++	if (IS_ERR(skb)) {
++		ret = -PTR_ERR(skb);
++		goto err_free;
++	}
+ 
+ 	resp = (struct hci_rp_read_local_version *)skb->data;
+ 	bt_dev_info(hdev, "rtl: examining hci_ver=%02x hci_rev=%04x "
+@@ -441,39 +442,271 @@ int btrtl_setup_realtek(struct hci_dev *hdev)
+ 		    resp->hci_ver, resp->hci_rev,
+ 		    resp->lmp_ver, resp->lmp_subver);
+ 
+-	lmp_subver = le16_to_cpu(resp->lmp_subver);
++	btrtl_dev->lmp_subver = le16_to_cpu(resp->lmp_subver);
++
+ 	kfree_skb(skb);
+ 
++	switch (btrtl_dev->lmp_subver) {
++	case RTL_ROM_LMP_8723A:
++	case RTL_ROM_LMP_3499:
++		fw_name = "rtl_bt/rtl8723a_fw.bin";
++		cfg_name = NULL;
++		has_rom_version = false;
++		break;
++	case RTL_ROM_LMP_8723B:
++		/* all variants support reading the ROM version */
++		has_rom_version = true;
++
++		/*
++		 * RTL8723 devices exist in different variants:
++		 * - RTL8723BS (SDIO chip with UART Bluetooth)
++		 * - RTL8723DS (SDIO chip with UART Bluetooth)
++		 * - for backwards-compatibility everything else is assumed to
++		 *   be an RTL8723B communicating over USB
++		 *
++		 * Only UART devices really need the config because that
++		 * contains the UART speed / flow control settings.
++		 */
++		if (hdev->bus == HCI_UART && resp->hci_ver == 6 &&
++		    le16_to_cpu(resp->hci_rev) == 0xb) {
++			fw_name = "rtl_bt/rtl8723bs_fw.bin";
++			cfg_name = "rtl_bt/rtl8723bs_config.bin";
++			cfg_needed = true;
++		} else if (hdev->bus == HCI_UART && resp->hci_ver == 8 &&
++			   le16_to_cpu(resp->hci_rev) == 0xd) {
++			fw_name = "rtl_bt/rtl8723ds_fw.bin";
++			cfg_name = "rtl_bt/rtl872ds_config.bin";
++			cfg_needed = true;
++		} else {
++			fw_name = "rtl_bt/rtl8723b_fw.bin";
++			cfg_name = "rtl_bt/rtl8723b_config.bin";
++		}
++		break;
++	case RTL_ROM_LMP_8821A:
++		fw_name = "rtl_bt/rtl8821a_fw.bin";
++		cfg_name = "rtl_bt/rtl8821a_config.bin";
++		has_rom_version = true;
++		break;
++	case RTL_ROM_LMP_8761A:
++		fw_name = "rtl_bt/rtl8761a_fw.bin";
++		cfg_name = "rtl_bt/rtl8761a_config.bin";
++		has_rom_version = true;
++		break;
++	case RTL_ROM_LMP_8822B:
++		fw_name = "rtl_bt/rtl8822b_fw.bin";
++		cfg_name = "rtl_bt/rtl8822b_config.bin";
++		has_rom_version = true;
++		cfg_needed = true;
++		break;
++	default:
++		bt_dev_info(hdev, "rtl: assuming no firmware upload needed");
++		return btrtl_dev;
++	}
++
++	if (has_rom_version) {
++		ret = rtl_read_rom_version(hdev, &btrtl_dev->rom_version);
++		if (ret)
++			goto err_free;
++	}
++
++	btrtl_dev->fw_len = rtl_load_file(hdev, fw_name, &btrtl_dev->fw_data);
++	if (btrtl_dev->fw_len < 0) {
++		bt_dev_err(hdev, "firmware file %s not found\n", fw_name);
++		ret = btrtl_dev->fw_len;
++		goto err_free;
++	}
++
++	/* try loading the config blob from device-tree first: */
++	ret = rtl_load_config_from_dt(hdev, btrtl_dev);
++	/* fall back to loading the config via request_firmware: */
++	if (ret && cfg_name) {
++		btrtl_dev->cfg_len = rtl_load_file(hdev, cfg_name,
++						   &btrtl_dev->cfg_data);
++		if (cfg_needed && btrtl_dev->cfg_len <= 0) {
++			bt_dev_err(hdev,
++				   "mandatory config blob not found in %s or DT\n",
++				   cfg_name);
++			ret = btrtl_dev->fw_len;
++			goto err_free;
++		}
++	}
++
++	return btrtl_dev;
++
++err_free:
++	btrtl_free(btrtl_dev);
++err_alloc:
++	return ERR_PTR(ret);
++}
++EXPORT_SYMBOL_GPL(btrtl_initialize);
++
++int btrtl_download_firmware(struct hci_dev *hdev,
++			    struct btrtl_device_info *btrtl_dev)
++{
+ 	/* Match a set of subver values that correspond to stock firmware,
+ 	 * which is not compatible with standard btusb.
+ 	 * If matched, upload an alternative firmware that does conform to
+ 	 * standard btusb. Once that firmware is uploaded, the subver changes
+ 	 * to a different value.
+ 	 */
+-	switch (lmp_subver) {
++	switch (btrtl_dev->lmp_subver) {
+ 	case RTL_ROM_LMP_8723A:
+ 	case RTL_ROM_LMP_3499:
+-		return btrtl_setup_rtl8723a(hdev);
++		return btrtl_setup_rtl8723a(hdev, btrtl_dev);
+ 	case RTL_ROM_LMP_8723B:
+-		return btrtl_setup_rtl8723b(hdev, lmp_subver,
+-					    "rtl_bt/rtl8723b_fw.bin");
+ 	case RTL_ROM_LMP_8821A:
+-		return btrtl_setup_rtl8723b(hdev, lmp_subver,
+-					    "rtl_bt/rtl8821a_fw.bin");
+ 	case RTL_ROM_LMP_8761A:
+-		return btrtl_setup_rtl8723b(hdev, lmp_subver,
+-					    "rtl_bt/rtl8761a_fw.bin");
+ 	case RTL_ROM_LMP_8822B:
+-		return btrtl_setup_rtl8723b(hdev, lmp_subver,
+-					    "rtl_bt/rtl8822b_fw.bin");
++		return btrtl_setup_rtl8723b(hdev, btrtl_dev);
+ 	default:
+ 		bt_dev_info(hdev, "rtl: assuming no firmware upload needed");
+ 		return 0;
+ 	}
+ }
++EXPORT_SYMBOL_GPL(btrtl_download_firmware);
++
++int btrtl_setup_realtek(struct hci_dev *hdev)
++{
++	struct btrtl_device_info *btrtl_dev;
++	int ret;
++
++	btrtl_dev = btrtl_initialize(hdev);
++	if (IS_ERR(btrtl_dev))
++		return PTR_ERR(btrtl_dev);
++
++	ret = btrtl_download_firmware(hdev, btrtl_dev);
++
++	btrtl_free(btrtl_dev);
++
++	return ret;
++}
+ EXPORT_SYMBOL_GPL(btrtl_setup_realtek);
+ 
++unsigned int btrtl_convert_baudrate(u32 device_baudrate)
++{
++	switch (device_baudrate) {
++	case 0x0252a00a:
++		return 230400;
++
++	case 0x05f75004:
++		return 921600;
++
++	case 0x00005004:
++		return 1000000;
++
++	case 0x04928002:
++	case 0x01128002:
++		return 1500000;
++
++	case 0x00005002:
++		return 2000000;
++
++	case 0x0000b001:
++		return 2500000;
++
++	case 0x04928001:
++		return 3000000;
++
++	case 0x052a6001:
++		return 3500000;
++
++	case 0x00005001:
++		return 4000000;
++
++	case 0x0252c014:
++	default:
++		return 115200;
++	}
++}
++
++int btrtl_get_uart_settings(struct hci_dev *hdev,
++			    struct btrtl_device_info *btrtl_dev,
++			    unsigned int *controller_baudrate,
++			    u32 *device_baudrate, bool *flow_control)
++{
++	struct rtl_vendor_config *config;
++	struct rtl_vendor_config_entry *entry;
++	int i, total_data_len;
++	bool found = false;
++
++	total_data_len = btrtl_dev->cfg_len - sizeof(*config);
++	if (total_data_len <= 0) {
++		bt_dev_warn(hdev, "rtl: no config loaded");
++		return -EINVAL;
++	}
++
++	config = (struct rtl_vendor_config *)btrtl_dev->cfg_data;
++	if (le32_to_cpu(config->signature) != RTL_CONFIG_MAGIC) {
++		bt_dev_err(hdev, "rtl: invalid config magic");
++		return -EINVAL;
++	}
++
++	if (total_data_len < le16_to_cpu(config->total_len)) {
++		bt_dev_err(hdev, "rtl: config is too short");
++		return -EINVAL;
++	}
++
++	for (i = 0; i < total_data_len; ) {
++		entry = ((void *)config->entry) + i;
++
++		switch (le16_to_cpu(entry->offset)) {
++		case 0xc:
++			if (entry->len < sizeof(*device_baudrate)) {
++				bt_dev_err(hdev,
++					   "rtl: invalid UART config entry");
++				return -EINVAL;
++			}
++
++			*device_baudrate = get_unaligned_le32(entry->data);
++			*controller_baudrate = btrtl_convert_baudrate(
++							*device_baudrate);
++
++			if (entry->len >= 13)
++				*flow_control = !!(entry->data[12] & BIT(2));
++			else
++				*flow_control = false;
++
++			found = true;
++			break;
++
++		default:
++			bt_dev_dbg(hdev,
++				   "rtl: skipping config entry 0x%x (len %u)",
++				   le16_to_cpu(entry->offset), entry->len);
++			break;
++		};
++
++		i += sizeof(*entry) + entry->len;
++	}
++
++	if (!found) {
++		bt_dev_err(hdev, "rtl: no UART config entry found");
++		return -ENOENT;
++	}
++
++	bt_dev_dbg(hdev, "rtl: device baudrate = 0x%08x", *device_baudrate);
++	bt_dev_dbg(hdev, "rtl: controller baudrate = %u",
++		   *controller_baudrate);
++	bt_dev_dbg(hdev, "rtl: flow control %d", *flow_control);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(btrtl_get_uart_settings);
++
+ MODULE_AUTHOR("Daniel Drake <drake@endlessm.com>");
+ MODULE_DESCRIPTION("Bluetooth support for Realtek devices ver " VERSION);
+ MODULE_VERSION(VERSION);
+ MODULE_LICENSE("GPL");
++MODULE_FIRMWARE("rtl_bt/rtl8723a_fw.bin");
++MODULE_FIRMWARE("rtl_bt/rtl8723b_fw.bin");
++MODULE_FIRMWARE("rtl_bt/rtl8723b_config.bin");
++MODULE_FIRMWARE("rtl_bt/rtl8723bs_fw.bin");
++MODULE_FIRMWARE("rtl_bt/rtl8723bs_config.bin");
++MODULE_FIRMWARE("rtl_bt/rtl8723ds_fw.bin");
++MODULE_FIRMWARE("rtl_bt/rtl8723ds_config.bin");
++MODULE_FIRMWARE("rtl_bt/rtl8761a_fw.bin");
++MODULE_FIRMWARE("rtl_bt/rtl8761a_config.bin");
++MODULE_FIRMWARE("rtl_bt/rtl8821a_fw.bin");
++MODULE_FIRMWARE("rtl_bt/rtl8821a_config.bin");
++MODULE_FIRMWARE("rtl_bt/rtl8822b_fw.bin");
++MODULE_FIRMWARE("rtl_bt/rtl8822b_config.bin");
+diff --git a/drivers/bluetooth/btrtl.h b/drivers/bluetooth/btrtl.h
+index 38ffe4890..2e7856fa5 100644
+--- a/drivers/bluetooth/btrtl.h
++++ b/drivers/bluetooth/btrtl.h
+@@ -17,6 +17,8 @@
+ 
+ #define RTL_FRAG_LEN 252
+ 
++struct btrtl_device_info;
++
+ struct rtl_download_cmd {
+ 	__u8 index;
+ 	__u8 data[RTL_FRAG_LEN];
+@@ -38,15 +40,59 @@ struct rtl_epatch_header {
+ 	__le16 num_patches;
+ } __packed;
+ 
++struct rtl_vendor_config_entry {
++	__le16 offset;
++	__u8 len;
++	__u8 data[0];
++} __packed;
++
++struct rtl_vendor_config {
++	__le32 signature;
++	__le16 total_len;
++	struct rtl_vendor_config_entry entry[0];
++} __packed;
++
+ #if IS_ENABLED(CONFIG_BT_RTL)
+ 
++struct btrtl_device_info *btrtl_initialize(struct hci_dev *hdev);
++void btrtl_free(struct btrtl_device_info *btrtl_dev);
++int btrtl_download_firmware(struct hci_dev *hdev,
++			    struct btrtl_device_info *btrtl_dev);
+ int btrtl_setup_realtek(struct hci_dev *hdev);
++int btrtl_get_uart_settings(struct hci_dev *hdev,
++			    struct btrtl_device_info *btrtl_dev,
++			    unsigned int *controller_baudrate,
++			    u32 *device_baudrate, bool *flow_control);
+ 
+ #else
+ 
++static inline struct btrtl_device_info *btrtl_initialize(struct hci_dev *hdev)
++{
++	return ERR_PTR(-EOPNOTSUPP);
++}
++
++static inline void btrtl_free(struct btrtl_device_info *btrtl_dev)
++{
++}
++
++static inline int btrtl_download_firmware(struct hci_dev *hdev,
++					  struct btrtl_device_info *btrtl_dev)
++{
++	return -EOPNOTSUPP;
++}
++
+ static inline int btrtl_setup_realtek(struct hci_dev *hdev)
+ {
+ 	return -EOPNOTSUPP;
+ }
+ 
++static inline int btrtl_get_uart_settings(struct hci_dev *hdev,
++					  struct btrtl_device_info *btrtl_dev,
++					  unsigned int *controller_baudrate,
++					  u32 *device_baudrate,
++					  bool *flow_control)
++{
++	return -ENOENT;
++}
++
+ #endif
+diff --git a/drivers/bluetooth/hci_h5.c b/drivers/bluetooth/hci_h5.c
+index 6a8d0d06a..a03acc3b1 100644
+--- a/drivers/bluetooth/hci_h5.c
++++ b/drivers/bluetooth/hci_h5.c
+@@ -28,7 +28,14 @@
+ #include <net/bluetooth/bluetooth.h>
+ #include <net/bluetooth/hci_core.h>
+ 
++#include <linux/gpio/consumer.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/of_device.h>
++#include <linux/serdev.h>
++
+ #include "hci_uart.h"
++#include "btrtl.h"
+ 
+ #define HCI_3WIRE_ACK_PKT	0
+ #define HCI_3WIRE_LINK_PKT	15
+@@ -97,6 +104,13 @@ struct h5 {
+ 	} sleep;
+ };
+ 
++struct h5_device {
++	struct hci_uart hu;
++	struct gpio_desc *enable_gpio;
++	struct gpio_desc *reset_gpio;
++	int (*vendor_setup)(struct h5_device *h5_dev);
++};
++
+ static void h5_reset_rx(struct h5 *h5);
+ 
+ static void h5_link_control(struct hci_uart *hu, const void *data, size_t len)
+@@ -190,6 +204,7 @@ static int h5_open(struct hci_uart *hu)
+ {
+ 	struct h5 *h5;
+ 	const unsigned char sync[] = { 0x01, 0x7e };
++	int err;
+ 
+ 	BT_DBG("hu %p", hu);
+ 
+@@ -210,7 +225,13 @@ static int h5_open(struct hci_uart *hu)
+ 
+ 	h5->tx_win = H5_TX_WIN_MAX;
+ 
+-	set_bit(HCI_UART_INIT_PENDING, &hu->hdev_flags);
++	if (hu->serdev) {
++		err = serdev_device_open(hu->serdev);
++		if (err) {
++			bt_dev_err(hu->hdev, "failed to open serdev: %d", err);
++			return err;
++		}
++	}
+ 
+ 	/* Send initial sync request */
+ 	h5_link_control(hu, sync, sizeof(sync));
+@@ -219,6 +240,25 @@ static int h5_open(struct hci_uart *hu)
+ 	return 0;
+ }
+ 
++static int h5_setup(struct hci_uart *hu)
++{
++	int err;
++	struct h5_device *h5_dev;
++
++	if (!hu->serdev)
++		return 0;
++
++	h5_dev = serdev_device_get_drvdata(hu->serdev);
++
++	if (h5_dev->vendor_setup) {
++		err = h5_dev->vendor_setup(h5_dev);
++		if (err)
++			return err;
++	}
++
++	return 0;
++}
++
+ static int h5_close(struct hci_uart *hu)
+ {
+ 	struct h5 *h5 = hu->priv;
+@@ -229,6 +269,15 @@ static int h5_close(struct hci_uart *hu)
+ 	skb_queue_purge(&h5->rel);
+ 	skb_queue_purge(&h5->unrel);
+ 
++	if (hu->serdev) {
++		struct h5_device *h5_dev;
++
++		h5_dev = serdev_device_get_drvdata(hu->serdev);
++		gpiod_set_value_cansleep(h5_dev->enable_gpio, 0);
++
++		serdev_device_close(hu->serdev);
++	}
++
+ 	kfree(h5);
+ 
+ 	return 0;
+@@ -316,7 +365,6 @@ static void h5_handle_internal_rx(struct hci_uart *hu)
+ 			h5->tx_win = (data[2] & 0x07);
+ 		BT_DBG("Three-wire init complete. tx_win %u", h5->tx_win);
+ 		h5->state = H5_ACTIVE;
+-		hci_uart_init_ready(hu);
+ 		return;
+ 	} else if (memcmp(data, sleep_req, 2) == 0) {
+ 		BT_DBG("Peer went to sleep");
+@@ -739,10 +787,160 @@ static int h5_flush(struct hci_uart *hu)
+ 	return 0;
+ }
+ 
++#if IS_ENABLED(CONFIG_SERIAL_DEV_BUS)
++static int h5_setup_realtek(struct h5_device *h5_dev)
++{
++	struct hci_uart *hu = &h5_dev->hu;
++	int err = 0, retry = 3;
++	struct sk_buff *skb;
++	struct btrtl_device_info *btrtl_dev;
++	__le32 baudrate_data;
++	u32 device_baudrate;
++	unsigned int controller_baudrate;
++	bool flow_control;
++
++	/* devices always start with flow control disabled and even parity */
++	serdev_device_set_flow_control(hu->serdev, false);
++	serdev_device_set_parity(hu->serdev, true, false);
++
++	do {
++		/* disable the device and put it into reset. some devices only
++		 * have one of these lines, so we toggle both here to support
++		 * all combinations.
++		 */
++		gpiod_set_value_cansleep(h5_dev->reset_gpio, 1);
++		gpiod_set_value_cansleep(h5_dev->enable_gpio, 0);
++
++		/* wait until the device is disabled and/or reset. 500ms are
++		 * chosen by manually testing on a RTL8723BS. shorter wait
++		 * times lead to a non-responding device.
++		 */
++		msleep(500);
++
++		/* take the device out of reset and enable it. */
++		gpiod_set_value_cansleep(h5_dev->reset_gpio, 0);
++		gpiod_set_value_cansleep(h5_dev->enable_gpio, 1);
++
++		/* after that we need to wait 500ms, otherwise the device might
++		 * not respond in all cases. this was determined by testing
++		 * with a RTL8723BS.
++		 */
++		msleep(500);
++
++		btrtl_dev = btrtl_initialize(hu->hdev);
++		if (!IS_ERR(btrtl_dev))
++			break;
++
++		/* Toggle the enable and reset pins above and try again */
++	} while (retry--);
++
++	if (IS_ERR(btrtl_dev))
++		return PTR_ERR(btrtl_dev);
++
++	err = btrtl_get_uart_settings(hu->hdev, btrtl_dev,
++				      &controller_baudrate, &device_baudrate,
++				      &flow_control);
++	if (err)
++		goto out_free;
++
++	baudrate_data = cpu_to_le32(device_baudrate);
++	skb = __hci_cmd_sync(hu->hdev, 0xfc17, sizeof(baudrate_data),
++			     &baudrate_data, HCI_INIT_TIMEOUT);
++	if (IS_ERR(skb)) {
++		bt_dev_err(hu->hdev, "set baud rate command failed");
++		err = -PTR_ERR(skb);
++		goto out_free;
++	} else {
++		kfree_skb(skb);
++	}
++
++	serdev_device_set_baudrate(hu->serdev, controller_baudrate);
++	serdev_device_set_flow_control(hu->serdev, flow_control);
++
++	err = btrtl_download_firmware(hu->hdev, btrtl_dev);
++
++out_free:
++	btrtl_free(btrtl_dev);
++
++	return err;
++}
++
++static const struct hci_uart_proto h5p;
++
++static int hci_h5_probe(struct serdev_device *serdev)
++{
++	struct hci_uart *hu;
++	struct h5_device *h5_dev;
++
++	h5_dev = devm_kzalloc(&serdev->dev, sizeof(*h5_dev), GFP_KERNEL);
++	if (!h5_dev)
++		return -ENOMEM;
++
++	hu = &h5_dev->hu;
++	hu->serdev = serdev;
++
++	serdev_device_set_drvdata(serdev, h5_dev);
++
++	h5_dev->vendor_setup = of_device_get_match_data(&serdev->dev);
++
++	h5_dev->enable_gpio = devm_gpiod_get_optional(&serdev->dev, "enable",
++						       GPIOD_OUT_HIGH);
++	if (IS_ERR(h5_dev->enable_gpio))
++		return PTR_ERR(h5_dev->enable_gpio);
++
++	h5_dev->reset_gpio = devm_gpiod_get_optional(&serdev->dev, "reset",
++						     GPIOD_OUT_LOW);
++	if (IS_ERR(h5_dev->reset_gpio))
++		return PTR_ERR(h5_dev->reset_gpio);
++
++	hci_uart_set_speeds(hu, 115200, 0);
++
++	return hci_uart_register_device(hu, &h5p);
++}
++
++static void hci_h5_remove(struct serdev_device *serdev)
++{
++	struct h5_device *h5_dev = serdev_device_get_drvdata(serdev);
++	struct hci_uart *hu = &h5_dev->hu;
++	struct hci_dev *hdev = hu->hdev;
++
++	cancel_work_sync(&hu->write_work);
++
++	hci_unregister_dev(hdev);
++	hci_free_dev(hdev);
++	hu->proto->close(hu);
++}
++
++#ifdef CONFIG_OF
++static const struct of_device_id hci_h5_of_match[] = {
++	{
++		.compatible = "realtek,rtl8723bs-bluetooth",
++		.data = h5_setup_realtek
++	},
++	{
++		.compatible = "realtek,rtl8723ds-bluetooth",
++		.data = h5_setup_realtek
++	},
++	{},
++};
++MODULE_DEVICE_TABLE(of, hci_h5_of_match);
++#endif
++
++static struct serdev_device_driver hci_h5_drv = {
++	.driver		= {
++		.name	= "hci-h5",
++		.of_match_table = of_match_ptr(hci_h5_of_match),
++	},
++	.probe	= hci_h5_probe,
++	.remove	= hci_h5_remove,
++};
++#endif
++
+ static const struct hci_uart_proto h5p = {
+ 	.id		= HCI_UART_3WIRE,
+ 	.name		= "Three-wire (H5)",
+ 	.open		= h5_open,
++	.setup		= h5_setup,
+ 	.close		= h5_close,
+ 	.recv		= h5_recv,
+ 	.enqueue	= h5_enqueue,
+@@ -752,10 +950,14 @@ static const struct hci_uart_proto h5p = {
+ 
+ int __init h5_init(void)
+ {
++	serdev_device_driver_register(&hci_h5_drv);
++
+ 	return hci_uart_register_proto(&h5p);
+ }
+ 
+ int __exit h5_deinit(void)
+ {
++	serdev_device_driver_unregister(&hci_h5_drv);
++
+ 	return hci_uart_unregister_proto(&h5p);
+ }
+diff --git a/drivers/bluetooth/hci_ldisc.c b/drivers/bluetooth/hci_ldisc.c
+index c823914b3..5dd3e1beb 100644
+--- a/drivers/bluetooth/hci_ldisc.c
++++ b/drivers/bluetooth/hci_ldisc.c
+@@ -195,39 +195,6 @@ static void hci_uart_write_work(struct work_struct *work)
+ 	clear_bit(HCI_UART_SENDING, &hu->tx_state);
+ }
+ 
+-static void hci_uart_init_work(struct work_struct *work)
+-{
+-	struct hci_uart *hu = container_of(work, struct hci_uart, init_ready);
+-	int err;
+-	struct hci_dev *hdev;
+-
+-	if (!test_and_clear_bit(HCI_UART_INIT_PENDING, &hu->hdev_flags))
+-		return;
+-
+-	err = hci_register_dev(hu->hdev);
+-	if (err < 0) {
+-		BT_ERR("Can't register HCI device");
+-		hdev = hu->hdev;
+-		hu->hdev = NULL;
+-		hci_free_dev(hdev);
+-		clear_bit(HCI_UART_PROTO_READY, &hu->flags);
+-		hu->proto->close(hu);
+-		return;
+-	}
+-
+-	set_bit(HCI_UART_REGISTERED, &hu->flags);
+-}
+-
+-int hci_uart_init_ready(struct hci_uart *hu)
+-{
+-	if (!test_bit(HCI_UART_INIT_PENDING, &hu->hdev_flags))
+-		return -EALREADY;
+-
+-	schedule_work(&hu->init_ready);
+-
+-	return 0;
+-}
+-
+ /* ------- Interface to HCI layer ------ */
+ /* Initialize device */
+ static int hci_uart_open(struct hci_dev *hdev)
+@@ -490,7 +457,6 @@ static int hci_uart_tty_open(struct tty_struct *tty)
+ 	hu->alignment = 1;
+ 	hu->padding = 0;
+ 
+-	INIT_WORK(&hu->init_ready, hci_uart_init_work);
+ 	INIT_WORK(&hu->write_work, hci_uart_write_work);
+ 
+ 	percpu_init_rwsem(&hu->proto_lock);
+@@ -653,9 +619,6 @@ static int hci_uart_register_dev(struct hci_uart *hu)
+ 	else
+ 		hdev->dev_type = HCI_PRIMARY;
+ 
+-	if (test_bit(HCI_UART_INIT_PENDING, &hu->hdev_flags))
+-		return 0;
+-
+ 	if (hci_register_dev(hdev) < 0) {
+ 		BT_ERR("Can't register HCI device");
+ 		hu->hdev = NULL;
+@@ -699,7 +662,6 @@ static int hci_uart_set_flags(struct hci_uart *hu, unsigned long flags)
+ 	unsigned long valid_flags = BIT(HCI_UART_RAW_DEVICE) |
+ 				    BIT(HCI_UART_RESET_ON_INIT) |
+ 				    BIT(HCI_UART_CREATE_AMP) |
+-				    BIT(HCI_UART_INIT_PENDING) |
+ 				    BIT(HCI_UART_EXT_CONFIG) |
+ 				    BIT(HCI_UART_VND_DETECT);
+ 
+diff --git a/drivers/bluetooth/hci_serdev.c b/drivers/bluetooth/hci_serdev.c
+index 71664b22e..076b8295e 100644
+--- a/drivers/bluetooth/hci_serdev.c
++++ b/drivers/bluetooth/hci_serdev.c
+@@ -332,9 +332,6 @@ int hci_uart_register_device(struct hci_uart *hu,
+ 	else
+ 		hdev->dev_type = HCI_PRIMARY;
+ 
+-	if (test_bit(HCI_UART_INIT_PENDING, &hu->hdev_flags))
+-		return 0;
+-
+ 	if (hci_register_dev(hdev) < 0) {
+ 		BT_ERR("Can't register HCI device");
+ 		err = -ENODEV;
+diff --git a/drivers/bluetooth/hci_uart.h b/drivers/bluetooth/hci_uart.h
+index 66e8c68e4..47e755ff4 100644
+--- a/drivers/bluetooth/hci_uart.h
++++ b/drivers/bluetooth/hci_uart.h
+@@ -53,7 +53,7 @@
+ #define HCI_UART_RAW_DEVICE	0
+ #define HCI_UART_RESET_ON_INIT	1
+ #define HCI_UART_CREATE_AMP	2
+-#define HCI_UART_INIT_PENDING	3
++/* 3 is unused - was HCI_UART_INIT_PENDING */
+ #define HCI_UART_EXT_CONFIG	4
+ #define HCI_UART_VND_DETECT	5
+ 
+@@ -83,7 +83,6 @@ struct hci_uart {
+ 	unsigned long		flags;
+ 	unsigned long		hdev_flags;
+ 
+-	struct work_struct	init_ready;
+ 	struct work_struct	write_work;
+ 
+ 	const struct hci_uart_proto *proto;
+@@ -115,7 +114,6 @@ int hci_uart_register_device(struct hci_uart *hu, const struct hci_uart_proto *p
+ void hci_uart_unregister_device(struct hci_uart *hu);
+ 
+ int hci_uart_tx_wakeup(struct hci_uart *hu);
+-int hci_uart_init_ready(struct hci_uart *hu);
+ void hci_uart_set_baudrate(struct hci_uart *hu, unsigned int speed);
+ void hci_uart_set_flow_control(struct hci_uart *hu, bool enable);
+ void hci_uart_set_speeds(struct hci_uart *hu, unsigned int init_speed,
+diff --git a/drivers/tty/serdev/core.c b/drivers/tty/serdev/core.c
+index 1bef39828..d327b0298 100644
+--- a/drivers/tty/serdev/core.c
++++ b/drivers/tty/serdev/core.c
+@@ -225,6 +225,18 @@ void serdev_device_set_flow_control(struct serdev_device *serdev, bool enable)
+ }
+ EXPORT_SYMBOL_GPL(serdev_device_set_flow_control);
+ 
++void serdev_device_set_parity(struct serdev_device *serdev, bool enable,
++			      bool odd)
++{
++	struct serdev_controller *ctrl = serdev->ctrl;
++
++	if (!ctrl || !ctrl->ops->set_parity)
++		return;
++
++	ctrl->ops->set_parity(ctrl, enable, odd);
++}
++EXPORT_SYMBOL_GPL(serdev_device_set_parity);
++
+ void serdev_device_wait_until_sent(struct serdev_device *serdev, long timeout)
+ {
+ 	struct serdev_controller *ctrl = serdev->ctrl;
+diff --git a/drivers/tty/serdev/serdev-ttyport.c b/drivers/tty/serdev/serdev-ttyport.c
+index 247788a16..36bed86e5 100644
+--- a/drivers/tty/serdev/serdev-ttyport.c
++++ b/drivers/tty/serdev/serdev-ttyport.c
+@@ -190,6 +190,26 @@ static void ttyport_set_flow_control(struct serdev_controller *ctrl, bool enable
+ 	tty_set_termios(tty, &ktermios);
+ }
+ 
++static void ttyport_set_parity(struct serdev_controller *ctrl, bool enable,
++			       bool odd)
++{
++	struct serport *serport = serdev_controller_get_drvdata(ctrl);
++	struct tty_struct *tty = serport->tty;
++	struct ktermios ktermios = tty->termios;
++
++	if (enable)
++		ktermios.c_cflag |= PARENB;
++	else
++		ktermios.c_cflag &= ~PARENB;
++
++	if (odd)
++		ktermios.c_cflag |= PARODD;
++	else
++		ktermios.c_cflag &= ~PARODD;
++
++	tty_set_termios(tty, &ktermios);
++}
++
+ static void ttyport_wait_until_sent(struct serdev_controller *ctrl, long timeout)
+ {
+ 	struct serport *serport = serdev_controller_get_drvdata(ctrl);
+@@ -227,6 +247,7 @@ static const struct serdev_controller_ops ctrl_ops = {
+ 	.open = ttyport_open,
+ 	.close = ttyport_close,
+ 	.set_flow_control = ttyport_set_flow_control,
++	.set_parity = ttyport_set_parity,
+ 	.set_baudrate = ttyport_set_baudrate,
+ 	.wait_until_sent = ttyport_wait_until_sent,
+ 	.get_tiocm = ttyport_get_tiocm,
+diff --git a/include/linux/serdev.h b/include/linux/serdev.h
+index d609e6dc5..07f2d4d4e 100644
+--- a/include/linux/serdev.h
++++ b/include/linux/serdev.h
+@@ -86,6 +86,7 @@ struct serdev_controller_ops {
+ 	int (*open)(struct serdev_controller *);
+ 	void (*close)(struct serdev_controller *);
+ 	void (*set_flow_control)(struct serdev_controller *, bool);
++	void (*set_parity)(struct serdev_controller *, bool, bool);
+ 	unsigned int (*set_baudrate)(struct serdev_controller *, unsigned int);
+ 	void (*wait_until_sent)(struct serdev_controller *, long);
+ 	int (*get_tiocm)(struct serdev_controller *);
+@@ -195,6 +196,7 @@ int serdev_device_open(struct serdev_device *);
+ void serdev_device_close(struct serdev_device *);
+ unsigned int serdev_device_set_baudrate(struct serdev_device *, unsigned int);
+ void serdev_device_set_flow_control(struct serdev_device *, bool);
++void serdev_device_set_parity(struct serdev_device *, bool, bool);
+ int serdev_device_write_buf(struct serdev_device *, const unsigned char *, size_t);
+ void serdev_device_wait_until_sent(struct serdev_device *, long);
+ int serdev_device_get_tiocm(struct serdev_device *);
+@@ -237,6 +239,9 @@ static inline unsigned int serdev_device_set_baudrate(struct serdev_device *sdev
+ 	return 0;
+ }
+ static inline void serdev_device_set_flow_control(struct serdev_device *sdev, bool enable) {}
++static inline void serdev_device_set_parity(struct serdev_device *sdev,
++					    bool enable,
++					    bool odd) {}
+ static inline int serdev_device_write_buf(struct serdev_device *serdev,
+ 					  const unsigned char *buf,
+ 					  size_t count)
+-- 
+2.14.1
+

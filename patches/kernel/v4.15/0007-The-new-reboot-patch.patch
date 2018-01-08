@@ -1,0 +1,100 @@
+From 00cfe97e8a30b3596c10473b5f51d8092dcc96dd Mon Sep 17 00:00:00 2001
+From: Myy Miouyouyou <myy@miouyouyou.fr>
+Date: Sun, 7 Jan 2018 00:52:06 +0100
+Subject: [PATCH] The new reboot patch
+
+
+diff --git a/drivers/mmc/host/dw_mmc-rockchip.c b/drivers/mmc/host/dw_mmc-rockchip.c
+index a3f1c2b30..de7c20953 100644
+--- a/drivers/mmc/host/dw_mmc-rockchip.c
++++ b/drivers/mmc/host/dw_mmc-rockchip.c
+@@ -334,6 +334,66 @@ static const struct of_device_id dw_mci_rockchip_match[] = {
+ };
+ MODULE_DEVICE_TABLE(of, dw_mci_rockchip_match);
+ 
++struct dw_mci_rockchip_broken_boards_data = {
++	struct notifier_block reset_nb;
++	struct platform_device *pdev;
++};
++
++/* This reboot handler handles cases where disabling the SDMMC on
++ * reboot will cause the hardware to be unable to start correctly
++ * after rebooting.
++ * 
++ * This happens with Tinkerboard systems...
++ */
++static int dw_mci_rockchip_broken_boards_reset_nb(
++	struct notifier_block *this,
++	unsigned long mode, void *cmd)
++{
++	struct dw_mci_rockchip_broken_boards_data const *data =
++		container_of(this,
++			struct dw_mci_rockchip_broken_boards_data,
++			reset_nb);
++	struct dw_mci *host = platform_get_drvdata(data->pdev);
++	struct mmc_host *mmc = host->slot->mmc;
++
++	printk(KERN_ERR "Meow.\n");
++
++	mmc_power_off(mmc);
++
++	mdelay(20);
++
++	if (!IS_ERR(mmc->supply.vmmc))
++		regulator_enable(mmc->supply.vmmc);
++
++	if (!IS_ERR(mmc->supply.vqmmc))
++		regulator_set_voltage(mmc->supply.vqmmc, 3000000, 3300000);
++
++	printk(KERN_ERR "woeM.\n");
++
++	return NOTIFY_DONE;
++}
++
++static void dw_mci_rockchip_register_broken_boards_reboot_handler(
++	struct platform_device *pdev)
++{
++	struct dw_mci_rockchip_broken_boards_data *data;
++
++	if (!of_machine_is_compatible("asus,rk3288-tinker"))
++		return;
++
++	data = dev_kzalloc(pdev, sizeof(*data), GFP_KERNEL);
++
++	if (!data)
++		return;
++
++	data->reset_nb.notifier_call =
++		dw_mci_rockchip_broken_boards_reset_nb;
++	data->reset_nb.priority = 255;
++	register_reset_handler(&data->reset_nb);
++
++	data->platform_device = pdev;
++}
++
+ static int dw_mci_rockchip_probe(struct platform_device *pdev)
+ {
+ 	const struct dw_mci_drv_data *drv_data;
+@@ -361,6 +421,7 @@ static int dw_mci_rockchip_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	pm_runtime_put_autosuspend(&pdev->dev);
++	dw_mci_rockchip_register_broken_boards_reboot_handler(pdev);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/mmc/host/dw_mmc.c b/drivers/mmc/host/dw_mmc.c
+index 0aa39975f..d6f179fcf 100644
+--- a/drivers/mmc/host/dw_mmc.c
++++ b/drivers/mmc/host/dw_mmc.c
+@@ -3376,6 +3376,7 @@ int dw_mci_probe(struct dw_mci *host)
+ 	/* Now that slots are all setup, we can enable card detect */
+ 	dw_mci_enable_cd(host);
+ 
++	dw_mci_register_broken_boards_reboot_handler();
+ 	return 0;
+ 
+ err_dmaunmap:
+-- 
+2.14.1
+
