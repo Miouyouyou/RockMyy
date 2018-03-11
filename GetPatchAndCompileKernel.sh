@@ -4,7 +4,7 @@ export CROSS_COMPILE=arm-linux-gnueabihf-
 export KERNEL_GIT_URL='git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
 
 export KERNEL_SERIES=v4.16
-export KERNEL_BRANCH=v4.16-rc3
+export KERNEL_BRANCH=v4.16-rc4
 export LOCALVERSION=-RockMyy-16Bits-Edition
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
@@ -50,7 +50,7 @@ export KERNEL_PATCHES="
 0002-clk-rockchip-add-all-known-operating-points-to-the-a.patch
 0003-clk-rockchip-rk3288-prefer-vdpu-for-vcodec-clock-sou.patch
 0004-Remove-the-dependency-to-the-clk_mali-symbol.patch
-0005-ASUS-Tinkerboard-Stupid-reboot.patch
+0005-dw_mmc-The-stupid-ASUS-Reboot.patch
 0006-soc-rockchip-power-domain-export-idle-request.patch
 "
 

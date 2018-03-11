@@ -1,29 +1,30 @@
-From bf9b932f6ae506baf5b79c8407089448ed77fc56 Mon Sep 17 00:00:00 2001
+From b557fc4afe1563d26aab58bec05ee84dcd6f9be8 Mon Sep 17 00:00:00 2001
 From: Myy Miouyouyou <myy@miouyouyou.fr>
-Date: Sun, 17 Dec 2017 16:15:03 +0100
-Subject: [PATCH] ASUS Tinkerboard: Stupid reboot patch
+Date: Sun, 11 Mar 2018 22:15:36 +0100
+Subject: [PATCH] dw_mmc: The stupid ASUS Reboot patch
 
-This patch is ugly as shit and will be reworked when possible.
+The patch didn't apply in the 4.16-rc4 so it had to be "rewritten".
+By "rewritten", I mean, move the code blocks accordingly, based on
+the new dw_mmc.c file layout.
 
-Meanwhile, this fixes an issue with the ASUS Tinkerboard which
-cannot reboot correctly. The issue is that the MMC hardware is
-shutdown during the reboot phase and is not powered again after
-the power cycle, leading to a dead board awaiting a hard power
-cycle.
+No major changes were done.
+
+It's still fucking ugly but I have no time to concentrate on this
+issue and deal with it accordingly.
 
 Signed-off-by: Myy Miouyouyou <myy@miouyouyou.fr>
 ---
- drivers/mmc/host/dw_mmc-rockchip.c | 24 ++++++++++++++++++++++++
- drivers/mmc/host/dw_mmc.c          | 28 ++++++++++++++++++++++++++++
+ drivers/mmc/host/dw_mmc-rockchip.c | 25 +++++++++++++++++++++++++
+ drivers/mmc/host/dw_mmc.c          | 31 +++++++++++++++++++++++++++++++
  include/linux/reboot.h             |  2 ++
  kernel/reboot.c                    |  1 +
- 4 files changed, 55 insertions(+)
+ 4 files changed, 59 insertions(+)
 
 diff --git a/drivers/mmc/host/dw_mmc-rockchip.c b/drivers/mmc/host/dw_mmc-rockchip.c
-index a3f1c2b30..52c13733f 100644
+index 339295212..a8fe79b14 100644
 --- a/drivers/mmc/host/dw_mmc-rockchip.c
 +++ b/drivers/mmc/host/dw_mmc-rockchip.c
-@@ -14,10 +14,12 @@
+@@ -14,10 +14,13 @@
  #include <linux/of_address.h>
  #include <linux/mmc/slot-gpio.h>
  #include <linux/pm_runtime.h>
@@ -33,10 +34,11 @@ index a3f1c2b30..52c13733f 100644
  #include "dw_mmc.h"
  #include "dw_mmc-pltfm.h"
 +#include "../core/core.h" // Stupid Tinkerboard Hack
++
  
  #define RK3288_CLKGEN_DIV       2
  
-@@ -365,6 +367,27 @@ static int dw_mci_rockchip_probe(struct platform_device *pdev)
+@@ -366,6 +369,27 @@ static int dw_mci_rockchip_probe(struct platform_device *pdev)
  	return 0;
  }
  
@@ -64,7 +66,7 @@ index a3f1c2b30..52c13733f 100644
  static int dw_mci_rockchip_remove(struct platform_device *pdev)
  {
  	pm_runtime_get_sync(&pdev->dev);
-@@ -385,6 +408,7 @@ static const struct dev_pm_ops dw_mci_rockchip_dev_pm_ops = {
+@@ -386,6 +410,7 @@ static const struct dev_pm_ops dw_mci_rockchip_dev_pm_ops = {
  static struct platform_driver dw_mci_rockchip_pltfm_driver = {
  	.probe		= dw_mci_rockchip_probe,
  	.remove		= dw_mci_rockchip_remove,
@@ -73,7 +75,7 @@ index a3f1c2b30..52c13733f 100644
  		.name		= "dwmmc_rockchip",
  		.of_match_table	= dw_mci_rockchip_match,
 diff --git a/drivers/mmc/host/dw_mmc.c b/drivers/mmc/host/dw_mmc.c
-index 0aa39975f..70f7ce21b 100644
+index d9b4acefe..5627c9da6 100644
 --- a/drivers/mmc/host/dw_mmc.c
 +++ b/drivers/mmc/host/dw_mmc.c
 @@ -39,8 +39,10 @@
@@ -83,11 +85,11 @@ index 0aa39975f..70f7ce21b 100644
 +#include <linux/reboot.h> // Stupid Tinkerboard Hack
  
  #include "dw_mmc.h"
-+#include "../core/core.h" // Stupid Tinkerboard Hack
++#include "../core/core.h" // Stupid Tinkerboard hack
  
  /* Common flag combinations */
  #define DW_MCI_DATA_ERROR_FLAGS	(SDMMC_INT_DRTO | SDMMC_INT_DCRC | \
-@@ -2778,6 +2780,29 @@ static irqreturn_t dw_mci_interrupt(int irq, void *dev_id)
+@@ -2782,6 +2784,31 @@ static irqreturn_t dw_mci_interrupt(int irq, void *dev_id)
  	return IRQ_HANDLED;
  }
  
@@ -114,16 +116,19 @@ index 0aa39975f..70f7ce21b 100644
 +}
 +EXPORT_SYMBOL(setmmcEmergency);
 +
- static int dw_mci_init_slot(struct dw_mci *host)
++
++
+ static int dw_mci_init_slot_caps(struct dw_mci_slot *slot)
  {
- 	struct mmc_host *mmc;
-@@ -2809,6 +2834,9 @@ static int dw_mci_init_slot(struct dw_mci *host)
+ 	struct dw_mci *host = slot->host;
+@@ -2858,6 +2885,10 @@ static int dw_mci_init_slot(struct dw_mci *host)
  		mmc->f_max = freq[1];
  	}
  
 +	/* Stupid Tinkerboard Hack */
 +	if (of_find_property(host->dev->of_node, "supports-sd", NULL))
 +		mSdhost = host;
++
  	/*if there are external regulators, get them*/
  	ret = mmc_regulator_get_supply(mmc);
  	if (ret)
