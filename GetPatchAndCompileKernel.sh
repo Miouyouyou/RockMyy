@@ -3,8 +3,8 @@ export CROSS_COMPILE=arm-linux-gnueabihf-
 
 export KERNEL_GIT_URL='git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
 
-export KERNEL_SERIES=v4.16
-export KERNEL_BRANCH=v4.16
+export KERNEL_SERIES=v4.17
+export KERNEL_BRANCH=v4.17-rc3
 export LOCALVERSION=-RockMyy-16Bits-Edition
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
@@ -50,7 +50,7 @@ export KERNEL_PATCHES="
 0002-clk-rockchip-add-all-known-operating-points-to-the-a.patch
 0003-clk-rockchip-rk3288-prefer-vdpu-for-vcodec-clock-sou.patch
 0004-Remove-the-dependency-to-the-clk_mali-symbol.patch
-0005-dw_mmc-The-stupid-ASUS-Reboot.patch
+0005-drivers-mmc-dw-mci-rockchip-Handle-ASUS-Tinkerboard.patch
 0006-soc-rockchip-power-domain-export-idle-request.patch
 "
 
@@ -78,6 +78,7 @@ export KERNEL_DTS_PATCHES="
 0024-ARM-DTS-rk3288-tinker-Enable-the-Video-encoding-MMU-.patch
 0025-ARM-DTSI-rk3288-firefly-Enable-the-Video-encoding-MM.patch
 0026-ARM-DTSI-rk3288-veyron-Enable-the-Video-encoding-MMU.patch
+0027-ARM-DTSI-rk3288-Add-the-appropriate-clock-references.patch
 "
 
 export MALI_PATCHES="
@@ -86,6 +87,7 @@ export MALI_PATCHES="
 0005-Added-the-new-compatible-list-mainly-used-by-Rockchi.patch
 0006-gpu-arm-Midgard-setup_timer-timer_setup.patch
 0007-drivers-gpu-Arm-Midgard-Replace-ACCESS_ONCE-by-READ_.patch
+0008-gpu-arm-midgard-Remove-sys_close-references.patch
 "
 
 # -- Helper functions
