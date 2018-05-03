@@ -5,7 +5,7 @@ export KERNEL_GIT_URL='git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/li
 
 export KERNEL_SERIES=v4.17
 export KERNEL_BRANCH=v4.17-rc3
-export LOCALVERSION=-RockMyy-16Bits-Edition
+export LOCALVERSION=-RockMyy-Seventeen
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
 
@@ -52,6 +52,7 @@ export KERNEL_PATCHES="
 0004-Remove-the-dependency-to-the-clk_mali-symbol.patch
 0005-drivers-mmc-dw-mci-rockchip-Handle-ASUS-Tinkerboard.patch
 0006-soc-rockchip-power-domain-export-idle-request.patch
+0007-drivers-drm-rockchip-Enable-IRQ-on-unbind.patch
 "
 
 export KERNEL_DTS_PATCHES="
