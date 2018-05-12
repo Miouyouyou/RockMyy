@@ -68,7 +68,7 @@ export KERNEL_DTS_PATCHES="
 0011-ARM-DTSI-rk3288-Adding-missing-EDP-power-domain.patch
 0013-ARM-DTSI-rk3288-Adding-missing-VOPB-registers.patch
 0014-ARM-DTSI-rk3288-Fixed-the-SPDIF-node-address.patch
-0015-ARM-DTS-rk3288-tinker-Enabling-SDIO-Wireless-and.patch
+0015-ARM-DTS-rk3288-tinker-Enabling-SDIO-and-Wifi.patch
 0016-ARM-DTS-rk3288-tinker-Improving-the-CPU-max-volt.patch
 0017-ARM-DTS-rk3288-tinker-Setting-up-the-SD-regulato.patch
 0018-ARM-DTS-rk3288-tinker-Defined-the-I2C-interfaces.patch
