@@ -1,7 +1,7 @@
-From 05b13d62e9aec73e095d3995eabbabb08204e76f Mon Sep 17 00:00:00 2001
+From 546e2d27d1b6f1c063740e06dde890eb989a3ea1 Mon Sep 17 00:00:00 2001
 From: Myy Miouyouyou <myy@miouyouyou.fr>
-Date: Sat, 12 May 2018 23:33:29 +0200
-Subject: [PATCH] ARM: DTS: rk3288-tinker: Enabling SDIO and Wifi
+Date: Tue, 15 May 2018 22:41:00 +0200
+Subject: [PATCH 1/2] ARM: DTS: rk3288-tinker: Enabling SDIO and Wifi
 
 Adding the appropriate nodes in order to exploit the WiFi capabilities
 of the board.
@@ -15,11 +15,11 @@ Split if necessary.
 
 Signed-off-by: Myy Miouyouyou <myy@miouyouyou.fr>
 ---
- arch/arm/boot/dts/rk3288-tinker.dts | 64 ++++++++++++++++++++++++++++-
- 1 file changed, 63 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/rk3288-tinker.dts | 60 ++++++++++++++++++++++++++++-
+ 1 file changed, 59 insertions(+), 1 deletion(-)
 
 diff --git a/arch/arm/boot/dts/rk3288-tinker.dts b/arch/arm/boot/dts/rk3288-tinker.dts
-index 346b0d8b..2a0c9f59 100644
+index 346b0d8b..9391c51d 100644
 --- a/arch/arm/boot/dts/rk3288-tinker.dts
 +++ b/arch/arm/boot/dts/rk3288-tinker.dts
 @@ -44,6 +44,7 @@
@@ -49,7 +49,7 @@ index 346b0d8b..2a0c9f59 100644
 +		 * - SDIO_RESET_L_WL_REG_ON
 +		 * - PDN (power down when low)
 +		 */
-+		reset-gpios = <&gpio4 RK_PD4 GPIO_ACTIVE_LOW>, <&gpio4 RK_PD3 GPIO_ACTIVE_LOW>;
++		reset-gpios = <&gpio4 28 GPIO_ACTIVE_LOW>, <&gpio4 27 GPIO_ACTIVE_LOW>;
 +	};
 +
  	vcc_sys: vsys-regulator {
@@ -72,7 +72,7 @@ index 346b0d8b..2a0c9f59 100644
  };
  
  &cpu0 {
-@@ -373,10 +402,30 @@
+@@ -373,10 +402,29 @@
  
  &io_domains {
  	status = "okay";
@@ -98,13 +98,12 @@ index 346b0d8b..2a0c9f59 100644
 +	pinctrl-0 = <&sdio0_bus4 &sdio0_cmd &sdio0_clk>;
 +	sd-uhs-sdr104;
 +	supports-sdio;
-+
 +};
 +
  &pinctrl {
  	pcfg_pull_none_drv_8ma: pcfg-pull-none-drv-8ma {
  		drive-strength = <8>;
-@@ -422,6 +471,16 @@
+@@ -422,6 +470,16 @@
  		};
  	};
  
@@ -121,23 +120,6 @@ index 346b0d8b..2a0c9f59 100644
  	sdmmc {
  		sdmmc_bus4: sdmmc-bus4 {
  			rockchip,pins = <6 16 RK_FUNC_1 &pcfg_pull_up_drv_8ma>,
-@@ -453,6 +512,7 @@
- 			rockchip,pins = <7 8 RK_FUNC_GPIO &pcfg_pull_none>;
- 		};
- 	};
-+
- };
- 
- &pwm0 {
-@@ -485,6 +545,8 @@
- 
- &uart0 {
- 	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&uart0_xfer>, <&uart0_cts>;
- };
- 
- &uart1 {
 -- 
 2.17.0
 

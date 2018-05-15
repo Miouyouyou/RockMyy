@@ -4,7 +4,7 @@ export CROSS_COMPILE=arm-linux-gnueabihf-
 export KERNEL_GIT_URL='git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
 
 export KERNEL_SERIES=v4.17
-export KERNEL_BRANCH=v4.17-rc4
+export KERNEL_BRANCH=v4.17-rc5
 export LOCALVERSION=-RockMyy-Seventeen
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
@@ -64,23 +64,25 @@ export KERNEL_DTS_PATCHES="
 0006-ARM-DTSI-rk3288-Missing-GRF-handles.patch
 0007-RK3288-DTSI-rk3288-Add-missing-SPI2-pinctrl.patch
 0008-Added-support-for-Tinkerboard-s-SPI-interface.patch
-0010-ARM-DTSI-rk3288-Adding-cells-addresses-and-size.patch
-0011-ARM-DTSI-rk3288-Adding-missing-EDP-power-domain.patch
-0013-ARM-DTSI-rk3288-Adding-missing-VOPB-registers.patch
-0014-ARM-DTSI-rk3288-Fixed-the-SPDIF-node-address.patch
-0015-ARM-DTS-rk3288-tinker-Enabling-SDIO-and-Wifi.patch
-0016-ARM-DTS-rk3288-tinker-Improving-the-CPU-max-volt.patch
-0017-ARM-DTS-rk3288-tinker-Setting-up-the-SD-regulato.patch
-0018-ARM-DTS-rk3288-tinker-Defined-the-I2C-interfaces.patch
-0020-ARM-DTS-rk3288-tinker-Defining-the-SPI-interface.patch
-0021-ARM-DTS-rk3288-tinker-Defining-SDMMC-properties.patch
-0022-ARM-DTSI-rk3288-Define-the-VPU-services.patch
-0023-ARM-DTS-rk3288-miqi-Enable-the-Video-encoding-MM.patch
-0024-ARM-DTS-rk3288-tinker-Enable-the-Video-encoding-MMU-.patch
-0025-ARM-DTSI-rk3288-firefly-Enable-the-Video-encoding-MM.patch
-0026-ARM-DTSI-rk3288-veyron-Enable-the-Video-encoding-MMU.patch
-0027-ARM-DTSI-rk3288-Add-the-appropriate-clock-references.patch
+0009-ARM-DTSI-rk3288-Adding-cells-addresses-and-size.patch
+0010-ARM-DTSI-rk3288-Adding-missing-EDP-power-domain.patch
+0011-ARM-DTSI-rk3288-Adding-missing-VOPB-registers.patch
+0012-ARM-DTSI-rk3288-Fixed-the-SPDIF-node-address.patch
+0013-ARM-DTS-rk3288-tinker-Enabling-SDIO-and-Wifi.patch
+0014-ARM-DTS-rk3288-tinker-Setup-the-Bluetooth-UART-pins.patch
+0015-ARM-DTS-rk3288-tinker-Improving-the-CPU-max-volt.patch
+0016-ARM-DTS-rk3288-tinker-Setting-up-the-SD-regulato.patch
+0017-ARM-DTS-rk3288-tinker-Defined-the-I2C-interfaces.patch
+0018-ARM-DTS-rk3288-tinker-Defining-the-SPI-interface.patch
+0019-ARM-DTS-rk3288-tinker-Defining-SDMMC-properties.patch
+0020-ARM-DTSI-rk3288-Define-the-VPU-services.patch
+0021-ARM-DTS-rk3288-miqi-Enable-the-Video-encoding-MM.patch
+0022-ARM-DTS-rk3288-tinker-Enable-the-Video-encoding-MMU-.patch
+0023-ARM-DTSI-rk3288-firefly-Enable-the-Video-encoding-MM.patch
+0024-ARM-DTSI-rk3288-veyron-Enable-the-Video-encoding-MMU.patch
+0025-ARM-DTSI-rk3288-Add-the-appropriate-clock-references.patch
 "
+
 
 export MALI_PATCHES="
 0001-Mali-midgard-r19p0-fixes-for-4.13-kernels.patch
