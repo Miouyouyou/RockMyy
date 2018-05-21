@@ -4,7 +4,7 @@ export CROSS_COMPILE=arm-linux-gnueabihf-
 export KERNEL_GIT_URL='git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
 
 export KERNEL_SERIES=v4.17
-export KERNEL_BRANCH=v4.17-rc5
+export KERNEL_BRANCH=v4.17-rc6
 export LOCALVERSION=-RockMyy-Seventeen
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
@@ -91,6 +91,7 @@ export MALI_PATCHES="
 0006-gpu-arm-Midgard-setup_timer-timer_setup.patch
 0007-drivers-gpu-Arm-Midgard-Replace-ACCESS_ONCE-by-READ_.patch
 0008-gpu-arm-midgard-Remove-sys_close-references.patch
+0009-GPU-ARM-Midgard-Adapt-to-the-new-mmap-call-checks.patch
 "
 
 # -- Helper functions
