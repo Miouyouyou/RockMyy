@@ -3,8 +3,12 @@ export CROSS_COMPILE=arm-linux-gnueabihf-
 
 export KERNEL_GIT_URL='git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
 
+if [ -z ${MAKEOPTS+x} ]; then
+	export MAKEOPTS=-j16
+fi
+
 export KERNEL_SERIES=v4.17
-export KERNEL_BRANCH=v4.17-rc6
+export KERNEL_BRANCH=v4.17
 export LOCALVERSION=-RockMyy-Seventeen
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
@@ -204,7 +208,7 @@ if [ -z ${MAKE_CONFIG+x} ]; then
 fi
 
 make $MAKE_CONFIG
-make $DTB_FILES zImage modules -j5
+make $DTB_FILES zImage modules $MAKEOPTS
 die_on_error "Compilation failed"
 
 if [ -z ${DONT_INSTALL_IN_TMP+x} ]; then
