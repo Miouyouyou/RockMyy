@@ -8,7 +8,7 @@ if [ -z ${MAKEOPTS+x} ]; then
 fi
 
 export KERNEL_SERIES=v4.18
-export KERNEL_BRANCH=v4.18-rc1
+export KERNEL_BRANCH=v4.18-rc2
 export LOCALVERSION=-RockMyy-181818
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
@@ -84,6 +84,8 @@ export KERNEL_DTS_PATCHES="
 0022-ARM-DTS-rk3288-tinker-Enable-the-Video-encoding-MMU-.patch
 0023-ARM-DTSI-rk3288-firefly-Enable-the-Video-encoding-MM.patch
 0024-ARM-DTSI-rk3288-veyron-Enable-the-Video-encoding-MMU.patch
+0025-ARM-DTSI-rk3288-Renamed-the-VPU-services-clocks.patch
+0026-ARM-DTSI-rk3288-Set-the-VPU-MMU-power-domains.patch
 "
 
 
