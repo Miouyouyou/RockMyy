@@ -1,0 +1,32 @@
+From 3cb7282de999c1d103bb20943010e06637bfc1d8 Mon Sep 17 00:00:00 2001
+From: "Miouyouyou (Myy)" <myy@miouyouyou.fr>
+Date: Mon, 25 Jun 2018 17:50:25 +0200
+Subject: [PATCH 28/28] ARM: DTSI: rk3288-evb: Fix the EDP output nodes
+
+Mimiced from @mmind patch, provided here :
+https://www.spinics.net/lists/arm-kernel/msg659143.html
+
+This patch removes the following warning :
+Warning (graph_endpoint): /dp@ff970000/ports/port@1/endpoint: graph node unit address error, expected "0"
+
+Signed-off-by: Miouyouyou (Myy) <myy@miouyouyou.fr>
+---
+ arch/arm/boot/dts/rk3288-evb.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/rk3288-evb.dtsi b/arch/arm/boot/dts/rk3288-evb.dtsi
+index 39b61dce..1c4dfd94 100644
+--- a/arch/arm/boot/dts/rk3288-evb.dtsi
++++ b/arch/arm/boot/dts/rk3288-evb.dtsi
+@@ -232,7 +232,7 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 
+-			edp_out_panel: endpoint {
++			edp_out_panel: endpoint@0 {
+ 				reg = <0>;
+ 				remote-endpoint = <&panel_in_edp>;
+ 			};
+-- 
+2.16.4
+

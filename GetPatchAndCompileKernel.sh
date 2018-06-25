@@ -86,6 +86,8 @@ export KERNEL_DTS_PATCHES="
 0024-ARM-DTSI-rk3288-veyron-Enable-the-Video-encoding-MMU.patch
 0025-ARM-DTSI-rk3288-Renamed-the-VPU-services-clocks.patch
 0026-ARM-DTSI-rk3288-Set-the-VPU-MMU-power-domains.patch
+0027-ARM-DTSI-rk3288-veyron-chromebook-Fix-the-EDP-output.patch
+0028-ARM-DTSI-rk3288-evb-Fix-the-EDP-output-nodes.patch
 "
 
 

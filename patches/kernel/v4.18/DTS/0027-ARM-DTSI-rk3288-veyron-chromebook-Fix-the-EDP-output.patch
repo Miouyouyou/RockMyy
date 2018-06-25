@@ -1,0 +1,33 @@
+From 907103cc0dbd812181b2644c790b8884c4e6b6ff Mon Sep 17 00:00:00 2001
+From: "Miouyouyou (Myy)" <myy@miouyouyou.fr>
+Date: Mon, 25 Jun 2018 17:48:24 +0200
+Subject: [PATCH 27/28] ARM: DTSI: rk3288-veyron-chromebook: Fix the EDP output
+ nodes
+
+Mimiced from @mmind patch, provided here :
+https://www.spinics.net/lists/arm-kernel/msg659143.html
+
+This patch removes the following warning :
+Warning (graph_endpoint): /dp@ff970000/ports/port@1/endpoint: graph node unit address error, expected "0"
+
+Signed-off-by: Miouyouyou (Myy) <myy@miouyouyou.fr>
+---
+ arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi b/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
+index b16d570f..acf5f8a2 100644
+--- a/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
++++ b/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
+@@ -174,7 +174,7 @@
+ 			reg = <1>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+-			edp_out_panel: endpoint {
++			edp_out_panel: endpoint@0 {
+ 				reg = <0>;
+ 				remote-endpoint = <&panel_in_edp>;
+ 			};
+-- 
+2.16.4
+
