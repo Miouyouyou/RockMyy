@@ -8,22 +8,27 @@ Using the main script
 ---------------------
 
 ```bash
-sh GetPatchAndCompileKernel.sh
+bash GetPatchAndCompileKernel.sh
 ```
 
 This works whether you cloned this whole repository or just downloaded
 the script alone.
 
 Don't hesitate to edit the script and replace the `CROSS_COMPILE` value
-in the script, in order to match your cross-compiling toolset prefix.
+in the script, in order to match your cross-compiling toolset prefix.  
+If you don't use cross-compile tools (meaning that you're compiling on
+your ARMv7 machine), set it like this `CROSS_COMPILE=`
 
 If you'd like to reconfigure the kernel using **menuconfig**, 
 **nconfig**, **qtconfig**, ... do it like this :
 
 ```bash
 # Assuming that you want to use menuconfig
-MAKE_CONFIG=menuconfig sh GetPatchAndCompileKernel.sh
+MAKE_CONFIG=menuconfig bash GetPatchAndCompileKernel.sh
 ```
+
+Now, you need all the tools required to compile a kernel.  
+That includes, at least, `gcc`, `make`, `automake`, `bison` and `flex`.
 
 Prebuilt kernels
 ----------------
