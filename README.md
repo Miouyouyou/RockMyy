@@ -29,7 +29,7 @@ MAKE_CONFIG=menuconfig bash GetPatchAndCompileKernel.sh
 ```
 
 Now, you need all the tools required to compile a kernel.  
-That includes, at least, `gcc`, `make`, `automake`, `bison` and `flex`.
+That includes, at least, `gcc`, `make`, `automake`, `bison`, `flex` and `bc`.
 
 Prebuilt kernels
 ----------------
