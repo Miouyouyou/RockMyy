@@ -7,9 +7,9 @@ if [ -z ${MAKEOPTS+x} ]; then
 	export MAKEOPTS=-j16
 fi
 
-export KERNEL_SERIES=v4.18
-export KERNEL_BRANCH=v4.18
-export LOCALVERSION=-RockMyy-181818
+export KERNEL_SERIES=v4.19
+export KERNEL_BRANCH=v4.19-rc1
+export LOCALVERSION=-RockMyyX
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
 
@@ -86,8 +86,6 @@ export KERNEL_DTS_PATCHES="
 0024-ARM-DTSI-rk3288-veyron-Enable-the-Video-encoding-MMU.patch
 0025-ARM-DTSI-rk3288-Renamed-the-VPU-services-clocks.patch
 0026-ARM-DTSI-rk3288-Set-the-VPU-MMU-power-domains.patch
-0027-ARM-DTSI-rk3288-veyron-chromebook-Fix-the-EDP-output.patch
-0028-ARM-DTSI-rk3288-evb-Fix-the-EDP-output-nodes.patch
 "
 
 
