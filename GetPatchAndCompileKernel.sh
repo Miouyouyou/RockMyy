@@ -8,7 +8,7 @@ if [ -z ${MAKEOPTS+x} ]; then
 fi
 
 export KERNEL_SERIES=v4.19
-export KERNEL_BRANCH=v4.19-rc1
+export KERNEL_BRANCH=v4.19-rc2
 export LOCALVERSION=-RockMyyX
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
@@ -56,7 +56,6 @@ export KERNEL_PATCHES="
 0004-Remove-the-dependency-to-the-clk_mali-symbol.patch
 0005-drivers-mmc-dw-mci-rockchip-Handle-ASUS-Tinkerboard.patch
 0006-soc-rockchip-power-domain-export-idle-request.patch
-0007-drivers-drm-rockchip-Enable-IRQ-on-unbind.patch
 "
 
 export KERNEL_DTS_PATCHES="
