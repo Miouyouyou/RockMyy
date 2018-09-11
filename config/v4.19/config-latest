@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm 4.19.0-rc1 Kernel Configuration
+# Linux/arm 4.19.0-rc3 Kernel Configuration
 #
 
 #
@@ -4867,7 +4867,7 @@ CONFIG_IOMMU_SUPPORT=y
 # CONFIG_IOMMU_IO_PGTABLE_LPAE is not set
 # CONFIG_IOMMU_IO_PGTABLE_ARMV7S is not set
 CONFIG_IOMMU_DEBUGFS=y
-CONFIG_IOMMU_DEFAULT_PASSTHROUGH=y
+# CONFIG_IOMMU_DEFAULT_PASSTHROUGH is not set
 CONFIG_OF_IOMMU=y
 CONFIG_ROCKCHIP_IOMMU=y
 # CONFIG_ARM_SMMU is not set
