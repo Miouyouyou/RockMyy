@@ -8,7 +8,7 @@ if [ -z ${MAKEOPTS+x} ]; then
 fi
 
 export KERNEL_SERIES=v4.19
-export KERNEL_BRANCH=v4.19-rc2
+export KERNEL_BRANCH=v4.19-rc3
 export LOCALVERSION=-RockMyyX
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
@@ -56,6 +56,8 @@ export KERNEL_PATCHES="
 0004-Remove-the-dependency-to-the-clk_mali-symbol.patch
 0005-drivers-mmc-dw-mci-rockchip-Handle-ASUS-Tinkerboard.patch
 0006-soc-rockchip-power-domain-export-idle-request.patch
+0100-media-Add-JPEG_RAW-format.patch
+0101-media-Add-controls-for-JPEG-quantization-tables.patch
 "
 
 export KERNEL_DTS_PATCHES="
@@ -78,13 +80,8 @@ export KERNEL_DTS_PATCHES="
 0017-ARM-DTS-rk3288-tinker-Defined-the-I2C-interfaces.patch
 0018-ARM-DTS-rk3288-tinker-Defining-the-SPI-interface.patch
 0019-ARM-DTS-rk3288-tinker-Defining-SDMMC-properties.patch
-0020-ARM-DTSI-rk3288-Define-the-VPU-services.patch
-0021-ARM-DTS-rk3288-miqi-Enable-the-Video-encoding-MM.patch
-0022-ARM-DTS-rk3288-tinker-Enable-the-Video-encoding-MMU-.patch
-0023-ARM-DTSI-rk3288-firefly-Enable-the-Video-encoding-MM.patch
-0024-ARM-DTSI-rk3288-veyron-Enable-the-Video-encoding-MMU.patch
-0025-ARM-DTSI-rk3288-Renamed-the-VPU-services-clocks.patch
 0026-ARM-DTSI-rk3288-Set-the-VPU-MMU-power-domains.patch
+0027-ARM-dtsi-The-VPU-service-as-defined-in-the-V4L2-driv.patch
 "
 
 
