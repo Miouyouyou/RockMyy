@@ -56,6 +56,7 @@ export KERNEL_PATCHES="
 0004-Remove-the-dependency-to-the-clk_mali-symbol.patch
 0005-drivers-mmc-dw-mci-rockchip-Handle-ASUS-Tinkerboard.patch
 0006-soc-rockchip-power-domain-export-idle-request.patch
+0007-drivers-wifi-ath9k-reverse-do-not-use-bulk-on-EP3-and-EP4.patch
 0100-media-Add-JPEG_RAW-format.patch
 0101-media-Add-controls-for-JPEG-quantization-tables.patch
 "
