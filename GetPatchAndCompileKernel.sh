@@ -41,11 +41,13 @@ export PATCHES_DIR=patches
 export KERNEL_PATCHES_DIR=$PATCHES_DIR/kernel/$KERNEL_SERIES
 export KERNEL_PATCHES_DTS_DIR=$KERNEL_PATCHES_DIR/DTS
 export MALI_PATCHES_DIR=$PATCHES_DIR/Midgard/$MALI_VERSION
+export KERNEL_DOCUMENTATION_PATCHES_DIR=$KERNEL_PATCHES_DIR/Documentation
 export CONFIG_FILE_PATH=config/$KERNEL_SERIES/config-latest
 
 export BASE_FILES_URL=https://raw.githubusercontent.com/$GITHUB_REPO/$GIT_BRANCH
 export KERNEL_PATCHES_DIR_URL=$BASE_FILES_URL/$KERNEL_PATCHES_DIR
 export KERNEL_DTS_PATCHES_DIR_URL=$BASE_FILES_URL/$KERNEL_PATCHES_DTS_DIR
+export KERNEL_DOCUMENTATION_PATCHES_DIR_URL=$BASE_FILES_URL/$KERNEL_DOCUMENTATION_PATCHES_DIR
 export MALI_PATCHES_DIR_URL=$BASE_FILES_URL/$MALI_PATCHES_DIR
 export CONFIG_FILE_URL=$BASE_FILES_URL/config/$KERNEL_SERIES/config-latest
 
@@ -57,6 +59,9 @@ export KERNEL_PATCHES="
 0005-drivers-mmc-dw-mci-rockchip-Handle-ASUS-Tinkerboard.patch
 0006-soc-rockchip-power-domain-export-idle-request.patch
 0007-drivers-wifi-ath9k-reverse-do-not-use-bulk-on-EP3-and-EP4.patch
+0008-rockchip-dwc2-usb-partial-power-down.patch
+0009-drivers-clk-rk3288-support-for-dedicating-NPLL-to-a-.patch
+0010-drm-dw_hdmi-rockchip-better-clock-selection-logic-an.patch
 0100-media-Add-JPEG_RAW-format.patch
 0101-media-Add-controls-for-JPEG-quantization-tables.patch
 "
@@ -83,8 +88,14 @@ export KERNEL_DTS_PATCHES="
 0019-ARM-DTS-rk3288-tinker-Defining-SDMMC-properties.patch
 0026-ARM-DTSI-rk3288-Set-the-VPU-MMU-power-domains.patch
 0027-ARM-dtsi-The-VPU-service-as-defined-in-the-V4L2-driv.patch
+0028-dts-rk3288-veyron-chromebook-dedicate-npll-to-VOP0-H.patch
+0029-dts-rk3288-support-for-dedicating-npll-to-a-vop.patch
 "
 
+export KERNEL_DOCUMENTATION_PATCHES="
+0001-dt-bindings-clock-rk3288-cru-Add-property-to-dedicat.patch
+0002-dt-bindings-display-rockchip-dw_hdmi-Add-property-fo.patch
+"
 
 export MALI_PATCHES="
 0001-Mali-midgard-r19p0-fixes-for-4.13-kernels.patch
@@ -176,10 +187,12 @@ if [ ! -e "PATCHED" ]; then
 	if [ ! -d "../patches" ]; then
 		download_and_apply_patches $KERNEL_PATCHES_DIR_URL $KERNEL_PATCHES
 		download_and_apply_patches $KERNEL_DTS_PATCHES_DIR_URL $KERNEL_DTS_PATCHES
+		download_and_apply_patches $KERNEL_DOCUMENTATION_PATCHES_DIR_URL $KERNEL_DOCUMENTATION_PATCHES
 		download_and_apply_patches $MALI_PATCHES_DIR_URL $MALI_PATCHES
 	else
 		copy_and_apply_patches ../$KERNEL_PATCHES_DIR $KERNEL_PATCHES
 		copy_and_apply_patches ../$KERNEL_PATCHES_DTS_DIR $KERNEL_DTS_PATCHES
+		copy_and_apply_patches ../$KERNEL_DOCUMENTATION_PATCHES_DIR $KERNEL_DOCUMENTATION_PATCHES
 		copy_and_apply_patches ../$MALI_PATCHES_DIR $MALI_PATCHES
 	fi
 
