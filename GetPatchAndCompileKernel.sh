@@ -62,6 +62,8 @@ export KERNEL_PATCHES="
 0008-rockchip-dwc2-usb-partial-power-down.patch
 0009-drivers-clk-rk3288-support-for-dedicating-NPLL-to-a-.patch
 0010-drm-dw_hdmi-rockchip-better-clock-selection-logic-an.patch
+0011-block-partitions-efi-Ignore-GPT-flags-on-Veyron-Chro.patch
+0012-block-partitions-efi-Ignore-bizarre-Chromebook-GPT-p.patch
 0100-media-Add-JPEG_RAW-format.patch
 0101-media-Add-controls-for-JPEG-quantization-tables.patch
 "
