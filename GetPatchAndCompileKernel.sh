@@ -8,7 +8,7 @@ if [ -z ${MAKEOPTS+x} ]; then
 fi
 
 export KERNEL_SERIES=v4.19
-export KERNEL_BRANCH=v4.19-rc7
+export KERNEL_BRANCH=v4.19
 export LOCALVERSION=-RockMyyX
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
@@ -64,6 +64,7 @@ export KERNEL_PATCHES="
 0010-drm-dw_hdmi-rockchip-better-clock-selection-logic-an.patch
 0011-block-partitions-efi-Ignore-GPT-flags-on-Veyron-Chro.patch
 0012-block-partitions-efi-Ignore-bizarre-Chromebook-GPT-p.patch
+0013-mmc-Added-a-flag-to-disable-cache-flush-during-reset.patch
 0100-media-Add-JPEG_RAW-format.patch
 0101-media-Add-controls-for-JPEG-quantization-tables.patch
 "
@@ -92,6 +93,7 @@ export KERNEL_DTS_PATCHES="
 0027-ARM-dtsi-The-VPU-service-as-defined-in-the-V4L2-driv.patch
 0028-dts-rk3288-veyron-chromebook-dedicate-npll-to-VOP0-H.patch
 0029-dts-rk3288-support-for-dedicating-npll-to-a-vop.patch
+0030-arm-dts-veyron-Added-a-flag-to-disable-cache-flush-d.patch
 "
 
 export KERNEL_DOCUMENTATION_PATCHES="
