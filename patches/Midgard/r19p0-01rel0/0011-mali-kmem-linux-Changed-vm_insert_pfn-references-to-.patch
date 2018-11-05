@@ -1,0 +1,41 @@
+From ce0b13b8398fcbcd038a1db01f45d1202ff84bf1 Mon Sep 17 00:00:00 2001
+From: "Miouyouyou (Myy)" <myy@miouyouyou.fr>
+Date: Mon, 5 Nov 2018 21:23:59 +0100
+Subject: [PATCH] mali: kmem: linux: Changed vm_insert_pfn references to
+ vmf_insert_pfn
+
+This change is due to the following change in the mainline kernel:
+* mm: remove vm_insert_pfn()
+  ID: ae2b01f37044c10e975d22116755df56252b09d8
+  Added in the kernel v4.20-rc1
+
+Signed-off-by: Miouyouyou (Myy) <myy@miouyouyou.fr>
+---
+ drivers/gpu/arm/midgard/mali_kbase_mem_linux.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpu/arm/midgard/mali_kbase_mem_linux.c b/drivers/gpu/arm/midgard/mali_kbase_mem_linux.c
+index 896aa3528..87708aa99 100644
+--- a/drivers/gpu/arm/midgard/mali_kbase_mem_linux.c
++++ b/drivers/gpu/arm/midgard/mali_kbase_mem_linux.c
+@@ -1824,7 +1824,7 @@ static int kbase_cpu_vm_fault(struct vm_fault *vmf)
+ 	addr = (pgoff_t)(vmf->address >> PAGE_SHIFT);
+ #endif
+ 	while (i < map->alloc->nents && (addr < vma->vm_end >> PAGE_SHIFT)) {
+-		int ret = vm_insert_pfn(vma, addr << PAGE_SHIFT,
++		int ret = vmf_insert_pfn(vma, addr << PAGE_SHIFT,
+ 		    PFN_DOWN(as_phys_addr_t(map->alloc->pages[i])));
+ 		if (ret < 0 && ret != -EBUSY)
+ 			goto locked_bad_fault;
+@@ -1907,7 +1907,7 @@ static int kbase_cpu_mmap(struct kbase_va_region *reg, struct vm_area_struct *vm
+ 			phys_addr_t phys;
+ 
+ 			phys = as_phys_addr_t(page_array[i + start_off]);
+-			err = vm_insert_pfn(vma, addr, PFN_DOWN(phys));
++			err = vmf_insert_pfn(vma, addr, PFN_DOWN(phys));
+ 			if (WARN_ON(err))
+ 				break;
+ 
+-- 
+2.16.4
+

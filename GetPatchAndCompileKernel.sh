@@ -7,9 +7,9 @@ if [ -z ${MAKEOPTS+x} ]; then
 	export MAKEOPTS=-j16
 fi
 
-export KERNEL_SERIES=v4.19
-export KERNEL_BRANCH=v4.19
-export LOCALVERSION=-RockMyyX
+export KERNEL_SERIES=v4.20
+export KERNEL_BRANCH=v4.20-rc1
+export LOCALVERSION=-RockMyyX2
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
 
@@ -59,14 +59,12 @@ export KERNEL_PATCHES="
 0005-drivers-mmc-dw-mci-rockchip-Handle-ASUS-Tinkerboard.patch
 0006-soc-rockchip-power-domain-export-idle-request.patch
 0007-drivers-wifi-ath9k-reverse-do-not-use-bulk-on-EP3-and-EP4.patch
-0008-rockchip-dwc2-usb-partial-power-down.patch
-0009-drivers-clk-rk3288-support-for-dedicating-NPLL-to-a-.patch
-0010-drm-dw_hdmi-rockchip-better-clock-selection-logic-an.patch
-0011-block-partitions-efi-Ignore-GPT-flags-on-Veyron-Chro.patch
-0012-block-partitions-efi-Ignore-bizarre-Chromebook-GPT-p.patch
-0013-mmc-Added-a-flag-to-disable-cache-flush-during-reset.patch
-0100-media-Add-JPEG_RAW-format.patch
-0101-media-Add-controls-for-JPEG-quantization-tables.patch
+0008-clk-rockchip-rk3288-Support-for-dedicating-NPLL-to-a.patch
+0009-drm-dw_hdmi-rockchip-better-clock-selection-logic-an.patch
+0010-block-partitions-efi-Ignore-GPT-flags-on-Veyron-Chro.patch
+0011-block-partitions-efi-Ignore-bizarre-Chromebook-GPT-p.patch
+0012-mmc-Added-a-flag-to-disable-cache-flush-during-reset.patch
+0013-spi-Added-support-for-Tinkerboard-s-SPI-interface.patch
 "
 
 export KERNEL_DTS_PATCHES="
@@ -77,23 +75,22 @@ export KERNEL_DTS_PATCHES="
 0005-Readapt-ARM-dts-rockchip-miqi-add-turbo-mode-operati.patch
 0006-ARM-DTSI-rk3288-Missing-GRF-handles.patch
 0007-RK3288-DTSI-rk3288-Add-missing-SPI2-pinctrl.patch
-0008-Added-support-for-Tinkerboard-s-SPI-interface.patch
 0009-ARM-DTSI-rk3288-Adding-cells-addresses-and-size.patch
 0010-ARM-DTSI-rk3288-Adding-missing-EDP-power-domain.patch
 0011-ARM-DTSI-rk3288-Adding-missing-VOPB-registers.patch
 0012-ARM-DTSI-rk3288-Fixed-the-SPDIF-node-address.patch
 0013-ARM-DTS-rk3288-tinker-Enabling-SDIO-and-Wifi.patch
 0014-ARM-DTS-rk3288-tinker-Setup-the-Bluetooth-UART-pins.patch
-0015-ARM-DTS-rk3288-tinker-Improving-the-CPU-max-volt.patch
-0016-ARM-DTS-rk3288-tinker-Setting-up-the-SD-regulato.patch
+0015-ARM-DTSI-rk3288-tinker-Improving-the-CPU-max-voltage.patch
+0016-ARM-DTSI-rk3288-tinker-Setting-up-the-SD-regulators.patch
 0017-ARM-DTS-rk3288-tinker-Defined-the-I2C-interfaces.patch
 0018-ARM-DTS-rk3288-tinker-Defining-the-SPI-interface.patch
-0019-ARM-DTS-rk3288-tinker-Defining-SDMMC-properties.patch
-0026-ARM-DTSI-rk3288-Set-the-VPU-MMU-power-domains.patch
-0027-ARM-dtsi-The-VPU-service-as-defined-in-the-V4L2-driv.patch
-0028-dts-rk3288-veyron-chromebook-dedicate-npll-to-VOP0-H.patch
-0029-dts-rk3288-support-for-dedicating-npll-to-a-vop.patch
-0030-arm-dts-veyron-Added-a-flag-to-disable-cache-flush-d.patch
+0019-ARM-DTSI-rk3288-tinker-Defining-SDMMC-properties.patch
+0020-ARM-DTSI-rk3288-Set-the-VPU-MMU-power-domains.patch
+0021-ARM-dtsi-The-VPU-service-as-defined-in-the-V4L2-driv.patch
+0022-dts-rk3288-veyron-chromebook-dedicate-npll-to-VOP0-H.patch
+0023-dts-rk3288-support-for-dedicating-npll-to-a-vop.patch
+0024-arm-dts-veyron-Added-a-flag-to-disable-cache-flush-d.patch
 "
 
 export KERNEL_DOCUMENTATION_PATCHES="
@@ -109,6 +106,8 @@ export MALI_PATCHES="
 0007-drivers-gpu-Arm-Midgard-Replace-ACCESS_ONCE-by-READ_.patch
 0008-gpu-arm-midgard-Remove-sys_close-references.patch
 0009-GPU-ARM-Midgard-Adapt-to-the-new-mmap-call-checks.patch
+0010-GPU-Mali-Midgard-remove-rcu_read_lock-references.patch
+0011-mali-kmem-linux-Changed-vm_insert_pfn-references-to-.patch
 "
 
 # -- Helper functions
