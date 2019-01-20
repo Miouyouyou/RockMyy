@@ -7,9 +7,9 @@ if [ -z ${MAKEOPTS+x} ]; then
 	export MAKEOPTS=-j16
 fi
 
-export KERNEL_SERIES=v4.20
-export KERNEL_BRANCH=v4.20-rc2
-export LOCALVERSION=-RockMyyX2
+export KERNEL_SERIES=v5.0
+export KERNEL_BRANCH=v5.0-rc2
+export LOCALVERSION=-RockMyy-HighFive
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
 
@@ -60,11 +60,11 @@ export KERNEL_PATCHES="
 0006-soc-rockchip-power-domain-export-idle-request.patch
 0007-drivers-wifi-ath9k-reverse-do-not-use-bulk-on-EP3-and-EP4.patch
 0008-clk-rockchip-rk3288-Support-for-dedicating-NPLL-to-a.patch
-0009-drm-dw_hdmi-rockchip-better-clock-selection-logic-an.patch
 0010-block-partitions-efi-Ignore-GPT-flags-on-Veyron-Chro.patch
 0011-block-partitions-efi-Ignore-bizarre-Chromebook-GPT-p.patch
 0012-mmc-Added-a-flag-to-disable-cache-flush-during-reset.patch
 0013-spi-Added-support-for-Tinkerboard-s-SPI-interface.patch
+0014-drivers-tty-serial-Bail-out-if-no-UART-is-detected.patch
 "
 
 export KERNEL_DTS_PATCHES="
@@ -86,16 +86,12 @@ export KERNEL_DTS_PATCHES="
 0017-ARM-DTS-rk3288-tinker-Defined-the-I2C-interfaces.patch
 0018-ARM-DTS-rk3288-tinker-Defining-the-SPI-interface.patch
 0019-ARM-DTSI-rk3288-tinker-Defining-SDMMC-properties.patch
-0020-ARM-DTSI-rk3288-Set-the-VPU-MMU-power-domains.patch
-0021-ARM-dtsi-The-VPU-service-as-defined-in-the-V4L2-driv.patch
 0022-dts-rk3288-veyron-chromebook-dedicate-npll-to-VOP0-H.patch
 0023-dts-rk3288-support-for-dedicating-npll-to-a-vop.patch
 0024-arm-dts-veyron-Added-a-flag-to-disable-cache-flush-d.patch
 "
 
 export KERNEL_DOCUMENTATION_PATCHES="
-0001-dt-bindings-clock-rk3288-cru-Add-property-to-dedicat.patch
-0002-dt-bindings-display-rockchip-dw_hdmi-Add-property-fo.patch
 "
 
 export MALI_PATCHES="
@@ -107,7 +103,7 @@ export MALI_PATCHES="
 0008-gpu-arm-midgard-Remove-sys_close-references.patch
 0009-GPU-ARM-Midgard-Adapt-to-the-new-mmap-call-checks.patch
 0010-GPU-Mali-Midgard-remove-rcu_read_lock-references.patch
-0011-mali-kmem-linux-Changed-vm_insert_pfn-references-to-.patch
+0011-mali-kbase-v4.20-to-v5.0-rc2-changes.patch
 "
 
 # -- Helper functions
@@ -190,12 +186,12 @@ if [ ! -e "PATCHED" ]; then
 	if [ ! -d "../patches" ]; then
 		download_and_apply_patches $KERNEL_PATCHES_DIR_URL $KERNEL_PATCHES
 		download_and_apply_patches $KERNEL_DTS_PATCHES_DIR_URL $KERNEL_DTS_PATCHES
-		download_and_apply_patches $KERNEL_DOCUMENTATION_PATCHES_DIR_URL $KERNEL_DOCUMENTATION_PATCHES
+		#download_and_apply_patches $KERNEL_DOCUMENTATION_PATCHES_DIR_URL $KERNEL_DOCUMENTATION_PATCHES
 		download_and_apply_patches $MALI_PATCHES_DIR_URL $MALI_PATCHES
 	else
 		copy_and_apply_patches ../$KERNEL_PATCHES_DIR $KERNEL_PATCHES
 		copy_and_apply_patches ../$KERNEL_PATCHES_DTS_DIR $KERNEL_DTS_PATCHES
-		copy_and_apply_patches ../$KERNEL_DOCUMENTATION_PATCHES_DIR $KERNEL_DOCUMENTATION_PATCHES
+		#copy_and_apply_patches ../$KERNEL_DOCUMENTATION_PATCHES_DIR $KERNEL_DOCUMENTATION_PATCHES
 		copy_and_apply_patches ../$MALI_PATCHES_DIR $MALI_PATCHES
 	fi
 
