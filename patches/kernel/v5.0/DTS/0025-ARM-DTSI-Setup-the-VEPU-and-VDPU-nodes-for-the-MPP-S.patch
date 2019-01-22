@@ -1,0 +1,79 @@
+From 6380283041af589e5ef2bb8f690141b168b40776 Mon Sep 17 00:00:00 2001
+From: "Miouyouyou (Myy)" <myy@miouyouyou.fr>
+Date: Tue, 22 Jan 2019 21:14:47 +0100
+Subject: [PATCH 101/102] ARM: DTSI: Setup the VEPU and VDPU nodes for the MPP
+ Service driver
+
+The only thing that has been tested, right now, is that, when combined
+with the right DTS patches for RK3288 boards, the staging RKMPP driver
+loads.
+
+That's it. I didn't test the whole functionnality.
+
+Signed-off-by: Miouyouyou (Myy) <myy@miouyouyou.fr>
+---
+ arch/arm/boot/dts/rk3288.dtsi | 38 +++++++++++++++++++++++++++++++-------
+ 1 file changed, 31 insertions(+), 7 deletions(-)
+
+diff --git a/arch/arm/boot/dts/rk3288.dtsi b/arch/arm/boot/dts/rk3288.dtsi
+index 766636f23..f5b76ff12 100644
+--- a/arch/arm/boot/dts/rk3288.dtsi
++++ b/arch/arm/boot/dts/rk3288.dtsi
+@@ -1248,16 +1248,39 @@
+ 		};
+ 	};
+ 
+-	vpu: video-codec@ff9a0000 {
+-		compatible = "rockchip,rk3288-vpu";
+-		reg = <0x0 0xff9a0000 0x0 0x800>;
+-		interrupts = <GIC_SPI 9 IRQ_TYPE_LEVEL_HIGH>,
+-			     <GIC_SPI 10 IRQ_TYPE_LEVEL_HIGH>;
+-		interrupt-names = "vepu", "vdpu";
++	vpu_service: vpu-srv {
++		compatible = "rockchip,mpp-service";
++		status = "okay";
++	};
++
++	vepu: video-codec@ff9a0000 {
++		compatible = "rockchip,vpu-encoder-v1";
++		reg = <0x0 0xff9a0000 0x0 0x400>;
++		interrupts = <GIC_SPI 9 IRQ_TYPE_LEVEL_HIGH>;
++		interrupt-names = "irc_enc";
+ 		clocks = <&cru ACLK_VCODEC>, <&cru HCLK_VCODEC>;
+-		clock-names = "aclk", "hclk";
++		clock-names = "aclk_vcodec", "hclk_vcodec";
++		resets = <&cru SRST_VCODEC_AXI>, <&cru SRST_VCODEC_AHB>;
++		reset-names = "video_a", "video_h";
+ 		iommus = <&vpu_mmu>;
+ 		power-domains = <&power RK3288_PD_VIDEO>;
++		rockchip,srv = <&vpu_service>;
++		status = "disabled";
++	};
++
++	vdpu: video-codec@ff9a0400 {
++		compatible = "rockchip,vpu-decoder-v1";
++		reg = <0x0 0xff9a0400 0x0 0x400>;
++		interrupts = <GIC_SPI 10 IRQ_TYPE_LEVEL_HIGH>;
++		interrupt-names = "irq_dec";
++		clocks = <&cru ACLK_VCODEC>, <&cru HCLK_VCODEC>;
++		clock-names = "aclk_vcodec", "hclk_vcodec";
++		resets = <&cru SRST_VCODEC_AXI>, <&cru SRST_VCODEC_AHB>;
++		reset-names = "video_a", "video_h";
++		iommus = <&vpu_mmu>;
++		power-domains = <&power RK3288_PD_VIDEO>;
++		rockchip,srv = <&vpu_service>;
++		status = "disabled";
+ 	};
+ 
+ 	vpu_mmu: iommu@ff9a0800 {
+@@ -1269,6 +1292,7 @@
+ 		clock-names = "aclk", "iface";
+ 		#iommu-cells = <0>;
+ 		power-domains = <&power RK3288_PD_VIDEO>;
++		status = "disabled";
+ 	};
+ 
+ 	hevc_mmu: iommu@ff9c0440 {
+-- 
+2.16.4
+

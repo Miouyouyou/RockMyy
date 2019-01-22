@@ -9,12 +9,12 @@ fi
 
 export KERNEL_SERIES=v5.0
 export KERNEL_BRANCH=v5.0-rc2
-export LOCALVERSION=-RockMyy-HighFive
+export LOCALVERSION=-RockMyy-HighFive-VPU-Beta
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
 
 export GITHUB_REPO=Miouyouyou/RockMyy
-export GIT_BRANCH=master
+export GIT_BRANCH=RandyLi-Patches-Test
 
 export DTB_FILES="
 rk3288-evb-act8846.dtb
@@ -65,6 +65,9 @@ export KERNEL_PATCHES="
 0012-mmc-Added-a-flag-to-disable-cache-flush-during-reset.patch
 0013-spi-Added-support-for-Tinkerboard-s-SPI-interface.patch
 0014-drivers-tty-serial-Bail-out-if-no-UART-is-detected.patch
+0101-staging-video-rockchip-video-codec-for-vendor-API.patch
+0102-staging-video-rockchip-fixup-for-upstream.patch
+0103-staging-video-rockchip-add-video-codec.patch
 "
 
 export KERNEL_DTS_PATCHES="
@@ -89,6 +92,8 @@ export KERNEL_DTS_PATCHES="
 0022-dts-rk3288-veyron-chromebook-dedicate-npll-to-VOP0-H.patch
 0023-dts-rk3288-support-for-dedicating-npll-to-a-vop.patch
 0024-arm-dts-veyron-Added-a-flag-to-disable-cache-flush-d.patch
+0025-ARM-DTSI-Setup-the-VEPU-and-VDPU-nodes-for-the-MPP-S.patch
+0026-ARM-DTS-Enable-the-VEPU-VDPU-and-VPU-MMU-on-the-Tink.patch
 "
 
 export KERNEL_DOCUMENTATION_PATCHES="
