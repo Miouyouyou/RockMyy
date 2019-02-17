@@ -8,7 +8,7 @@ if [ -z ${MAKEOPTS+x} ]; then
 fi
 
 export KERNEL_SERIES=v5.0
-export KERNEL_BRANCH=v5.0-rc2
+export KERNEL_BRANCH=v5.0-rc5
 export LOCALVERSION=-RockMyy-HighFive-VPU-Beta
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
@@ -64,7 +64,6 @@ export KERNEL_PATCHES="
 0011-block-partitions-efi-Ignore-bizarre-Chromebook-GPT-p.patch
 0012-mmc-Added-a-flag-to-disable-cache-flush-during-reset.patch
 0013-spi-Added-support-for-Tinkerboard-s-SPI-interface.patch
-0014-drivers-tty-serial-Bail-out-if-no-UART-is-detected.patch
 0101-staging-video-rockchip-video-codec-for-vendor-API.patch
 0102-staging-video-rockchip-fixup-for-upstream.patch
 0103-staging-video-rockchip-add-video-codec.patch
