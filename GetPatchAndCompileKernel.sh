@@ -64,9 +64,6 @@ export KERNEL_PATCHES="
 0011-block-partitions-efi-Ignore-bizarre-Chromebook-GPT-p.patch
 0012-mmc-Added-a-flag-to-disable-cache-flush-during-reset.patch
 0013-spi-Added-support-for-Tinkerboard-s-SPI-interface.patch
-0101-staging-video-rockchip-video-codec-for-vendor-API.patch
-0102-staging-video-rockchip-fixup-for-upstream.patch
-0103-staging-video-rockchip-add-video-codec.patch
 "
 
 export KERNEL_DTS_PATCHES="
@@ -219,6 +216,10 @@ fi
 
 if [ -z ${MAKE_CONFIG+x} ]; then
   export MAKE_CONFIG=oldconfig
+fi
+
+if [ ! -z ${APPLYONLY+x} ]; then
+  exit
 fi
 
 make $MAKE_CONFIG
