@@ -1,0 +1,34 @@
+From 3ac4a1e5fd0588c793db6d53e16014217f0b3880 Mon Sep 17 00:00:00 2001
+From: Heiko Stuebner <heiko@sntech.de>
+Date: Wed, 2 Jan 2019 20:41:02 +0100
+Subject: [PATCH 102/159] ARM: dts: rockchip: fix cif1_pdn pin on
+ rk3188-bqedison2qc
+
+The powerdown pin for the second camera is gpio3_b5 not b4,
+so fix that. We don't have a working camera setup yet, so this
+is not really critical, but nevertheless better to have fixed
+already.
+
+Fixes: 36ead9149916 ("ARM: dts: rockchip: add BQ Edison 2 QC devicetree")
+Reported-by: Johan Jonker <jbx6244@gmail.com>
+Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+---
+ arch/arm/boot/dts/rk3188-bqedison2qc.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/rk3188-bqedison2qc.dts b/arch/arm/boot/dts/rk3188-bqedison2qc.dts
+index a7477a09f..2b5abfb48 100644
+--- a/arch/arm/boot/dts/rk3188-bqedison2qc.dts
++++ b/arch/arm/boot/dts/rk3188-bqedison2qc.dts
+@@ -526,7 +526,7 @@
+ 		};
+ 
+ 		cif1_pdn: cif1-pdn {
+-			rockchip,pins = <3 RK_PB4 RK_FUNC_GPIO &pcfg_pull_none>;
++			rockchip,pins = <3 RK_PB5 RK_FUNC_GPIO &pcfg_pull_none>;
+ 		};
+ 
+ 		cif_avdd_en: cif-avdd-en {
+-- 
+2.16.4
+

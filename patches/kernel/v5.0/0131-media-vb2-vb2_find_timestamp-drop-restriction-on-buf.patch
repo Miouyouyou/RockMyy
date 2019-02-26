@@ -1,0 +1,73 @@
+From 1ae2b697154406acbe8be8f81ddfbb9f02576330 Mon Sep 17 00:00:00 2001
+From: Hans Verkuil <hverkuil@xs4all.nl>
+Date: Thu, 24 Jan 2019 06:47:49 -0200
+Subject: [PATCH 131/159] media: vb2: vb2_find_timestamp: drop restriction on
+ buffer state
+
+There really is no reason why vb2_find_timestamp can't just find
+buffers in any state. Drop that part of the test.
+
+This also means that vb->timestamp should only be set to 0 when
+the driver doesn't copy timestamps.
+
+This change allows for more efficient pipelining (i.e. you can use
+a buffer for a reference frame even when it is queued).
+
+Signed-off-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
+Reviewed-by: Tomasz Figa <tfiga@chromium.org>
+Reviewed-by: Alexandre Courbot <acourbot@chromium.org>
+Reviewed-by: Paul Kocialkowski <paul.kocialkowski@bootlin.com>
+Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+(cherry picked from commit 03535e7a3a9937da99ee18304309e0574d2504fc)
+---
+ drivers/media/common/videobuf2/videobuf2-v4l2.c | 11 +++--------
+ include/media/videobuf2-v4l2.h                  |  3 +--
+ 2 files changed, 4 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/media/common/videobuf2/videobuf2-v4l2.c b/drivers/media/common/videobuf2/videobuf2-v4l2.c
+index 75ea90e79..2f3b3ca5b 100644
+--- a/drivers/media/common/videobuf2/videobuf2-v4l2.c
++++ b/drivers/media/common/videobuf2/videobuf2-v4l2.c
+@@ -567,7 +567,7 @@ static int __fill_vb2_buffer(struct vb2_buffer *vb, struct vb2_plane *planes)
+ 	struct vb2_v4l2_buffer *vbuf = to_vb2_v4l2_buffer(vb);
+ 	unsigned int plane;
+ 
+-	if (!vb->vb2_queue->is_output || !vb->vb2_queue->copy_timestamp)
++	if (!vb->vb2_queue->copy_timestamp)
+ 		vb->timestamp = 0;
+ 
+ 	for (plane = 0; plane < vb->num_planes; ++plane) {
+@@ -594,14 +594,9 @@ int vb2_find_timestamp(const struct vb2_queue *q, u64 timestamp,
+ {
+ 	unsigned int i;
+ 
+-	for (i = start_idx; i < q->num_buffers; i++) {
+-		struct vb2_buffer *vb = q->bufs[i];
+-
+-		if ((vb->state == VB2_BUF_STATE_DEQUEUED ||
+-		     vb->state == VB2_BUF_STATE_DONE) &&
+-		    vb->timestamp == timestamp)
++	for (i = start_idx; i < q->num_buffers; i++)
++		if (q->bufs[i]->timestamp == timestamp)
+ 			return i;
+-	}
+ 	return -1;
+ }
+ EXPORT_SYMBOL_GPL(vb2_find_timestamp);
+diff --git a/include/media/videobuf2-v4l2.h b/include/media/videobuf2-v4l2.h
+index a9961bc77..8a10889dc 100644
+--- a/include/media/videobuf2-v4l2.h
++++ b/include/media/videobuf2-v4l2.h
+@@ -59,8 +59,7 @@ struct vb2_v4l2_buffer {
+  * vb2_find_timestamp() - Find buffer with given timestamp in the queue
+  *
+  * @q:		pointer to &struct vb2_queue with videobuf2 queue.
+- * @timestamp:	the timestamp to find. Only buffers in state DEQUEUED or DONE
+- *		are considered.
++ * @timestamp:	the timestamp to find.
+  * @start_idx:	the start index (usually 0) in the buffer array to start
+  *		searching from. Note that there may be multiple buffers
+  *		with the same timestamp value, so you can restart the search
+-- 
+2.16.4
+

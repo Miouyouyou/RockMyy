@@ -1,0 +1,30 @@
+From a2552688fdf41ccddd3355e735cf4920e6ba86f4 Mon Sep 17 00:00:00 2001
+From: Otavio Salvador <otavio@ossystems.com.br>
+Date: Thu, 3 Jan 2019 23:40:20 -0200
+Subject: [PATCH 111/159] ARM: dts: rockchip: Add missing dma-names SPI support
+ for rv1108
+
+Pass the 'dma-names' property to the SPI ports so that DMA can
+be supported.
+
+Signed-off-by: Otavio Salvador <otavio@ossystems.com.br>
+Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+---
+ arch/arm/boot/dts/rv1108.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/boot/dts/rv1108.dtsi b/arch/arm/boot/dts/rv1108.dtsi
+index d31370ff2..cb26d9d98 100644
+--- a/arch/arm/boot/dts/rv1108.dtsi
++++ b/arch/arm/boot/dts/rv1108.dtsi
+@@ -207,6 +207,7 @@
+ 		clocks = <&cru SCLK_SPI>, <&cru PCLK_SPI>;
+ 		clock-names = "spiclk", "apb_pclk";
+ 		dmas = <&pdma 8>, <&pdma 9>;
++		dma-names = "tx", "rx";
+ 		#dma-cells = <2>;
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-- 
+2.16.4
+

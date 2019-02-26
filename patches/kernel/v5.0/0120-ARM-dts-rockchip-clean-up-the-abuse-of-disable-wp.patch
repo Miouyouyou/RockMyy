@@ -1,0 +1,195 @@
+From 6790cc67815e6c4eac33e7cec2dd3b33a0af1f12 Mon Sep 17 00:00:00 2001
+From: Shawn Lin <shawn.lin@rock-chips.com>
+Date: Tue, 22 Jan 2019 16:35:47 +0800
+Subject: [PATCH 120/159] ARM: dts: rockchip: clean up the abuse of disable-wp
+
+The mmc.txt didn't explicitly say disable-wp is for SD card slot
+only, but that is what it was designed for in the first place.
+
+Remove all disable-wp from emmc or sdio controller.
+
+Signed-off-by: Shawn Lin <shawn.lin@rock-chips.com>
+Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+---
+ arch/arm/boot/dts/rk3066a-bqcurie2.dts      | 1 -
+ arch/arm/boot/dts/rk3066a-mk808.dts         | 1 -
+ arch/arm/boot/dts/rk3066a-rayeager.dts      | 2 --
+ arch/arm/boot/dts/rk3188-bqedison2qc.dts    | 1 -
+ arch/arm/boot/dts/rk3188-px3-evb.dts        | 1 -
+ arch/arm/boot/dts/rk3229-evb.dts            | 1 -
+ arch/arm/boot/dts/rk3288-fennec.dts         | 1 -
+ arch/arm/boot/dts/rk3288-firefly-reload.dts | 1 -
+ arch/arm/boot/dts/rk3288-miqi.dts           | 1 -
+ arch/arm/boot/dts/rk3288-popmetal.dts       | 1 -
+ arch/arm/boot/dts/rk3288-rock2-square.dts   | 1 -
+ arch/arm/boot/dts/rk3288-tinker-s.dts       | 1 -
+ arch/arm/boot/dts/rk3288-vyasa.dts          | 1 -
+ 13 files changed, 14 deletions(-)
+
+diff --git a/arch/arm/boot/dts/rk3066a-bqcurie2.dts b/arch/arm/boot/dts/rk3066a-bqcurie2.dts
+index 1c925f20d..0a56a2f1b 100644
+--- a/arch/arm/boot/dts/rk3066a-bqcurie2.dts
++++ b/arch/arm/boot/dts/rk3066a-bqcurie2.dts
+@@ -171,7 +171,6 @@
+ 	pinctrl-0 = <&sd1_clk &sd1_cmd &sd1_bus4>;
+ 
+ 	bus-width = <4>;
+-	disable-wp;
+ };
+ 
+ &pwm3 {
+diff --git a/arch/arm/boot/dts/rk3066a-mk808.dts b/arch/arm/boot/dts/rk3066a-mk808.dts
+index b6a8a82d2..9d2216d71 100644
+--- a/arch/arm/boot/dts/rk3066a-mk808.dts
++++ b/arch/arm/boot/dts/rk3066a-mk808.dts
+@@ -101,7 +101,6 @@
+ 
+ &mmc1 {
+ 	bus-width = <4>;
+-	disable-wp;
+ 	non-removable;
+ 	pinctrl-0 = <&sd1_clk &sd1_cmd &sd1_bus4>;
+ 	pinctrl-names = "default";
+diff --git a/arch/arm/boot/dts/rk3066a-rayeager.dts b/arch/arm/boot/dts/rk3066a-rayeager.dts
+index cd126b927..949fa8005 100644
+--- a/arch/arm/boot/dts/rk3066a-rayeager.dts
++++ b/arch/arm/boot/dts/rk3066a-rayeager.dts
+@@ -147,7 +147,6 @@
+ &emmc {
+ 	bus-width = <8>;
+ 	cap-mmc-highspeed;
+-	disable-wp;
+ 	non-removable;
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&emmc_clk>, <&emmc_cmd>, <&emmc_rst>;
+@@ -309,7 +308,6 @@
+ 
+ &mmc1 {
+ 	bus-width = <4>;
+-	disable-wp;
+ 	non-removable;
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&sd1_clk>, <&sd1_cmd>, <&sd1_bus4>;
+diff --git a/arch/arm/boot/dts/rk3188-bqedison2qc.dts b/arch/arm/boot/dts/rk3188-bqedison2qc.dts
+index 887d1aa8d..cc66abb22 100644
+--- a/arch/arm/boot/dts/rk3188-bqedison2qc.dts
++++ b/arch/arm/boot/dts/rk3188-bqedison2qc.dts
+@@ -227,7 +227,6 @@
+ &emmc {
+ 	bus-width = <8>;
+ 	cap-mmc-highspeed;
+-	disable-wp;
+ 	non-removable;
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&emmc_clk &emmc_cmd>;
+diff --git a/arch/arm/boot/dts/rk3188-px3-evb.dts b/arch/arm/boot/dts/rk3188-px3-evb.dts
+index 9ae65c767..c0eaa9c54 100644
+--- a/arch/arm/boot/dts/rk3188-px3-evb.dts
++++ b/arch/arm/boot/dts/rk3188-px3-evb.dts
+@@ -62,7 +62,6 @@
+ &emmc {
+ 	bus-width = <8>;
+ 	cap-mmc-highspeed;
+-	disable-wp;
+ 	non-removable;
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&emmc_clk>, <&emmc_cmd>, <&emmc_rst>;
+diff --git a/arch/arm/boot/dts/rk3229-evb.dts b/arch/arm/boot/dts/rk3229-evb.dts
+index 4df7accc3..350497a3c 100644
+--- a/arch/arm/boot/dts/rk3229-evb.dts
++++ b/arch/arm/boot/dts/rk3229-evb.dts
+@@ -137,7 +137,6 @@
+ 
+ &emmc {
+ 	cap-mmc-highspeed;
+-	disable-wp;
+ 	non-removable;
+ 	status = "okay";
+ };
+diff --git a/arch/arm/boot/dts/rk3288-fennec.dts b/arch/arm/boot/dts/rk3288-fennec.dts
+index b1b56dfdf..29af26e6d 100644
+--- a/arch/arm/boot/dts/rk3288-fennec.dts
++++ b/arch/arm/boot/dts/rk3288-fennec.dts
+@@ -37,7 +37,6 @@
+ &emmc {
+ 	bus-width = <8>;
+ 	cap-mmc-highspeed;
+-	disable-wp;
+ 	non-removable;
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&emmc_clk &emmc_cmd &emmc_pwr &emmc_bus8>;
+diff --git a/arch/arm/boot/dts/rk3288-firefly-reload.dts b/arch/arm/boot/dts/rk3288-firefly-reload.dts
+index 58ea8bed0..3a646c5f4 100644
+--- a/arch/arm/boot/dts/rk3288-firefly-reload.dts
++++ b/arch/arm/boot/dts/rk3288-firefly-reload.dts
+@@ -254,7 +254,6 @@
+ 	bus-width = <4>;
+ 	cap-sd-highspeed;
+ 	cap-sdio-irq;
+-	disable-wp;
+ 	mmc-pwrseq = <&sdio_pwrseq>;
+ 	non-removable;
+ 	pinctrl-names = "default";
+diff --git a/arch/arm/boot/dts/rk3288-miqi.dts b/arch/arm/boot/dts/rk3288-miqi.dts
+index a6f18cabe..e7225202e 100644
+--- a/arch/arm/boot/dts/rk3288-miqi.dts
++++ b/arch/arm/boot/dts/rk3288-miqi.dts
+@@ -200,7 +200,6 @@
+ &emmc {
+ 	bus-width = <8>;
+ 	cap-mmc-highspeed;
+-	disable-wp;
+ 	non-removable;
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&emmc_clk>, <&emmc_cmd>, <&emmc_pwr>, <&emmc_bus8>;
+diff --git a/arch/arm/boot/dts/rk3288-popmetal.dts b/arch/arm/boot/dts/rk3288-popmetal.dts
+index 596435e03..6a5194039 100644
+--- a/arch/arm/boot/dts/rk3288-popmetal.dts
++++ b/arch/arm/boot/dts/rk3288-popmetal.dts
+@@ -109,7 +109,6 @@
+ &emmc {
+ 	bus-width = <8>;
+ 	cap-mmc-highspeed;
+-	disable-wp;
+ 	mmc-ddr-1_8v;
+ 	mmc-hs200-1_8v;
+ 	non-removable;
+diff --git a/arch/arm/boot/dts/rk3288-rock2-square.dts b/arch/arm/boot/dts/rk3288-rock2-square.dts
+index 6a30cadad..5b7e1c9e9 100644
+--- a/arch/arm/boot/dts/rk3288-rock2-square.dts
++++ b/arch/arm/boot/dts/rk3288-rock2-square.dts
+@@ -133,7 +133,6 @@
+ 	bus-width = <4>;
+ 	cap-sd-highspeed;
+ 	cap-sdio-irq;
+-	disable-wp;
+ 	mmc-pwrseq = <&sdio_pwrseq>;
+ 	non-removable;
+ 	pinctrl-names = "default";
+diff --git a/arch/arm/boot/dts/rk3288-tinker-s.dts b/arch/arm/boot/dts/rk3288-tinker-s.dts
+index 37093922b..d97da89bc 100644
+--- a/arch/arm/boot/dts/rk3288-tinker-s.dts
++++ b/arch/arm/boot/dts/rk3288-tinker-s.dts
+@@ -15,7 +15,6 @@
+ &emmc {
+ 	bus-width = <8>;
+ 	cap-mmc-highspeed;
+-	disable-wp;
+ 	non-removable;
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&emmc_clk &emmc_cmd &emmc_pwr &emmc_bus8>;
+diff --git a/arch/arm/boot/dts/rk3288-vyasa.dts b/arch/arm/boot/dts/rk3288-vyasa.dts
+index 4856a9fc0..40b232eb5 100644
+--- a/arch/arm/boot/dts/rk3288-vyasa.dts
++++ b/arch/arm/boot/dts/rk3288-vyasa.dts
+@@ -121,7 +121,6 @@
+ &emmc {
+ 	bus-width = <8>;
+ 	cap-mmc-highspeed;
+-	disable-wp;
+ 	non-removable;
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&emmc_clk &emmc_cmd &emmc_pwr &emmc_bus8>;
+-- 
+2.16.4
+

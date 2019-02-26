@@ -1,0 +1,44 @@
+From fc780513b4b379d63cabfdc3aa705fbdaf12c476 Mon Sep 17 00:00:00 2001
+From: Heiko Stuebner <heiko.stuebner@bq.com>
+Date: Fri, 21 Dec 2018 17:10:12 +0100
+Subject: [PATCH 103/159] ARM: dts: rockchip: add focaltech touchscreen to
+ rk3188-bqedison2qc
+
+The Edison tablet uses a Focaltech touchscreen, with one speciality
+that the touchscreen resolution doesn't match the display resolution
+(1024x768 vs. 1280x600) which userspace will have to compensate for.
+
+Signed-off-by: Heiko Stuebner <heiko.stuebner@bq.com>
+---
+ arch/arm/boot/dts/rk3188-bqedison2qc.dts | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/arch/arm/boot/dts/rk3188-bqedison2qc.dts b/arch/arm/boot/dts/rk3188-bqedison2qc.dts
+index 2b5abfb48..887d1aa8d 100644
+--- a/arch/arm/boot/dts/rk3188-bqedison2qc.dts
++++ b/arch/arm/boot/dts/rk3188-bqedison2qc.dts
+@@ -408,6 +408,21 @@
+ &i2c2 {
+ 	clock-frequency = <400000>;
+ 	status = "okay";
++
++	ft5606: touchscreen@3e {
++		compatible = "edt,edt-ft5506";
++		reg = <0x3e>;
++		interrupt-parent = <&gpio1>;
++		interrupts = <RK_PB7 IRQ_TYPE_EDGE_FALLING>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&tp_int &tp_rst>;
++		reset-gpios = <&gpio0 RK_PB6 GPIO_ACTIVE_LOW>;
++		touchscreen-inverted-y;
++		/* hw ts resolution does not match display */
++		touchscreen-size-y = <1024>;
++		touchscreen-size-x = <768>;
++		touchscreen-swapped-x-y;
++	};
+ };
+ 
+ &i2c3 {
+-- 
+2.16.4
+

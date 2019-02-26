@@ -1,0 +1,38 @@
+From cb6ec25a4f0d6655cb1716cfb549b64fb39df004 Mon Sep 17 00:00:00 2001
+From: Hans Verkuil <hverkuil-cisco@xs4all.nl>
+Date: Wed, 16 Jan 2019 10:01:17 -0200
+Subject: [PATCH 138/159] media: vb2: check that buf_out_validate is present
+
+The buf_out_validate is required for output queues in combination
+with requests. Check this.
+
+Signed-off-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
+Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+(cherry picked from commit 1284ed59a147c27cb882e49213571f7d52976eb5)
+---
+ drivers/media/common/videobuf2/videobuf2-v4l2.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/drivers/media/common/videobuf2/videobuf2-v4l2.c b/drivers/media/common/videobuf2/videobuf2-v4l2.c
+index 2f3b3ca5b..3aeaea3af 100644
+--- a/drivers/media/common/videobuf2/videobuf2-v4l2.c
++++ b/drivers/media/common/videobuf2/videobuf2-v4l2.c
+@@ -409,6 +409,15 @@ static int vb2_queue_or_prepare_buf(struct vb2_queue *q, struct media_device *md
+ 	 */
+ 	if (WARN_ON(!q->ops->buf_request_complete))
+ 		return -EINVAL;
++	/*
++	 * Make sure this op is implemented by the driver for the output queue.
++	 * It's easy to forget this callback, but is it important to correctly
++	 * validate the 'field' value at QBUF time.
++	 */
++	if (WARN_ON((q->type == V4L2_BUF_TYPE_VIDEO_OUTPUT ||
++		     q->type == V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE) &&
++		    !q->ops->buf_out_validate))
++		return -EINVAL;
+ 
+ 	if (vb->state != VB2_BUF_STATE_DEQUEUED) {
+ 		dprintk(1, "%s: buffer is not in dequeued state\n", opname);
+-- 
+2.16.4
+

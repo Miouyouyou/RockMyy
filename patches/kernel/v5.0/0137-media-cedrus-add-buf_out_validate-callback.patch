@@ -1,0 +1,46 @@
+From a3458f5226444371985e803a39ff859bec30ebe2 Mon Sep 17 00:00:00 2001
+From: Hans Verkuil <hverkuil-cisco@xs4all.nl>
+Date: Wed, 16 Jan 2019 10:01:16 -0200
+Subject: [PATCH 137/159] media: cedrus: add buf_out_validate callback
+
+Validate the field for an output buffer. This ensures that the
+field is validated when the buffer is queued to a request, and
+not when the request itself is queued, which is too late.
+
+Signed-off-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
+Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+(cherry picked from commit 6b3e4c4cc162390b833e57de656644786ca88919)
+---
+ drivers/staging/media/sunxi/cedrus/cedrus_video.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/drivers/staging/media/sunxi/cedrus/cedrus_video.c b/drivers/staging/media/sunxi/cedrus/cedrus_video.c
+index 8721b4a7d..b5cc79389 100644
+--- a/drivers/staging/media/sunxi/cedrus/cedrus_video.c
++++ b/drivers/staging/media/sunxi/cedrus/cedrus_video.c
+@@ -416,6 +416,14 @@ static void cedrus_buf_cleanup(struct vb2_buffer *vb)
+ 		ctx->dst_bufs[vb->index] = NULL;
+ }
+ 
++static int cedrus_buf_out_validate(struct vb2_buffer *vb)
++{
++	struct vb2_v4l2_buffer *vbuf = to_vb2_v4l2_buffer(vb);
++
++	vbuf->field = V4L2_FIELD_NONE;
++	return 0;
++}
++
+ static int cedrus_buf_prepare(struct vb2_buffer *vb)
+ {
+ 	struct vb2_queue *vq = vb->vb2_queue;
+@@ -493,6 +501,7 @@ static struct vb2_ops cedrus_qops = {
+ 	.buf_init		= cedrus_buf_init,
+ 	.buf_cleanup		= cedrus_buf_cleanup,
+ 	.buf_queue		= cedrus_buf_queue,
++	.buf_out_validate	= cedrus_buf_out_validate,
+ 	.buf_request_complete	= cedrus_buf_request_complete,
+ 	.start_streaming	= cedrus_start_streaming,
+ 	.stop_streaming		= cedrus_stop_streaming,
+-- 
+2.16.4
+

@@ -1,0 +1,29 @@
+From 1b66e42a8af74aa0f86b16de15cf6132f9e824b4 Mon Sep 17 00:00:00 2001
+From: Otavio Salvador <otavio@ossystems.com.br>
+Date: Thu, 3 Jan 2019 23:40:22 -0200
+Subject: [PATCH 113/159] dt-bindings: Add vendor prefix for elgin
+
+Add elgin vendor definition as 'Elgin S/A.'
+
+Signed-off-by: Otavio Salvador <otavio@ossystems.com.br>
+Reviewed-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+---
+ Documentation/devicetree/bindings/vendor-prefixes.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b/Documentation/devicetree/bindings/vendor-prefixes.txt
+index 389508584..0ba5150a8 100644
+--- a/Documentation/devicetree/bindings/vendor-prefixes.txt
++++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
+@@ -113,6 +113,7 @@ eckelmann	Eckelmann AG
+ edt	Emerging Display Technologies
+ eeti	eGalax_eMPIA Technology Inc
+ elan	Elan Microelectronic Corp.
++elgin	Elgin S/A.
+ embest	Shenzhen Embest Technology Co., Ltd.
+ emlid	Emlid, Ltd.
+ emmicro	EM Microelectronic
+-- 
+2.16.4
+

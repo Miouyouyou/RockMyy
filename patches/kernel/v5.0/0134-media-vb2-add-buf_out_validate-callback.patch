@@ -1,0 +1,110 @@
+From e79d2991389db1442e644aa3b14d5b72411d148c Mon Sep 17 00:00:00 2001
+From: Hans Verkuil <hverkuil-cisco@xs4all.nl>
+Date: Wed, 16 Jan 2019 10:01:13 -0200
+Subject: [PATCH 134/159] media: vb2: add buf_out_validate callback
+
+When queueing a buffer to a request the 'field' value is not validated.
+That field is only validated when the _buf_prepare() is called,
+which happens when the request is queued.
+
+However, this validation should happen at QBUF time, since you want
+to know about this as soon as possible. Also, the spec requires that
+the 'field' value is validated at QBUF time.
+
+This patch adds a new buf_out_validate callback to validate the
+output buffer at buf_prepare time or when QBUF queues an unprepared
+buffer to a request. This callback is mandatory for output queues
+that support requests.
+
+This issue was found by v4l2-compliance since it failed to replace
+V4L2_FIELD_ANY by a proper field value when testing the vivid video
+output in combination with requests.
+
+Signed-off-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
+Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+(cherry picked from commit 28d77c21cbeb2c6039d48ef88401b87a56a7a07f)
+---
+ drivers/media/common/videobuf2/videobuf2-core.c | 22 +++++++++++++++++++---
+ include/media/videobuf2-core.h                  |  5 +++++
+ 2 files changed, 24 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/media/common/videobuf2/videobuf2-core.c b/drivers/media/common/videobuf2/videobuf2-core.c
+index ce9294a63..e07b6bdb6 100644
+--- a/drivers/media/common/videobuf2/videobuf2-core.c
++++ b/drivers/media/common/videobuf2/videobuf2-core.c
+@@ -499,9 +499,9 @@ static int __vb2_queue_free(struct vb2_queue *q, unsigned int buffers)
+ 			pr_info("     buf_init: %u buf_cleanup: %u buf_prepare: %u buf_finish: %u\n",
+ 				vb->cnt_buf_init, vb->cnt_buf_cleanup,
+ 				vb->cnt_buf_prepare, vb->cnt_buf_finish);
+-			pr_info("     buf_queue: %u buf_done: %u buf_request_complete: %u\n",
+-				vb->cnt_buf_queue, vb->cnt_buf_done,
+-				vb->cnt_buf_request_complete);
++			pr_info("     buf_out_validate: %u buf_queue: %u buf_done: %u buf_request_complete: %u\n",
++				vb->cnt_buf_out_validate, vb->cnt_buf_queue,
++				vb->cnt_buf_done, vb->cnt_buf_request_complete);
+ 			pr_info("     alloc: %u put: %u prepare: %u finish: %u mmap: %u\n",
+ 				vb->cnt_mem_alloc, vb->cnt_mem_put,
+ 				vb->cnt_mem_prepare, vb->cnt_mem_finish,
+@@ -1277,6 +1277,14 @@ static int __buf_prepare(struct vb2_buffer *vb)
+ 		return 0;
+ 	WARN_ON(vb->synced);
+ 
++	if (q->is_output) {
++		ret = call_vb_qop(vb, buf_out_validate, vb);
++		if (ret) {
++			dprintk(1, "buffer validation failed\n");
++			return ret;
++		}
++	}
++
+ 	vb->state = VB2_BUF_STATE_PREPARING;
+ 
+ 	switch (q->memory) {
+@@ -1523,6 +1531,14 @@ int vb2_core_qbuf(struct vb2_queue *q, unsigned int index, void *pb,
+ 			return -EINVAL;
+ 		}
+ 
++		if (q->is_output && !vb->prepared) {
++			ret = call_vb_qop(vb, buf_out_validate, vb);
++			if (ret) {
++				dprintk(1, "buffer validation failed\n");
++				return ret;
++			}
++		}
++
+ 		media_request_object_init(&vb->req_obj);
+ 
+ 		/* Make sure the request is in a safe state for updating. */
+diff --git a/include/media/videobuf2-core.h b/include/media/videobuf2-core.h
+index 4a737b2c6..4849b865b 100644
+--- a/include/media/videobuf2-core.h
++++ b/include/media/videobuf2-core.h
+@@ -296,6 +296,7 @@ struct vb2_buffer {
+ 	u32		cnt_mem_num_users;
+ 	u32		cnt_mem_mmap;
+ 
++	u32		cnt_buf_out_validate;
+ 	u32		cnt_buf_init;
+ 	u32		cnt_buf_prepare;
+ 	u32		cnt_buf_finish;
+@@ -342,6 +343,9 @@ struct vb2_buffer {
+  * @wait_finish:	reacquire all locks released in the previous callback;
+  *			required to continue operation after sleeping while
+  *			waiting for a new buffer to arrive.
++ * @buf_out_validate:	called when the output buffer is prepared or queued
++ *			to a request; drivers can use this to validate
++ *			userspace-provided information; optional.
+  * @buf_init:		called once after allocating a buffer (in MMAP case)
+  *			or after acquiring a new USERPTR buffer; drivers may
+  *			perform additional buffer-related initialization;
+@@ -409,6 +413,7 @@ struct vb2_ops {
+ 	void (*wait_prepare)(struct vb2_queue *q);
+ 	void (*wait_finish)(struct vb2_queue *q);
+ 
++	int (*buf_out_validate)(struct vb2_buffer *vb);
+ 	int (*buf_init)(struct vb2_buffer *vb);
+ 	int (*buf_prepare)(struct vb2_buffer *vb);
+ 	void (*buf_finish)(struct vb2_buffer *vb);
+-- 
+2.16.4
+

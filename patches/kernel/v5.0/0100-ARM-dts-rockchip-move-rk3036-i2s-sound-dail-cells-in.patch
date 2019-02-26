@@ -1,0 +1,43 @@
+From acf59b5461097a3a4c206403916a2170a0192ae7 Mon Sep 17 00:00:00 2001
+From: Heiko Stuebner <heiko@sntech.de>
+Date: Mon, 24 Dec 2018 09:17:45 +0100
+Subject: [PATCH 100/159] ARM: dts: rockchip: move rk3036 i2s sound-dail-cells
+ into soc dtsi
+
+The Rockchip i2s controller always only has one output connection
+hence #sound-dai-cells is always 0. Therefore define it in the soc
+dtsi itself instead of in individual boards.
+
+Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+---
+ arch/arm/boot/dts/rk3036-kylin.dts | 1 -
+ arch/arm/boot/dts/rk3036.dtsi      | 1 +
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/rk3036-kylin.dts b/arch/arm/boot/dts/rk3036-kylin.dts
+index 0fd19f972..0173eb11e 100644
+--- a/arch/arm/boot/dts/rk3036-kylin.dts
++++ b/arch/arm/boot/dts/rk3036-kylin.dts
+@@ -310,7 +310,6 @@
+ };
+ 
+ &i2s {
+-	#sound-dai-cells = <0>;
+ 	status = "okay";
+ };
+ 
+diff --git a/arch/arm/boot/dts/rk3036.dtsi b/arch/arm/boot/dts/rk3036.dtsi
+index d560fc405..59c90863b 100644
+--- a/arch/arm/boot/dts/rk3036.dtsi
++++ b/arch/arm/boot/dts/rk3036.dtsi
+@@ -289,6 +289,7 @@
+ 		dma-names = "tx", "rx";
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&i2s_bus>;
++		#sound-dai-cells = <0>;
+ 		status = "disabled";
+ 	};
+ 
+-- 
+2.16.4
+

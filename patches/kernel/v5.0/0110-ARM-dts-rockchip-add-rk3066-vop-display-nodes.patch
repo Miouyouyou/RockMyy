@@ -1,0 +1,82 @@
+From c371ac62e1166085cb0266076384138a2fa41576 Mon Sep 17 00:00:00 2001
+From: Mark Yao <mark.yao@rock-chips.com>
+Date: Sat, 29 Dec 2018 14:33:16 +0100
+Subject: [PATCH 110/159] ARM: dts: rockchip: add rk3066 vop display nodes
+
+This patch adds the core display subsystem and vop nodes to rk3066.
+
+Signed-off-by: Mark Yao <mark.yao@rock-chips.com>
+Signed-off-by: Johan Jonker <jbx6244@gmail.com>
+Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+---
+ arch/arm/boot/dts/rk3066a.dtsi | 47 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
+
+diff --git a/arch/arm/boot/dts/rk3066a.dtsi b/arch/arm/boot/dts/rk3066a.dtsi
+index b6b3a77da..653127a37 100644
+--- a/arch/arm/boot/dts/rk3066a.dtsi
++++ b/arch/arm/boot/dts/rk3066a.dtsi
+@@ -44,6 +44,11 @@
+ 		};
+ 	};
+ 
++	display-subsystem {
++		compatible = "rockchip,display-subsystem";
++		ports = <&vop0_out>, <&vop1_out>;
++	};
++
+ 	sram: sram@10080000 {
+ 		compatible = "mmio-sram";
+ 		reg = <0x10080000 0x10000>;
+@@ -57,6 +62,48 @@
+ 		};
+ 	};
+ 
++	vop0: vop@1010c000 {
++		compatible = "rockchip,rk3066-vop";
++		reg = <0x1010c000 0x19c>;
++		interrupts = <GIC_SPI 13 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&cru ACLK_LCDC0>,
++			 <&cru DCLK_LCDC0>,
++			 <&cru HCLK_LCDC0>;
++		clock-names = "aclk_vop", "dclk_vop", "hclk_vop";
++		power-domains = <&power RK3066_PD_VIO>;
++		resets = <&cru SRST_LCDC0_AXI>,
++			 <&cru SRST_LCDC0_AHB>,
++			 <&cru SRST_LCDC0_DCLK>;
++		reset-names = "axi", "ahb", "dclk";
++		status = "disabled";
++
++		vop0_out: port {
++			#address-cells = <1>;
++			#size-cells = <0>;
++		};
++	};
++
++	vop1: vop@1010e000 {
++		compatible = "rockchip,rk3066-vop";
++		reg = <0x1010e000 0x19c>;
++		interrupts = <GIC_SPI 14 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&cru ACLK_LCDC1>,
++			 <&cru DCLK_LCDC1>,
++			 <&cru HCLK_LCDC1>;
++		clock-names = "aclk_vop", "dclk_vop", "hclk_vop";
++		power-domains = <&power RK3066_PD_VIO>;
++		resets = <&cru SRST_LCDC1_AXI>,
++			 <&cru SRST_LCDC1_AHB>,
++			 <&cru SRST_LCDC1_DCLK>;
++		reset-names = "axi", "ahb", "dclk";
++		status = "disabled";
++
++		vop1_out: port {
++			#address-cells = <1>;
++			#size-cells = <0>;
++		};
++	};
++
+ 	i2s0: i2s@10118000 {
+ 		compatible = "rockchip,rk3066-i2s";
+ 		reg = <0x10118000 0x2000>;
+-- 
+2.16.4
+

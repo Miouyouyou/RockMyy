@@ -1,0 +1,63 @@
+From 57ba9085d5a3b681c7214cf5d4621f4a9f741dce Mon Sep 17 00:00:00 2001
+From: Pawel Osciak <posciak@chromium.org>
+Date: Thu, 24 Jan 2019 07:51:55 -0200
+Subject: [PATCH 132/159] media: vb2: Keep dma-buf buffers mapped until they
+ are freed
+
+When using vb2 for video decoding, dequeued capture buffers may still
+be accessed by the hardware: this is the case when they are used as
+reference frames for decoding subsequent frames.
+
+When the buffer is imported with dma-buf, it needs to be mapped before
+access. Until now, it was mapped when queuing and unmapped when
+dequeuing, which doesn't work for access as a reference frames.
+
+One way to solve this would be to map the buffer again when it is
+needed as a reference, but the mapping/unmapping operations can
+seriously impact performance. As a result, map the buffer once (when it
+is first needed when queued) and keep it mapped until it is freed.
+
+Reviewed-on: https://chromium-review.googlesource.com/334103
+[Paul: Updated for mainline and changed commit message]
+
+Signed-off-by: Pawel Osciak <posciak@chromium.org>
+Signed-off-by: Paul Kocialkowski <paul.kocialkowski@bootlin.com>
+Signed-off-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
+Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+(cherry picked from commit 2cc1802f62e562611e86f04d9dae1337c824991e)
+---
+ drivers/media/common/videobuf2/videobuf2-core.c | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/media/common/videobuf2/videobuf2-core.c b/drivers/media/common/videobuf2/videobuf2-core.c
+index 70e8c3366..ce9294a63 100644
+--- a/drivers/media/common/videobuf2/videobuf2-core.c
++++ b/drivers/media/common/videobuf2/videobuf2-core.c
+@@ -1196,6 +1196,9 @@ static int __prepare_dmabuf(struct vb2_buffer *vb)
+ 	 * userspace knows sooner rather than later if the dma-buf map fails.
+ 	 */
+ 	for (plane = 0; plane < vb->num_planes; ++plane) {
++		if (vb->planes[plane].dbuf_mapped)
++			continue;
++
+ 		ret = call_memop(vb, map_dmabuf, vb->planes[plane].mem_priv);
+ 		if (ret) {
+ 			dprintk(1, "failed to map dmabuf for plane %d\n",
+@@ -1758,14 +1761,6 @@ static void __vb2_dqbuf(struct vb2_buffer *vb)
+ 
+ 	vb->state = VB2_BUF_STATE_DEQUEUED;
+ 
+-	/* unmap DMABUF buffer */
+-	if (q->memory == VB2_MEMORY_DMABUF)
+-		for (i = 0; i < vb->num_planes; ++i) {
+-			if (!vb->planes[i].dbuf_mapped)
+-				continue;
+-			call_void_memop(vb, unmap_dmabuf, vb->planes[i].mem_priv);
+-			vb->planes[i].dbuf_mapped = 0;
+-		}
+ 	call_void_bufop(q, init_buffer, vb);
+ }
+ 
+-- 
+2.16.4
+

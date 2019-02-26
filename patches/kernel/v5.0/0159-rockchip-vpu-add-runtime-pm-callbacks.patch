@@ -1,0 +1,144 @@
+From d9013be635a265a38b8dd097ed081e4452f079ad Mon Sep 17 00:00:00 2001
+From: Jonas Karlman <jonas@kwiboo.se>
+Date: Sun, 10 Feb 2019 14:57:34 +0000
+Subject: [PATCH 159/159] rockchip/vpu: add runtime pm callbacks
+
+---
+ drivers/staging/media/rockchip/vpu/rockchip_vpu.h  |  4 ++
+ .../staging/media/rockchip/vpu/rockchip_vpu_drv.c  | 46 ++++++++++++++++------
+ 2 files changed, 38 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu.h b/drivers/staging/media/rockchip/vpu/rockchip_vpu.h
+index 2e178b745..feb46b39d 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu.h
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu.h
+@@ -57,6 +57,8 @@ struct rockchip_vpu_codec_ops;
+  * @codec:			Supported codecs
+  * @codec_ops:			Codec ops.
+  * @init:			Initialize hardware.
++ * @resume:			Enable hardware.
++ * @suspend:			Disable hardware.
+  * @vepu_irq:			encoder interrupt handler
+  * @vdpu_irq:			decoder interrupt handler
+  * @clk_names:			array of clock names
+@@ -72,6 +74,8 @@ struct rockchip_vpu_variant {
+ 	unsigned int codec;
+ 	const struct rockchip_vpu_codec_ops *codec_ops;
+ 	int (*init)(struct rockchip_vpu_dev *vpu);
++	int (*resume)(struct rockchip_vpu_dev *vpu);
++	int (*suspend)(struct rockchip_vpu_dev *vpu);
+ 	irqreturn_t (*vepu_irq)(int irq, void *priv);
+ 	irqreturn_t (*vdpu_irq)(int irq, void *priv);
+ 	const char *clk_names[ROCKCHIP_VPU_MAX_CLOCKS];
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c b/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
+index 785f20c37..0be313277 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
+@@ -69,7 +69,6 @@ static void rockchip_vpu_job_finish(struct rockchip_vpu_dev *vpu,
+ 
+ 	pm_runtime_mark_last_busy(vpu->dev);
+ 	pm_runtime_put_autosuspend(vpu->dev);
+-	clk_bulk_disable(vpu->variant->num_clocks, vpu->clocks);
+ 
+ 	src = v4l2_m2m_src_buf_remove(ctx->fh.m2m_ctx);
+ 	dst = v4l2_m2m_dst_buf_remove(ctx->fh.m2m_ctx);
+@@ -146,9 +145,6 @@ static void device_run(void *priv)
+ 	struct rockchip_vpu_ctx *ctx = priv;
+ 	int ret;
+ 
+-	ret = clk_bulk_enable(ctx->dev->variant->num_clocks, ctx->dev->clocks);
+-	if (ret)
+-		goto err_cancel_job;
+ 	ret = pm_runtime_get_sync(ctx->dev->dev);
+ 	if (ret < 0)
+ 		goto err_cancel_job;
+@@ -750,9 +746,11 @@ static int rockchip_vpu_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
+-	ret = vpu->variant->init(vpu);
++	platform_set_drvdata(pdev, vpu);
++
++	ret = clk_bulk_prepare(vpu->variant->num_clocks, vpu->clocks);
+ 	if (ret) {
+-		dev_err(&pdev->dev, "Failed to init VPU hardware\n");
++		dev_err(&pdev->dev, "Failed to prepare clocks\n");
+ 		return ret;
+ 	}
+ 
+@@ -760,10 +758,10 @@ static int rockchip_vpu_probe(struct platform_device *pdev)
+ 	pm_runtime_use_autosuspend(vpu->dev);
+ 	pm_runtime_enable(vpu->dev);
+ 
+-	ret = clk_bulk_prepare(vpu->variant->num_clocks, vpu->clocks);
++	ret = vpu->variant->init(vpu);
+ 	if (ret) {
+-		dev_err(&pdev->dev, "Failed to prepare clocks\n");
+-		return ret;
++		dev_err(&pdev->dev, "Failed to init VPU hardware\n");
++		goto err_clk_unprepare;
+ 	}
+ 
+ 	ret = v4l2_device_register(&pdev->dev, &vpu->v4l2_dev);
+@@ -771,7 +769,6 @@ static int rockchip_vpu_probe(struct platform_device *pdev)
+ 		dev_err(&pdev->dev, "Failed to register v4l2 device\n");
+ 		goto err_clk_unprepare;
+ 	}
+-	platform_set_drvdata(pdev, vpu);
+ 
+ 	vpu->m2m_dev = v4l2_m2m_init(&vpu_m2m_ops);
+ 	if (IS_ERR(vpu->m2m_dev)) {
+@@ -833,8 +830,9 @@ static int rockchip_vpu_probe(struct platform_device *pdev)
+ err_v4l2_unreg:
+ 	v4l2_device_unregister(&vpu->v4l2_dev);
+ err_clk_unprepare:
+-	clk_bulk_unprepare(vpu->variant->num_clocks, vpu->clocks);
++	pm_runtime_dont_use_autosuspend(vpu->dev);
+ 	pm_runtime_disable(vpu->dev);
++	clk_bulk_unprepare(vpu->variant->num_clocks, vpu->clocks);
+ 	return ret;
+ }
+ 
+@@ -858,14 +856,38 @@ static int rockchip_vpu_remove(struct platform_device *pdev)
+ 		video_device_release(vpu->vfd_dec);
+ 	}
+ 	v4l2_device_unregister(&vpu->v4l2_dev);
+-	clk_bulk_unprepare(vpu->variant->num_clocks, vpu->clocks);
++	pm_runtime_dont_use_autosuspend(vpu->dev);
+ 	pm_runtime_disable(vpu->dev);
++	clk_bulk_unprepare(vpu->variant->num_clocks, vpu->clocks);
++	return 0;
++}
++
++static int rockchip_vpu_runtime_resume(struct device *dev)
++{
++	struct rockchip_vpu_dev *vpu = dev_get_drvdata(dev);
++
++	if (vpu && vpu->variant->resume)
++		return vpu->variant->resume(vpu);
++
++	return 0;
++}
++
++static int rockchip_vpu_runtime_suspend(struct device *dev)
++{
++	struct rockchip_vpu_dev *vpu = dev_get_drvdata(dev);
++
++	if (vpu && vpu->variant->suspend)
++		return vpu->variant->suspend(vpu);
++
+ 	return 0;
+ }
+ 
+ static const struct dev_pm_ops rockchip_vpu_pm_ops = {
+ 	SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
+ 				pm_runtime_force_resume)
++	SET_RUNTIME_PM_OPS(rockchip_vpu_runtime_suspend,
++			   rockchip_vpu_runtime_resume,
++			   NULL)
+ };
+ 
+ static struct platform_driver rockchip_vpu_driver = {
+-- 
+2.16.4
+

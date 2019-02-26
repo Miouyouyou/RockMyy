@@ -1,0 +1,87 @@
+From 34f2ba9825bc09ba7b229f374101e38d41b556d5 Mon Sep 17 00:00:00 2001
+From: Jonas Karlman <jonas@kwiboo.se>
+Date: Fri, 8 Feb 2019 22:39:27 +0000
+Subject: [PATCH 156/159] arm64: dts: rockchip: add rk3328 VPU nodes
+
+---
+ arch/arm64/boot/dts/rockchip/rk3328.dtsi | 33 ++++++++++++++++++++++++++++++--
+ 1 file changed, 31 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3328.dtsi b/arch/arm64/boot/dts/rockchip/rk3328.dtsi
+index 81cc3c996..937cf28bf 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3328.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3328.dtsi
+@@ -278,6 +278,8 @@
+ 			};
+ 			pd_vpu@RK3328_PD_VPU {
+ 				reg = <RK3328_PD_VPU>;
++				clocks = <&cru ACLK_VPU>, <&cru HCLK_VPU>;
++				pm_qos = <&qos_vpu>;
+ 			};
+ 		};
+ 
+@@ -584,17 +586,39 @@
+ 		status = "disabled";
+ 	};
+ 
++	vepu: video-codec@ff340000 {
++		compatible = "rockchip,rk3328-vepu";
++		reg = <0x0 0xff340000 0x0 0x400>;
++		interrupts = <GIC_SPI 97 IRQ_TYPE_LEVEL_HIGH>;
++		interrupt-names = "vepu";
++		clocks = <&cru ACLK_H264>, <&cru HCLK_H264>;
++		clock-names = "aclk", "hclk";
++		iommus = <&vepu_mmu>;
++		status = "disabled";
++	};
++
+ 	vepu_mmu: iommu@ff340800 {
+ 		compatible = "rockchip,iommu";
+ 		reg = <0x0 0xff340800 0x0 0x40>;
+ 		interrupts = <GIC_SPI 98 IRQ_TYPE_LEVEL_HIGH>;
+ 		interrupt-names = "vepu_mmu";
+-		clocks = <&cru ACLK_VPU>, <&cru HCLK_VPU>;
++		clocks = <&cru ACLK_H264>, <&cru HCLK_H264>;
+ 		clock-names = "aclk", "iface";
+ 		#iommu-cells = <0>;
+ 		status = "disabled";
+ 	};
+ 
++	vpu: video-codec@ff350000 {
++		compatible = "rockchip,rk3328-vpu";
++		reg = <0x0 0xff350000 0x0 0x800>;
++		interrupts = <GIC_SPI 9 IRQ_TYPE_LEVEL_HIGH>;
++		interrupt-names = "vdpu";
++		clocks = <&cru ACLK_VPU>, <&cru HCLK_VPU>;
++		clock-names = "aclk", "hclk";
++		iommus = <&vpu_mmu>;
++		power-domains = <&power RK3328_PD_VPU>;
++	};
++
+ 	vpu_mmu: iommu@ff350800 {
+ 		compatible = "rockchip,iommu";
+ 		reg = <0x0 0xff350800 0x0 0x40>;
+@@ -603,7 +627,7 @@
+ 		clocks = <&cru ACLK_VPU>, <&cru HCLK_VPU>;
+ 		clock-names = "aclk", "iface";
+ 		#iommu-cells = <0>;
+-		status = "disabled";
++		power-domains = <&power RK3328_PD_VPU>;
+ 	};
+ 
+ 	rkvdec_mmu: iommu@ff360480 {
+@@ -917,6 +941,11 @@
+ 		status = "disabled";
+ 	};
+ 
++	qos_vpu: qos@ff778000 {
++		compatible = "syscon";
++		reg = <0x0 0xff778000 0x0 0x20>;
++	};
++
+ 	gic: interrupt-controller@ff811000 {
+ 		compatible = "arm,gic-400";
+ 		#interrupt-cells = <3>;
+-- 
+2.16.4
+

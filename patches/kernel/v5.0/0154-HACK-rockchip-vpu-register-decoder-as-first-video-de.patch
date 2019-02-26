@@ -1,0 +1,52 @@
+From 17054c093ff8416d54add31ad6f764057e2ef4e9 Mon Sep 17 00:00:00 2001
+From: Jonas Karlman <jonas@kwiboo.se>
+Date: Thu, 7 Feb 2019 23:52:29 +0000
+Subject: [PATCH 154/159] HACK: rockchip/vpu: register decoder as first video
+ device
+
+---
+ drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c b/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
+index 39ddeb9bd..785f20c37 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
+@@ -786,18 +786,18 @@ static int rockchip_vpu_probe(struct platform_device *pdev)
+ 	vpu->mdev.ops = &rockchip_m2m_media_ops;
+ 	vpu->v4l2_dev.mdev = &vpu->mdev;
+ 
+-	if (vpu->variant->enc_fmts) {
+-		ret = rockchip_vpu_video_device_register(vpu, RK_VPU_ENCODER);
++	if (vpu->variant->dec_fmts) {
++		ret = rockchip_vpu_video_device_register(vpu, RK_VPU_DECODER);
+ 		if (ret) {
+-			dev_err(&pdev->dev, "Failed to register encoder\n");
+-			goto err_m2m_enc_rel;
++			dev_err(&pdev->dev, "Failed to register decoder\n");
++			goto err_m2m_rel;
+ 		}
+ 	}
+ 
+-	if (vpu->variant->dec_fmts) {
+-		ret = rockchip_vpu_video_device_register(vpu, RK_VPU_DECODER);
++	if (vpu->variant->enc_fmts) {
++		ret = rockchip_vpu_video_device_register(vpu, RK_VPU_ENCODER);
+ 		if (ret) {
+-			dev_err(&pdev->dev, "Failed to register decoder\n");
++			dev_err(&pdev->dev, "Failed to register encoder\n");
+ 			goto err_video_dev_unreg;
+ 		}
+ 	}
+@@ -828,7 +828,7 @@ static int rockchip_vpu_probe(struct platform_device *pdev)
+ 		video_unregister_device(vpu->vfd_enc);
+ 		video_device_release(vpu->vfd_enc);
+ 	}
+-err_m2m_enc_rel:
++err_m2m_rel:
+ 	v4l2_m2m_release(vpu->m2m_dev);
+ err_v4l2_unreg:
+ 	v4l2_device_unregister(&vpu->v4l2_dev);
+-- 
+2.16.4
+

@@ -1,0 +1,261 @@
+From 08efb4dddce1984af7d03cc5e8c459a5dfe3bcad Mon Sep 17 00:00:00 2001
+From: Otavio Salvador <otavio@ossystems.com.br>
+Date: Thu, 3 Jan 2019 23:40:23 -0200
+Subject: [PATCH 114/159] ARM: dts: rv1108: Add support for rv1108-elgin-r1
+ board
+
+rv1108-elgin-r1 board is based on Rockchip RV1108 SoC.
+
+Signed-off-by: Otavio Salvador <otavio@ossystems.com.br>
+Reviewed-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+---
+ .../devicetree/bindings/arm/rockchip.yaml          |   5 +
+ arch/arm/boot/dts/Makefile                         |   1 +
+ arch/arm/boot/dts/rv1108-elgin-r1.dts              | 206 +++++++++++++++++++++
+ 3 files changed, 212 insertions(+)
+ create mode 100644 arch/arm/boot/dts/rv1108-elgin-r1.dts
+
+diff --git a/Documentation/devicetree/bindings/arm/rockchip.yaml b/Documentation/devicetree/bindings/arm/rockchip.yaml
+index bcc60c492..a0a3adc7b 100644
+--- a/Documentation/devicetree/bindings/arm/rockchip.yaml
++++ b/Documentation/devicetree/bindings/arm/rockchip.yaml
+@@ -60,6 +60,11 @@ properties:
+           - const: chipspark,rayeager-px2
+           - const: rockchip,rk3066a
+ 
++      - description: Elgin RV1108 R1
++        items:
++          - const: elgin,rv1108-r1
++          - const: rockchip,rv1108
++
+       - description: Firefly Firefly-RK3288
+         items:
+           - enum:
+diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+index bd40148a1..d9a5649b3 100644
+--- a/arch/arm/boot/dts/Makefile
++++ b/arch/arm/boot/dts/Makefile
+@@ -868,6 +868,7 @@ dtb-$(CONFIG_ARCH_RENESAS) += \
+ 	r9a06g032-rzn1d400-db.dtb \
+ 	sh73a0-kzm9g.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += \
++	rv1108-elgin-r1.dtb \
+ 	rv1108-evb.dtb \
+ 	rk3036-evb.dtb \
+ 	rk3036-kylin.dtb \
+diff --git a/arch/arm/boot/dts/rv1108-elgin-r1.dts b/arch/arm/boot/dts/rv1108-elgin-r1.dts
+new file mode 100644
+index 000000000..658057d87
+--- /dev/null
++++ b/arch/arm/boot/dts/rv1108-elgin-r1.dts
+@@ -0,0 +1,206 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
++
++/*
++ * Copyright (C) 2018 O.S. Systems Software LTDA.
++ */
++
++/dts-v1/;
++
++#include "rv1108.dtsi"
++
++/ {
++	model = "Elgin RV1108 R1 board";
++	compatible = "elgin,rv1108-r1", "rockchip,rv1108";
++
++	memory@60000000 {
++		device_type = "memory";
++		reg = <0x60000000 0x08000000>;
++	};
++
++	chosen {
++		stdout-path = "serial2:1500000n8";
++	};
++
++	vcc_sys: vsys-regulator {
++		compatible = "regulator-fixed";
++		regulator-name = "vsys";
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		regulator-boot-on;
++	};
++};
++
++&cpu0 {
++	cpu-supply = <&vdd_core>;
++};
++
++&emmc {
++	bus-width = <8>;
++	cap-mmc-highspeed;
++	disable-wp;
++	no-sd;
++	no-sdio;
++	non-removable;
++	mmc-ddr-1_8v;
++	mmc-hs200-1_8v;
++	pinctrl-names = "default";
++	pinctrl-0 = <&emmc_clk &emmc_cmd &emmc_bus8>;
++	status = "okay";
++};
++
++&gmac {
++	clock_in_out = "output";
++	pinctrl-names = "default";
++	pinctrl-0 = <&rmii_pins>;
++	snps,reset-gpio = <&gpio1 RK_PC1 GPIO_ACTIVE_LOW>;
++	snps,reset-active-low;
++	status = "okay";
++};
++
++&i2c0 {
++	clock-frequency = <400000>;
++	i2c-scl-rising-time-ns = <275>;
++	i2c-scl-falling-time-ns = <16>;
++	status = "okay";
++
++	rk805: pmic@18 {
++		compatible = "rockchip,rk805";
++		reg = <0x18>;
++		interrupt-parent = <&gpio0>;
++		interrupts = <RK_PB4 IRQ_TYPE_LEVEL_LOW>;
++		rockchip,system-power-controller;
++
++		vcc1-supply = <&vcc_sys>;
++		vcc2-supply = <&vcc_sys>;
++		vcc3-supply = <&vcc_sys>;
++		vcc4-supply = <&vcc_sys>;
++		vcc5-supply = <&vcc_sys>;
++		vcc6-supply = <&vcc_sys>;
++
++		regulators {
++			vdd_core: DCDC_REG1 {
++				regulator-name= "vdd_core";
++				regulator-min-microvolt = <700000>;
++				regulator-max-microvolt = <1500000>;
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-state-mem {
++					regulator-state-enabled;
++					regulator-state-uv = <900000>;
++				};
++			};
++
++			vdd_cam: DCDC_REG2 {
++				regulator-name= "vdd_cam";
++				regulator-min-microvolt = <700000>;
++				regulator-max-microvolt = <2000000>;
++				regulator-state-mem {
++					regulator-state-disabled;
++				};
++			};
++
++			vcc_ddr: DCDC_REG3 {
++				regulator-name= "vcc_ddr";
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-state-mem {
++					regulator-state-enabled;
++				};
++			};
++
++			vcc_io: DCDC_REG4 {
++				regulator-name= "vcc_io";
++				regulator-min-microvolt = <3300000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-state-mem {
++					regulator-state-enabled;
++					regulator-state-uv = <3300000>;
++				};
++			};
++
++			vdd_10: LDO_REG1 {
++				regulator-name= "vdd_10";
++				regulator-min-microvolt = <1000000>;
++				regulator-max-microvolt = <1000000>;
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-state-mem {
++					regulator-state-disabled;
++				};
++			};
++
++			vcc_18: LDO_REG2 {
++				regulator-name= "vcc_18";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-state-mem {
++					regulator-state-disabled;
++				};
++			};
++
++			vdd10_pmu: LDO_REG3 {
++				regulator-name= "vdd10_pmu";
++				regulator-min-microvolt = <1000000>;
++				regulator-max-microvolt = <1000000>;
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-state-mem {
++					regulator-state-enabled;
++					regulator-state-uv = <1000000>;
++				};
++			};
++		};
++	};
++};
++
++&spi {
++	pinctrl-names = "default";
++	pinctrl-0 = <&spim1_clk &spim1_cs0 &spim1_tx &spim1_rx>;
++	status = "okay";
++
++	dh2228fv: dac@0 {
++		compatible = "rohm,dh2228fv";
++		reg = <0>;
++		spi-max-frequency = <24000000>;
++		spi-cpha;
++		spi-cpol;
++	};
++};
++
++&u2phy {
++	status = "okay";
++
++	u2phy_host: host-port {
++		status = "okay";
++	};
++
++	u2phy_otg: otg-port {
++		status = "okay";
++	};
++};
++
++&uart0 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&uart0_xfer>;
++	status = "okay";
++};
++
++&uart2 {
++	status = "okay";
++};
++
++&usb_host_ehci {
++	status = "okay";
++};
++
++&usb_host_ohci {
++	status = "okay";
++};
++
++&usb_otg {
++	status = "okay";
++};
+-- 
+2.16.4
+

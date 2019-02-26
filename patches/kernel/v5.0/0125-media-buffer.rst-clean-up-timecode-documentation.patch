@@ -1,0 +1,51 @@
+From b04c5f8ab263e76ed8c1c07415f272a3ed571f1a Mon Sep 17 00:00:00 2001
+From: Hans Verkuil <hverkuil-cisco@xs4all.nl>
+Date: Tue, 13 Nov 2018 03:32:25 -0500
+Subject: [PATCH 125/159] media: buffer.rst: clean up timecode documentation
+
+V4L2_BUF_FLAG_TIMECODE is not video capture specific, so drop that
+part.
+
+The 'Timecodes' section was a bit messy, so that's cleaned up.
+
+Signed-off-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
+Reviewed-by: Paul Kocialkowski <paul.kocialkowski@bootlin.com>
+Reviewed-by: Alexandre Courbot <acourbot@chromium.org>
+Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+(cherry picked from commit 0e9109ffded1cfa2aeb5617a9a683ca3467e6e99)
+---
+ Documentation/media/uapi/v4l/buffer.rst | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/Documentation/media/uapi/v4l/buffer.rst b/Documentation/media/uapi/v4l/buffer.rst
+index 86878bb00..81ffdcb89 100644
+--- a/Documentation/media/uapi/v4l/buffer.rst
++++ b/Documentation/media/uapi/v4l/buffer.rst
+@@ -230,8 +230,7 @@ struct v4l2_buffer
+     * - struct :c:type:`v4l2_timecode`
+       - ``timecode``
+       -
+-      - When ``type`` is ``V4L2_BUF_TYPE_VIDEO_CAPTURE`` and the
+-	``V4L2_BUF_FLAG_TIMECODE`` flag is set in ``flags``, this
++      - When the ``V4L2_BUF_FLAG_TIMECODE`` flag is set in ``flags``, this
+ 	structure contains a frame timecode. In
+ 	:c:type:`V4L2_FIELD_ALTERNATE <v4l2_field>` mode the top and
+ 	bottom field contain the same timecode. Timecodes are intended to
+@@ -714,10 +713,10 @@ enum v4l2_memory
+ Timecodes
+ =========
+ 
+-The struct :c:type:`v4l2_timecode` structure is designed to hold a
+-:ref:`smpte12m` or similar timecode. (struct
+-struct :c:type:`timeval` timestamps are stored in struct
+-:c:type:`v4l2_buffer` field ``timestamp``.)
++The :c:type:`v4l2_buffer_timecode` structure is designed to hold a
++:ref:`smpte12m` or similar timecode.
++(struct :c:type:`timeval` timestamps are stored in the struct
++:c:type:`v4l2_buffer` ``timestamp`` field.)
+ 
+ 
+ .. c:type:: v4l2_timecode
+-- 
+2.16.4
+

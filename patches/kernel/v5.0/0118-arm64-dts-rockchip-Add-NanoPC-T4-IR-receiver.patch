@@ -1,0 +1,46 @@
+From 9ee5cde00dc7ec006be9e88b8fb5522358f552f3 Mon Sep 17 00:00:00 2001
+From: Robin Murphy <robin.murphy@arm.com>
+Date: Mon, 14 Jan 2019 12:05:33 +0000
+Subject: [PATCH 118/159] arm64: dts: rockchip: Add NanoPC-T4 IR receiver
+
+In common with most Rockchip reference designs, NanoPC-T4 has a passive
+IR receiver connected to PWM3. In lieu of a specialised driver for
+PWM-based IR pulse measurement, running the pin as a GPIO with the basic
+driver works perfectly well.
+
+Signed-off-by: Robin Murphy <robin.murphy@arm.com>
+Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+---
+ arch/arm64/boot/dts/rockchip/rk3399-nanopc-t4.dts | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3399-nanopc-t4.dts b/arch/arm64/boot/dts/rockchip/rk3399-nanopc-t4.dts
+index 623a03f25..84433cf02 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3399-nanopc-t4.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3399-nanopc-t4.dts
+@@ -45,6 +45,22 @@
+ 			press-threshold-microvolt = <18000>;
+ 		};
+ 	};
++
++	ir-receiver {
++		compatible = "gpio-ir-receiver";
++		gpios = <&gpio0 RK_PA6 GPIO_ACTIVE_LOW>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&ir_rx>;
++	};
++};
++
++&pinctrl {
++	ir {
++		ir_rx: ir-rx {
++			/* external pullup to VCC3V3_SYS, despite being 1.8V :/ */
++			rockchip,pins = <0 RK_PA6 RK_FUNC_1 &pcfg_pull_none>;
++		};
++	};
+ };
+ 
+ &sdhci {
+-- 
+2.16.4
+
