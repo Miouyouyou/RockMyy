@@ -1,0 +1,3974 @@
+From patchwork Mon Mar  4 19:25:19 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Ezequiel Garcia <ezequiel@collabora.com>
+X-Patchwork-Id: 10838331
+Return-Path: 
+ <linux-rockchip-bounces+patchwork-linux-rockchip=patchwork.kernel.org@lists.infradead.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id B932B180E
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:26:46 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id A51EF2B26F
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:26:46 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id A35DA2B280; Mon,  4 Mar 2019 19:26:46 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-5.2 required=2.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,MAILING_LIST_MULTI,RCVD_IN_DNSWL_MED,UNPARSEABLE_RELAY
+	autolearn=ham version=3.3.1
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTPS id 84C522B285
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:26:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20170209; h=Sender:
+	Content-Transfer-Encoding:Content-Type:Cc:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=Isuzb58BvbeSn5uzBexT0OwKYQryo6MnONP3r3Lahmk=; b=QAGzJM9kwpFWv1
+	A4m2SsRFkP4lNq5RgrZ6H5kLFEvF7Ht3Ws61JzRSHptetRk2L0J0mCQbPlSM+K5gGEIudHpMH+n2/
+	f84F77/GYL9xekEKqaah/uionFAeTff0hhiG9cELXFvemFVxinWgpTMxy9Yd9kC4oFcST1mHXaRQO
+	2CvgsMklGPBfDKlpG/+IFzqJI5EIOi044Wxpq2DZjF2esAvOBRfrbwF5LSQfJAec/1QDxDCPXaPqL
+	jkscO/5Vj4l4alwDzigYfVh9NdNZ5QNys6Nkxo0RgX5jccdPCGzD6x1oee1LDUZKxblGKQkXSCDcG
+	qf6TjtEyxTlaJwcSXGMA==;
+Received: from localhost ([127.0.0.1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.90_1 #2 (Red Hat Linux))
+	id 1h0tEX-0003Dy-Qy; Mon, 04 Mar 2019 19:26:41 +0000
+Received: from bhuna.collabora.co.uk ([2a00:1098:0:82:1000:25:2eeb:e3e3])
+ by bombadil.infradead.org with esmtps (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1h0tEV-0003D5-Hx
+ for linux-rockchip@lists.infradead.org; Mon, 04 Mar 2019 19:26:40 +0000
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+ (Authenticated sender: ezequiel) with ESMTPSA id E206E277A3B
+From: Ezequiel Garcia <ezequiel@collabora.com>
+To: linux-media@vger.kernel.org
+Subject: [PATCH v2 01/11] rockchip/vpu: Rename pixel format helpers
+Date: Mon,  4 Mar 2019 16:25:19 -0300
+Message-Id: <20190304192529.14200-2-ezequiel@collabora.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190304192529.14200-1-ezequiel@collabora.com>
+References: <20190304192529.14200-1-ezequiel@collabora.com>
+MIME-Version: 1.0
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20190304_112639_720091_90E94ECD 
+X-CRM114-Status: UNSURE (   9.43  )
+X-CRM114-Notice: Please train this message.
+X-BeenThere: linux-rockchip@lists.infradead.org
+X-Mailman-Version: 2.1.21
+Precedence: list
+List-Id: Upstream kernel work for Rockchip platforms
+ <linux-rockchip.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip@lists.infradead.org>
+List-Help: <mailto:linux-rockchip-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=subscribe>
+Cc: Nicolas Dufresne <nicolas.dufresne@collabora.com>,
+ Heiko Stuebner <heiko@sntech.de>, Jonas Karlman <jonas@kwiboo.se>,
+ Tomasz Figa <tfiga@chromium.org>, linux-rockchip@lists.infradead.org,
+ Hans Verkuil <hans.verkuil@cisco.com>, kernel@collabora.com,
+ Ezequiel Garcia <ezequiel@collabora.com>
+Content-Type: text/plain; charset="us-ascii"
+Sender: "Linux-rockchip" <linux-rockchip-bounces@lists.infradead.org>
+Errors-To: 
+ linux-rockchip-bounces+patchwork-linux-rockchip=patchwork.kernel.org@lists.infradead.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+The rockchip VPU driver uses generic names for its pixel format
+helpers. We want to use the same names for generic versions
+of these helpers, so rename the rockchip ones.
+
+The driver will be switched to the generic helpers later.
+
+Signed-off-by: Ezequiel Garcia <ezequiel@collabora.com>
+---
+ .../staging/media/rockchip/vpu/rockchip_vpu_enc.c    | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu_enc.c b/drivers/staging/media/rockchip/vpu/rockchip_vpu_enc.c
+index ab0fb2053620..fb5e36aedd8c 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu_enc.c
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu_enc.c
+@@ -41,7 +41,7 @@
+  * @is_compressed: Is it a compressed format?
+  * @multiplanar: Is it a multiplanar variant format? (e.g. NV12M)
+  */
+-struct v4l2_format_info {
++struct rockchip_vpu_v4l2_format_info {
+ 	u32 format;
+ 	u32 header_size;
+ 	u8 num_planes;
+@@ -52,10 +52,10 @@ struct v4l2_format_info {
+ 	u8 multiplanar;
+ };
+ 
+-static const struct v4l2_format_info *
+-v4l2_format_info(u32 format)
++static const struct rockchip_vpu_v4l2_format_info *
++rockchip_vpu_v4l2_format_info(u32 format)
+ {
+-	static const struct v4l2_format_info formats[] = {
++	static const struct rockchip_vpu_v4l2_format_info formats[] = {
+ 		{ .format = V4L2_PIX_FMT_YUV420M,	.num_planes = 3, .cpp = { 1, 1, 1 }, .hsub = 2, .vsub = 2, .multiplanar = 1 },
+ 		{ .format = V4L2_PIX_FMT_NV12M,		.num_planes = 2, .cpp = { 1, 2, 0 }, .hsub = 2, .vsub = 2, .multiplanar = 1 },
+ 		{ .format = V4L2_PIX_FMT_YUYV,		.num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 2, .vsub = 1 },
+@@ -76,11 +76,11 @@ static void
+ fill_pixfmt_mp(struct v4l2_pix_format_mplane *pixfmt,
+ 	       int pixelformat, int width, int height)
+ {
+-	const struct v4l2_format_info *info;
++	const struct rockchip_vpu_v4l2_format_info *info;
+ 	struct v4l2_plane_pix_format *plane;
+ 	int i;
+ 
+-	info = v4l2_format_info(pixelformat);
++	info = rockchip_vpu_v4l2_format_info(pixelformat);
+ 	if (!info)
+ 		return;
+ 
+
+From patchwork Mon Mar  4 19:25:20 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Ezequiel Garcia <ezequiel@collabora.com>
+X-Patchwork-Id: 10838335
+Return-Path: 
+ <linux-rockchip-bounces+patchwork-linux-rockchip=patchwork.kernel.org@lists.infradead.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id E203413B5
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:26:49 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id CBA0C2AFB5
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:26:49 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id C98312B286; Mon,  4 Mar 2019 19:26:49 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-5.2 required=2.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,MAILING_LIST_MULTI,RCVD_IN_DNSWL_MED,UNPARSEABLE_RELAY
+	autolearn=unavailable version=3.3.1
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTPS id 05D282B294
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:26:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20170209; h=Sender:
+	Content-Transfer-Encoding:Content-Type:Cc:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=MCEih9NS/udKBfIDvoGOpqkYHscJeUdbOR58UBox1+0=; b=GfDJPasrRA7bmp
+	0dlR0BHXrQuMiEGL0AoGD4N23VAq7ZRIbxdYBWBxbdiOQbNC7K8+4APyQ8DPY//7z+Ujrj1ioV5ar
+	VpU7YTVj9dF5KA42w9vrDe4PWxdcv5Np7CWSP78LAkFkPqa+RjprDDRhufBNFtji9r9QeyX5NYpwF
+	QG1LuaY+Xuqda5emdtfCWw4WWIcI+6Oxu/B/LiSjqsDPHNK5hxgXFVyBVmaky5mpwI940OOs3aZrD
+	FqDLz4JrUZYY62wAu2qLPnV13R2hjXdnx4KDX6Kd4Ccxo6BnQ0z8Q+v7JUMq3DudsnzfzHglsOzSN
+	EztF+M5hp3TfoTCVrF/g==;
+Received: from localhost ([127.0.0.1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.90_1 #2 (Red Hat Linux))
+	id 1h0tEc-0003Gx-Be; Mon, 04 Mar 2019 19:26:46 +0000
+Received: from bhuna.collabora.co.uk ([2a00:1098:0:82:1000:25:2eeb:e3e3])
+ by bombadil.infradead.org with esmtps (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1h0tEZ-0003ES-6I
+ for linux-rockchip@lists.infradead.org; Mon, 04 Mar 2019 19:26:45 +0000
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+ (Authenticated sender: ezequiel) with ESMTPSA id 05B2B27FFA6
+From: Ezequiel Garcia <ezequiel@collabora.com>
+To: linux-media@vger.kernel.org
+Subject: [PATCH v2 02/11] media: Introduce helpers to fill pixel format
+ structs
+Date: Mon,  4 Mar 2019 16:25:20 -0300
+Message-Id: <20190304192529.14200-3-ezequiel@collabora.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190304192529.14200-1-ezequiel@collabora.com>
+References: <20190304192529.14200-1-ezequiel@collabora.com>
+MIME-Version: 1.0
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20190304_112643_517743_487EFD27 
+X-CRM114-Status: GOOD (  11.60  )
+X-BeenThere: linux-rockchip@lists.infradead.org
+X-Mailman-Version: 2.1.21
+Precedence: list
+List-Id: Upstream kernel work for Rockchip platforms
+ <linux-rockchip.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip@lists.infradead.org>
+List-Help: <mailto:linux-rockchip-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=subscribe>
+Cc: Nicolas Dufresne <nicolas.dufresne@collabora.com>,
+ Heiko Stuebner <heiko@sntech.de>, Jonas Karlman <jonas@kwiboo.se>,
+ Tomasz Figa <tfiga@chromium.org>, linux-rockchip@lists.infradead.org,
+ Hans Verkuil <hans.verkuil@cisco.com>, kernel@collabora.com,
+ Ezequiel Garcia <ezequiel@collabora.com>
+Content-Type: text/plain; charset="us-ascii"
+Sender: "Linux-rockchip" <linux-rockchip-bounces@lists.infradead.org>
+Errors-To: 
+ linux-rockchip-bounces+patchwork-linux-rockchip=patchwork.kernel.org@lists.infradead.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+Add two new API helpers, v4l2_fill_pixfmt and v4l2_fill_pixfmt_mp,
+to be used by drivers to calculate plane sizes and bytes per lines.
+
+Note that driver-specific padding and alignment are not
+taken into account, and must be done by drivers using this API.
+
+Signed-off-by: Ezequiel Garcia <ezequiel@collabora.com>
+---
+ drivers/media/v4l2-core/v4l2-common.c | 186 ++++++++++++++++++++++++++
+ include/media/v4l2-common.h           |  32 +++++
+ 2 files changed, 218 insertions(+)
+
+diff --git a/drivers/media/v4l2-core/v4l2-common.c b/drivers/media/v4l2-core/v4l2-common.c
+index 663730f088cd..11a16bb3efda 100644
+--- a/drivers/media/v4l2-core/v4l2-common.c
++++ b/drivers/media/v4l2-core/v4l2-common.c
+@@ -44,6 +44,7 @@
+  * Added Gerd Knorrs v4l1 enhancements (Justin Schoeman)
+  */
+ 
++#include <linux/ctype.h>
+ #include <linux/module.h>
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+@@ -445,3 +446,188 @@ int v4l2_s_parm_cap(struct video_device *vdev,
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(v4l2_s_parm_cap);
++
++static char printable_char(int c)
++{
++	return isascii(c) && isprint(c) ? c : '?';
++}
++
++const char *v4l2_get_fourcc_name(uint32_t format)
++{
++	static char buf[8];
++
++	snprintf(buf, 8,
++		 "%c%c%c%c%s",
++		 printable_char(format & 0xff),
++		 printable_char((format >> 8) & 0xff),
++		 printable_char((format >> 16) & 0xff),
++		 printable_char((format >> 24) & 0x7f),
++		 (format & BIT(31)) ? "-BE" : "");
++
++	return buf;
++}
++EXPORT_SYMBOL(v4l2_get_fourcc_name);
++
++const struct v4l2_format_info *v4l2_format_info(u32 format)
++{
++	static const struct v4l2_format_info formats[] = {
++		/* RGB formats */
++		{ .format = V4L2_PIX_FMT_BGR24,   .mem_planes = 1, .comp_planes = 1, .bpp = { 3, 0, 0, 0 }, .hdiv = 1, .vdiv = 1 },
++		{ .format = V4L2_PIX_FMT_RGB24,   .mem_planes = 1, .comp_planes = 1, .bpp = { 3, 0, 0, 0 }, .hdiv = 1, .vdiv = 1 },
++		{ .format = V4L2_PIX_FMT_HSV24,   .mem_planes = 1, .comp_planes = 1, .bpp = { 3, 0, 0, 0 }, .hdiv = 1, .vdiv = 1 },
++		{ .format = V4L2_PIX_FMT_BGR32,   .mem_planes = 1, .comp_planes = 1, .bpp = { 4, 0, 0, 0 }, .hdiv = 1, .vdiv = 1 },
++		{ .format = V4L2_PIX_FMT_XBGR32,  .mem_planes = 1, .comp_planes = 1, .bpp = { 4, 0, 0, 0 }, .hdiv = 1, .vdiv = 1 },
++		{ .format = V4L2_PIX_FMT_RGB32,   .mem_planes = 1, .comp_planes = 1, .bpp = { 4, 0, 0, 0 }, .hdiv = 1, .vdiv = 1 },
++		{ .format = V4L2_PIX_FMT_XRGB32,  .mem_planes = 1, .comp_planes = 1, .bpp = { 4, 0, 0, 0 }, .hdiv = 1, .vdiv = 1 },
++		{ .format = V4L2_PIX_FMT_HSV32,   .mem_planes = 1, .comp_planes = 1, .bpp = { 4, 0, 0, 0 }, .hdiv = 1, .vdiv = 1 },
++		{ .format = V4L2_PIX_FMT_ARGB32,  .mem_planes = 1, .comp_planes = 1, .bpp = { 4, 0, 0, 0 }, .hdiv = 1, .vdiv = 1 },
++		{ .format = V4L2_PIX_FMT_ABGR32,  .mem_planes = 1, .comp_planes = 1, .bpp = { 4, 0, 0, 0 }, .hdiv = 1, .vdiv = 1 },
++		{ .format = V4L2_PIX_FMT_GREY,    .mem_planes = 1, .comp_planes = 1, .bpp = { 1, 0, 0, 0 }, .hdiv = 1, .vdiv = 1 },
++
++		/* YUV packed formats */
++		{ .format = V4L2_PIX_FMT_YUYV,    .mem_planes = 1, .comp_planes = 1, .bpp = { 2, 0, 0, 0 }, .hdiv = 2, .vdiv = 1 },
++		{ .format = V4L2_PIX_FMT_YVYU,    .mem_planes = 1, .comp_planes = 1, .bpp = { 2, 0, 0, 0 }, .hdiv = 2, .vdiv = 1 },
++		{ .format = V4L2_PIX_FMT_UYVY,    .mem_planes = 1, .comp_planes = 1, .bpp = { 2, 0, 0, 0 }, .hdiv = 2, .vdiv = 1 },
++		{ .format = V4L2_PIX_FMT_VYUY,    .mem_planes = 1, .comp_planes = 1, .bpp = { 2, 0, 0, 0 }, .hdiv = 2, .vdiv = 1 },
++
++		/* YUV planar formats */
++		{ .format = V4L2_PIX_FMT_NV12,    .mem_planes = 1, .comp_planes = 2, .bpp = { 1, 2, 0, 0 }, .hdiv = 2, .vdiv = 2 },
++		{ .format = V4L2_PIX_FMT_NV21,    .mem_planes = 1, .comp_planes = 2, .bpp = { 1, 2, 0, 0 }, .hdiv = 2, .vdiv = 2 },
++		{ .format = V4L2_PIX_FMT_NV16,    .mem_planes = 1, .comp_planes = 2, .bpp = { 1, 2, 0, 0 }, .hdiv = 2, .vdiv = 1 },
++		{ .format = V4L2_PIX_FMT_NV61,    .mem_planes = 1, .comp_planes = 2, .bpp = { 1, 2, 0, 0 }, .hdiv = 2, .vdiv = 1 },
++		{ .format = V4L2_PIX_FMT_NV24,    .mem_planes = 1, .comp_planes = 2, .bpp = { 1, 2, 0, 0 }, .hdiv = 1, .vdiv = 1 },
++		{ .format = V4L2_PIX_FMT_NV42,    .mem_planes = 1, .comp_planes = 2, .bpp = { 1, 2, 0, 0 }, .hdiv = 1, .vdiv = 1 },
++
++		{ .format = V4L2_PIX_FMT_YUV410,  .mem_planes = 1, .comp_planes = 3, .bpp = { 1, 1, 1, 0 }, .hdiv = 4, .vdiv = 4 },
++		{ .format = V4L2_PIX_FMT_YVU410,  .mem_planes = 1, .comp_planes = 3, .bpp = { 1, 1, 1, 0 }, .hdiv = 4, .vdiv = 4 },
++		{ .format = V4L2_PIX_FMT_YUV411P, .mem_planes = 1, .comp_planes = 3, .bpp = { 1, 1, 1, 0 }, .hdiv = 4, .vdiv = 1 },
++		{ .format = V4L2_PIX_FMT_YUV420,  .mem_planes = 1, .comp_planes = 3, .bpp = { 1, 1, 1, 0 }, .hdiv = 2, .vdiv = 2 },
++		{ .format = V4L2_PIX_FMT_YVU420,  .mem_planes = 1, .comp_planes = 3, .bpp = { 1, 1, 1, 0 }, .hdiv = 2, .vdiv = 2 },
++		{ .format = V4L2_PIX_FMT_YUV422P, .mem_planes = 1, .comp_planes = 3, .bpp = { 1, 1, 1, 0 }, .hdiv = 2, .vdiv = 1 },
++
++		/* YUV planar formats, non contiguous variant */
++		{ .format = V4L2_PIX_FMT_YUV420M, .mem_planes = 3, .comp_planes = 3, .bpp = { 1, 1, 1, 0 }, .hdiv = 2, .vdiv = 2 },
++		{ .format = V4L2_PIX_FMT_YVU420M, .mem_planes = 3, .comp_planes = 3, .bpp = { 1, 1, 1, 0 }, .hdiv = 2, .vdiv = 2 },
++		{ .format = V4L2_PIX_FMT_YUV422M, .mem_planes = 3, .comp_planes = 3, .bpp = { 1, 1, 1, 0 }, .hdiv = 2, .vdiv = 1 },
++		{ .format = V4L2_PIX_FMT_YVU422M, .mem_planes = 3, .comp_planes = 3, .bpp = { 1, 1, 1, 0 }, .hdiv = 2, .vdiv = 1 },
++		{ .format = V4L2_PIX_FMT_YUV444M, .mem_planes = 3, .comp_planes = 3, .bpp = { 1, 1, 1, 0 }, .hdiv = 1, .vdiv = 1 },
++		{ .format = V4L2_PIX_FMT_YVU444M, .mem_planes = 3, .comp_planes = 3, .bpp = { 1, 1, 1, 0 }, .hdiv = 1, .vdiv = 1 },
++
++		{ .format = V4L2_PIX_FMT_NV12M,   .mem_planes = 2, .comp_planes = 2, .bpp = { 1, 2, 0, 0 }, .hdiv = 2, .vdiv = 2 },
++		{ .format = V4L2_PIX_FMT_NV21M,   .mem_planes = 2, .comp_planes = 2, .bpp = { 1, 2, 0, 0 }, .hdiv = 2, .vdiv = 2 },
++		{ .format = V4L2_PIX_FMT_NV16M,   .mem_planes = 2, .comp_planes = 2, .bpp = { 1, 2, 0, 0 }, .hdiv = 2, .vdiv = 1 },
++		{ .format = V4L2_PIX_FMT_NV61M,   .mem_planes = 2, .comp_planes = 2, .bpp = { 1, 2, 0, 0 }, .hdiv = 2, .vdiv = 1 },
++	};
++	unsigned int i;
++
++	for (i = 0; i < ARRAY_SIZE(formats); ++i)
++		if (formats[i].format == format)
++			return &formats[i];
++	return NULL;
++}
++EXPORT_SYMBOL(v4l2_format_info);
++
++static inline unsigned int v4l2_format_block_width(const struct v4l2_format_info *info, int plane)
++{
++	if (!info->block_w[plane])
++		return 1;
++	return info->block_w[plane];
++}
++
++static inline unsigned int v4l2_format_block_height(const struct v4l2_format_info *info, int plane)
++{
++	if (!info->block_h[plane])
++		return 1;
++	return info->block_h[plane];
++}
++
++int v4l2_fill_pixfmt_mp(struct v4l2_pix_format_mplane *pixfmt,
++			 int pixelformat, int width, int height)
++{
++	const struct v4l2_format_info *info;
++	struct v4l2_plane_pix_format *plane;
++	int i;
++
++	info = v4l2_format_info(pixelformat);
++	if (!info)
++		return -EINVAL;
++
++	pixfmt->width = width;
++	pixfmt->height = height;
++	pixfmt->pixelformat = pixelformat;
++	pixfmt->num_planes = info->mem_planes;
++
++	if (info->mem_planes == 1) {
++		plane = &pixfmt->plane_fmt[0];
++		plane->bytesperline = ALIGN(width, v4l2_format_block_width(info, 0)) * info->bpp[0];
++		plane->sizeimage = 0;
++
++		for (i = 0; i < info->comp_planes; i++) {
++			unsigned int hdiv = (i == 0) ? 1 : info->hdiv;
++			unsigned int vdiv = (i == 0) ? 1 : info->vdiv;
++			unsigned int aligned_width;
++			unsigned int aligned_height;
++
++			aligned_width = ALIGN(width, v4l2_format_block_width(info, i));
++			aligned_height = ALIGN(height, v4l2_format_block_height(info, i));
++
++			plane->sizeimage += info->bpp[i] *
++				DIV_ROUND_UP(aligned_width, hdiv) *
++				DIV_ROUND_UP(aligned_height, vdiv);
++		}
++	} else {
++		for (i = 0; i < info->comp_planes; i++) {
++			unsigned int hdiv = (i == 0) ? 1 : info->hdiv;
++			unsigned int vdiv = (i == 0) ? 1 : info->vdiv;
++			unsigned int aligned_width;
++			unsigned int aligned_height;
++
++			aligned_width = ALIGN(width, v4l2_format_block_width(info, i));
++			aligned_height = ALIGN(height, v4l2_format_block_height(info, i));
++
++			plane = &pixfmt->plane_fmt[i];
++			plane->bytesperline =
++				info->bpp[i] * DIV_ROUND_UP(aligned_width, hdiv);
++			plane->sizeimage =
++				plane->bytesperline * DIV_ROUND_UP(aligned_height, vdiv);
++		}
++	}
++	return 0;
++}
++EXPORT_SYMBOL_GPL(v4l2_fill_pixfmt_mp);
++
++int v4l2_fill_pixfmt(struct v4l2_pix_format *pixfmt, int pixelformat, int width, int height)
++{
++	const struct v4l2_format_info *info;
++	int i;
++
++	info = v4l2_format_info(pixelformat);
++	if (!info)
++		return -EINVAL;
++
++	/* Single planar API cannot be used for multi plane formats. */
++	if (info->mem_planes > 1)
++		return -EINVAL;
++
++	pixfmt->width = width;
++	pixfmt->height = height;
++	pixfmt->pixelformat = pixelformat;
++	pixfmt->bytesperline = ALIGN(width, v4l2_format_block_width(info, 0)) * info->bpp[0];
++	pixfmt->sizeimage = 0;
++
++	for (i = 0; i < info->comp_planes; i++) {
++		unsigned int hdiv = (i == 0) ? 1 : info->hdiv;
++		unsigned int vdiv = (i == 0) ? 1 : info->vdiv;
++		unsigned int aligned_width;
++		unsigned int aligned_height;
++
++		aligned_width = ALIGN(width, v4l2_format_block_width(info, i));
++		aligned_height = ALIGN(height, v4l2_format_block_height(info, i));
++
++		pixfmt->sizeimage += info->bpp[i] *
++			DIV_ROUND_UP(aligned_width, hdiv) *
++			DIV_ROUND_UP(aligned_height, vdiv);
++	}
++	return 0;
++}
++EXPORT_SYMBOL_GPL(v4l2_fill_pixfmt);
+diff --git a/include/media/v4l2-common.h b/include/media/v4l2-common.h
+index 2b93cb281fa5..937b74a946cd 100644
+--- a/include/media/v4l2-common.h
++++ b/include/media/v4l2-common.h
+@@ -392,4 +392,36 @@ int v4l2_s_parm_cap(struct video_device *vdev,
+ 	((u64)(a).numerator * (b).denominator OP	\
+ 	(u64)(b).numerator * (a).denominator)
+ 
++/* ------------------------------------------------------------------------- */
++
++/* Pixel format and FourCC helpers */
++
++/**
++ * struct v4l2_format_info - information about a V4L2 format
++ * @format: 4CC format identifier (V4L2_PIX_FMT_*)
++ * @mem_planes: Number of memory planes, which includes the alpha plane (1 to 4).
++ * @comp_planes: Number of component planes, which includes the alpha plane (1 to 4).
++ * @bpp: Array of per-plane bytes per pixel
++ * @hdiv: Horizontal chroma subsampling factor
++ * @vdiv: Vertical chroma subsampling factor
++ */
++struct v4l2_format_info {
++	u32 format;
++	u8 mem_planes;
++	u8 comp_planes;
++	u8 bpp[4];
++	u8 hdiv;
++	u8 vdiv;
++	u8 block_w[4];
++	u8 block_h[4];
++};
++
++const struct v4l2_format_info *v4l2_format_info(u32 format);
++const char *v4l2_get_fourcc_name(u32 format);
++
++int v4l2_fill_pixfmt(struct v4l2_pix_format *pixfmt, int pixelformat,
++		     int width, int height);
++int v4l2_fill_pixfmt_mp(struct v4l2_pix_format_mplane *pixfmt, int pixelformat,
++			int width, int height);
++
+ #endif /* V4L2_COMMON_H_ */
+
+From patchwork Mon Mar  4 19:25:21 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Ezequiel Garcia <ezequiel@collabora.com>
+X-Patchwork-Id: 10838339
+Return-Path: 
+ <linux-rockchip-bounces+patchwork-linux-rockchip=patchwork.kernel.org@lists.infradead.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id 44E4517E0
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:26:52 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 2FECA2B291
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:26:52 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id 2442A2B29A; Mon,  4 Mar 2019 19:26:52 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-5.2 required=2.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,MAILING_LIST_MULTI,RCVD_IN_DNSWL_MED,UNPARSEABLE_RELAY
+	autolearn=unavailable version=3.3.1
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTPS id B96CD2B293
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:26:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20170209; h=Sender:
+	Content-Transfer-Encoding:Content-Type:Cc:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=HPrPDzyf/evkBWXqwzt2AwO2+svTaJvsqS80gfNAIzk=; b=MkbyQDX+pubYMu
+	nWwBBCNYZVHGqkKuvUdjFX896vuueVTIRhvBr8uG0FehhsVHpZrXyIU2rreIQmTE+pkaDGN6pU08k
+	sstbjBMmezMeheYdY1FtviNshazU6I3D6t7oxg/28UMDHboCRUa6tfZ+G9j6Ahhq794KLW4c6Yifl
+	FF+hDB3R5tMm/M4ThEX4zuXtqRBKABqANj5Wpzif/TR9DM98JriZVpI1KzIADAgrbNj3xmGq7shqO
+	7q4LVJFW/E1ajMQ/mWE+rTW8+0Z853LNaZIe8yeEf8jjcJ/8C0u2x5yCa8DVkevOzu/Jyy0jeKxpM
+	cJcPiofxC4XQ9st0+ELQ==;
+Received: from localhost ([127.0.0.1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.90_1 #2 (Red Hat Linux))
+	id 1h0tEf-0003JY-S4; Mon, 04 Mar 2019 19:26:49 +0000
+Received: from bhuna.collabora.co.uk ([46.235.227.227])
+ by bombadil.infradead.org with esmtps (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1h0tEc-0003Gk-Q5
+ for linux-rockchip@lists.infradead.org; Mon, 04 Mar 2019 19:26:48 +0000
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+ (Authenticated sender: ezequiel) with ESMTPSA id 199402822DB
+From: Ezequiel Garcia <ezequiel@collabora.com>
+To: linux-media@vger.kernel.org
+Subject: [PATCH v2 03/11] rockchip/vpu: Use pixel format helpers
+Date: Mon,  4 Mar 2019 16:25:21 -0300
+Message-Id: <20190304192529.14200-4-ezequiel@collabora.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190304192529.14200-1-ezequiel@collabora.com>
+References: <20190304192529.14200-1-ezequiel@collabora.com>
+MIME-Version: 1.0
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20190304_112647_105593_2CC5DD24 
+X-CRM114-Status: UNSURE (   9.33  )
+X-CRM114-Notice: Please train this message.
+X-BeenThere: linux-rockchip@lists.infradead.org
+X-Mailman-Version: 2.1.21
+Precedence: list
+List-Id: Upstream kernel work for Rockchip platforms
+ <linux-rockchip.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip@lists.infradead.org>
+List-Help: <mailto:linux-rockchip-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=subscribe>
+Cc: Nicolas Dufresne <nicolas.dufresne@collabora.com>,
+ Heiko Stuebner <heiko@sntech.de>, Jonas Karlman <jonas@kwiboo.se>,
+ Tomasz Figa <tfiga@chromium.org>, linux-rockchip@lists.infradead.org,
+ Hans Verkuil <hans.verkuil@cisco.com>, kernel@collabora.com,
+ Ezequiel Garcia <ezequiel@collabora.com>
+Content-Type: text/plain; charset="us-ascii"
+Sender: "Linux-rockchip" <linux-rockchip-bounces@lists.infradead.org>
+Errors-To: 
+ linux-rockchip-bounces+patchwork-linux-rockchip=patchwork.kernel.org@lists.infradead.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+Now that we've introduced the pixel format helpers, use them
+in vpu driver, and get rid of the internal helpers.
+
+Signed-off-by: Ezequiel Garcia <ezequiel@collabora.com>
+---
+ .../media/rockchip/vpu/rockchip_vpu_enc.c     | 91 +------------------
+ 1 file changed, 2 insertions(+), 89 deletions(-)
+
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu_enc.c b/drivers/staging/media/rockchip/vpu/rockchip_vpu_enc.c
+index fb5e36aedd8c..4451bb2dc3d7 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu_enc.c
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu_enc.c
+@@ -30,93 +30,6 @@
+ #include "rockchip_vpu_hw.h"
+ #include "rockchip_vpu_common.h"
+ 
+-/**
+- * struct v4l2_format_info - information about a V4L2 format
+- * @format: 4CC format identifier (V4L2_PIX_FMT_*)
+- * @header_size: Size of header, optional and used by compressed formats
+- * @num_planes: Number of planes (1 to 3)
+- * @cpp: Number of bytes per pixel (per plane)
+- * @hsub: Horizontal chroma subsampling factor
+- * @vsub: Vertical chroma subsampling factor
+- * @is_compressed: Is it a compressed format?
+- * @multiplanar: Is it a multiplanar variant format? (e.g. NV12M)
+- */
+-struct rockchip_vpu_v4l2_format_info {
+-	u32 format;
+-	u32 header_size;
+-	u8 num_planes;
+-	u8 cpp[3];
+-	u8 hsub;
+-	u8 vsub;
+-	u8 is_compressed;
+-	u8 multiplanar;
+-};
+-
+-static const struct rockchip_vpu_v4l2_format_info *
+-rockchip_vpu_v4l2_format_info(u32 format)
+-{
+-	static const struct rockchip_vpu_v4l2_format_info formats[] = {
+-		{ .format = V4L2_PIX_FMT_YUV420M,	.num_planes = 3, .cpp = { 1, 1, 1 }, .hsub = 2, .vsub = 2, .multiplanar = 1 },
+-		{ .format = V4L2_PIX_FMT_NV12M,		.num_planes = 2, .cpp = { 1, 2, 0 }, .hsub = 2, .vsub = 2, .multiplanar = 1 },
+-		{ .format = V4L2_PIX_FMT_YUYV,		.num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 2, .vsub = 1 },
+-		{ .format = V4L2_PIX_FMT_UYVY,		.num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 2, .vsub = 1 },
+-	};
+-	unsigned int i;
+-
+-	for (i = 0; i < ARRAY_SIZE(formats); ++i) {
+-		if (formats[i].format == format)
+-			return &formats[i];
+-	}
+-
+-	vpu_err("Unsupported V4L 4CC format (%08x)\n", format);
+-	return NULL;
+-}
+-
+-static void
+-fill_pixfmt_mp(struct v4l2_pix_format_mplane *pixfmt,
+-	       int pixelformat, int width, int height)
+-{
+-	const struct rockchip_vpu_v4l2_format_info *info;
+-	struct v4l2_plane_pix_format *plane;
+-	int i;
+-
+-	info = rockchip_vpu_v4l2_format_info(pixelformat);
+-	if (!info)
+-		return;
+-
+-	pixfmt->width = width;
+-	pixfmt->height = height;
+-	pixfmt->pixelformat = pixelformat;
+-
+-	if (!info->multiplanar) {
+-		pixfmt->num_planes = 1;
+-		plane = &pixfmt->plane_fmt[0];
+-		plane->bytesperline = info->is_compressed ?
+-					0 : width * info->cpp[0];
+-		plane->sizeimage = info->header_size;
+-		for (i = 0; i < info->num_planes; i++) {
+-			unsigned int hsub = (i == 0) ? 1 : info->hsub;
+-			unsigned int vsub = (i == 0) ? 1 : info->vsub;
+-
+-			plane->sizeimage += info->cpp[i] *
+-				DIV_ROUND_UP(width, hsub) *
+-				DIV_ROUND_UP(height, vsub);
+-		}
+-	} else {
+-		pixfmt->num_planes = info->num_planes;
+-		for (i = 0; i < info->num_planes; i++) {
+-			unsigned int hsub = (i == 0) ? 1 : info->hsub;
+-			unsigned int vsub = (i == 0) ? 1 : info->vsub;
+-
+-			plane = &pixfmt->plane_fmt[i];
+-			plane->bytesperline =
+-				info->cpp[i] * DIV_ROUND_UP(width, hsub);
+-			plane->sizeimage =
+-				plane->bytesperline * DIV_ROUND_UP(height, vsub);
+-		}
+-	}
+-}
+-
+ static const struct rockchip_vpu_fmt *
+ rockchip_vpu_find_format(struct rockchip_vpu_ctx *ctx, u32 fourcc)
+ {
+@@ -339,7 +252,7 @@ vidioc_try_fmt_out_mplane(struct file *file, void *priv, struct v4l2_format *f)
+ 	height = round_up(height, JPEG_MB_DIM);
+ 
+ 	/* Fill remaining fields */
+-	fill_pixfmt_mp(pix_mp, fmt->fourcc, width, height);
++	v4l2_fill_pixfmt_mp(pix_mp, fmt->fourcc, width, height);
+ 
+ 	for (i = 0; i < pix_mp->num_planes; i++) {
+ 		memset(pix_mp->plane_fmt[i].reserved, 0,
+@@ -393,7 +306,7 @@ void rockchip_vpu_enc_reset_src_fmt(struct rockchip_vpu_dev *vpu,
+ 	fmt->quantization = V4L2_QUANTIZATION_DEFAULT;
+ 	fmt->xfer_func = V4L2_XFER_FUNC_DEFAULT;
+ 
+-	fill_pixfmt_mp(fmt, ctx->vpu_src_fmt->fourcc, width, height);
++	v4l2_fill_pixfmt_mp(fmt, ctx->vpu_src_fmt->fourcc, width, height);
+ }
+ 
+ static int
+
+From patchwork Mon Mar  4 19:25:22 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Ezequiel Garcia <ezequiel@collabora.com>
+X-Patchwork-Id: 10838343
+Return-Path: 
+ <linux-rockchip-bounces+patchwork-linux-rockchip=patchwork.kernel.org@lists.infradead.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id 84C0B13B5
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:26:56 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 6FB2E2B28F
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:26:56 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id 6DC2B2B2A5; Mon,  4 Mar 2019 19:26:56 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-5.2 required=2.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,MAILING_LIST_MULTI,RCVD_IN_DNSWL_MED,UNPARSEABLE_RELAY
+	autolearn=ham version=3.3.1
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTPS id 25DF42B2AF
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:26:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20170209; h=Sender:
+	Content-Transfer-Encoding:Content-Type:Cc:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=QTqCMW/3AqHzeiTWd98lH1H1jWPoYhc/uIsX4D/O0Sg=; b=JBwAwQZUX+0Uqw
+	UOjTkDDe0E2ep423XjHv5odhZkXG9bVdYqq8724VW0to1dRUArUEU+W7ZF27RNrQyYYp54f8TLHQs
+	dRWqGf/mb0jXbJU5mgG09Ov6ndDEJgV6//60gqmXWN/XLU7H5F0v9+fN8tDxuO6qA3qodI+VUmbnS
+	tUC1JNcBJPGX6+Mjn7Owb8PqSr0spq5YVp0NQPqkZyif4w+AGk5yYaI626etxLI/ChnvOLPLTILvA
+	izg1OQqjuRROeP2xJeHEtnTlfrJRacqkWwYHIBOV0lRbzJLMlGYlWA/PCipbuFXTp8DIfDJIu0+S/
+	IHY7aTdFQLfcfQk0Urqw==;
+Received: from localhost ([127.0.0.1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.90_1 #2 (Red Hat Linux))
+	id 1h0tEj-0003MM-Ip; Mon, 04 Mar 2019 19:26:53 +0000
+Received: from bhuna.collabora.co.uk ([2a00:1098:0:82:1000:25:2eeb:e3e3])
+ by bombadil.infradead.org with esmtps (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1h0tEf-0003J9-Pj
+ for linux-rockchip@lists.infradead.org; Mon, 04 Mar 2019 19:26:51 +0000
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+ (Authenticated sender: ezequiel) with ESMTPSA id 2AC5F27FFA6
+From: Ezequiel Garcia <ezequiel@collabora.com>
+To: linux-media@vger.kernel.org
+Subject: [PATCH v2 04/11] rockchip/vpu: Use v4l2_m2m_buf_copy_metadata
+Date: Mon,  4 Mar 2019 16:25:22 -0300
+Message-Id: <20190304192529.14200-5-ezequiel@collabora.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190304192529.14200-1-ezequiel@collabora.com>
+References: <20190304192529.14200-1-ezequiel@collabora.com>
+MIME-Version: 1.0
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20190304_112650_030699_C145A4A3 
+X-CRM114-Status: UNSURE (   7.94  )
+X-CRM114-Notice: Please train this message.
+X-BeenThere: linux-rockchip@lists.infradead.org
+X-Mailman-Version: 2.1.21
+Precedence: list
+List-Id: Upstream kernel work for Rockchip platforms
+ <linux-rockchip.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip@lists.infradead.org>
+List-Help: <mailto:linux-rockchip-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=subscribe>
+Cc: Nicolas Dufresne <nicolas.dufresne@collabora.com>,
+ Heiko Stuebner <heiko@sntech.de>, Jonas Karlman <jonas@kwiboo.se>,
+ Tomasz Figa <tfiga@chromium.org>, linux-rockchip@lists.infradead.org,
+ Hans Verkuil <hans.verkuil@cisco.com>, kernel@collabora.com,
+ Ezequiel Garcia <ezequiel@collabora.com>
+Content-Type: text/plain; charset="us-ascii"
+Sender: "Linux-rockchip" <linux-rockchip-bounces@lists.infradead.org>
+Errors-To: 
+ linux-rockchip-bounces+patchwork-linux-rockchip=patchwork.kernel.org@lists.infradead.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+Use the recently introduced v4l2_m2m_buf_copy_metadata helper
+and get rid of some code.
+
+Signed-off-by: Ezequiel Garcia <ezequiel@collabora.com>
+---
+ drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
+
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c b/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
+index 962412c79b91..5647b0bdac20 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
+@@ -59,14 +59,7 @@ static void rockchip_vpu_job_finish(struct rockchip_vpu_dev *vpu,
+ 	src->sequence = ctx->sequence_out++;
+ 	dst->sequence = ctx->sequence_cap++;
+ 
+-	dst->field = src->field;
+-	if (src->flags & V4L2_BUF_FLAG_TIMECODE)
+-		dst->timecode = src->timecode;
+-	dst->vb2_buf.timestamp = src->vb2_buf.timestamp;
+-	dst->flags &= ~(V4L2_BUF_FLAG_TSTAMP_SRC_MASK |
+-			V4L2_BUF_FLAG_TIMECODE);
+-	dst->flags |= src->flags & (V4L2_BUF_FLAG_TSTAMP_SRC_MASK |
+-				    V4L2_BUF_FLAG_TIMECODE);
++	v4l2_m2m_buf_copy_metadata(src, dst, true);
+ 
+ 	avail_size = vb2_plane_size(&dst->vb2_buf, 0) -
+ 		     ctx->vpu_dst_fmt->header_size;
+
+From patchwork Mon Mar  4 19:25:23 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Ezequiel Garcia <ezequiel@collabora.com>
+X-Patchwork-Id: 10838347
+Return-Path: 
+ <linux-rockchip-bounces+patchwork-linux-rockchip=patchwork.kernel.org@lists.infradead.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id 5E312180E
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:26:59 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 46D6C2B2BF
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:26:59 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id 327512AFB5; Mon,  4 Mar 2019 19:26:59 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-5.2 required=2.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,MAILING_LIST_MULTI,RCVD_IN_DNSWL_MED,UNPARSEABLE_RELAY
+	autolearn=unavailable version=3.3.1
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTPS id 77FEB2B281
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:26:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20170209; h=Sender:
+	Content-Transfer-Encoding:Content-Type:Cc:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=Oc0KqT45fpOJjx9XEbKSHLiJw1fFzdyH9B4GepwpO94=; b=YUfKCHUq0y2f/J
+	cL4M/wwzAKots/KBk7IkoKYJuSvubRFbwyJarEpiMdqD0nwtXBfvcW0EMghdImwTovNGh1uicL8ji
+	9kcdQp0YTEXpoNQzC5CFyTpxRWvGCIyNQZfh5VjyLWLToHGfki0bFcgWxGeNVi+/BosuAikc84vgZ
+	/JAH/sPKOUUNJSkY089cN97Od6XWrVl6eWa8yCCjlLFjA81UumLAEppluj+Otprb90lxUFZDuFkoc
+	sh+guO5ZhtGHX2eyRjcJMOFEjdAJuBmNZrdHiKFrlvwBnRdQ1bHJ88eIIIif5W5Ea9YN6trH2BX0o
+	tlKiTRTYT6XzK3ofubgw==;
+Received: from localhost ([127.0.0.1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.90_1 #2 (Red Hat Linux))
+	id 1h0tEm-0003O9-69; Mon, 04 Mar 2019 19:26:56 +0000
+Received: from bhuna.collabora.co.uk ([46.235.227.227])
+ by bombadil.infradead.org with esmtps (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1h0tEj-0003Ln-AV
+ for linux-rockchip@lists.infradead.org; Mon, 04 Mar 2019 19:26:54 +0000
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+ (Authenticated sender: ezequiel) with ESMTPSA id 3DF87277A3B
+From: Ezequiel Garcia <ezequiel@collabora.com>
+To: linux-media@vger.kernel.org
+Subject: [PATCH v2 05/11] rockchip/vpu: Cleanup macroblock alignment
+Date: Mon,  4 Mar 2019 16:25:23 -0300
+Message-Id: <20190304192529.14200-6-ezequiel@collabora.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190304192529.14200-1-ezequiel@collabora.com>
+References: <20190304192529.14200-1-ezequiel@collabora.com>
+MIME-Version: 1.0
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20190304_112653_499759_34B34BF4 
+X-CRM114-Status: UNSURE (   7.02  )
+X-CRM114-Notice: Please train this message.
+X-BeenThere: linux-rockchip@lists.infradead.org
+X-Mailman-Version: 2.1.21
+Precedence: list
+List-Id: Upstream kernel work for Rockchip platforms
+ <linux-rockchip.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip@lists.infradead.org>
+List-Help: <mailto:linux-rockchip-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=subscribe>
+Cc: Nicolas Dufresne <nicolas.dufresne@collabora.com>,
+ Heiko Stuebner <heiko@sntech.de>, Jonas Karlman <jonas@kwiboo.se>,
+ Tomasz Figa <tfiga@chromium.org>, linux-rockchip@lists.infradead.org,
+ Hans Verkuil <hans.verkuil@cisco.com>, kernel@collabora.com,
+ Ezequiel Garcia <ezequiel@collabora.com>
+Content-Type: text/plain; charset="us-ascii"
+Sender: "Linux-rockchip" <linux-rockchip-bounces@lists.infradead.org>
+Errors-To: 
+ linux-rockchip-bounces+patchwork-linux-rockchip=patchwork.kernel.org@lists.infradead.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+We need to make the macrobock alignment generic, in order
+to support multiple codecs.
+
+Signed-off-by: Ezequiel Garcia <ezequiel@collabora.com>
+---
+ .../media/rockchip/vpu/rockchip_vpu_enc.c     | 20 ++++++++-----------
+ 1 file changed, 8 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu_enc.c b/drivers/staging/media/rockchip/vpu/rockchip_vpu_enc.c
+index 4451bb2dc3d7..ae1ff3d9b9d2 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu_enc.c
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu_enc.c
+@@ -203,8 +203,8 @@ vidioc_try_fmt_cap_mplane(struct file *file, void *priv, struct v4l2_format *f)
+ 			       fmt->frmsize.min_height,
+ 			       fmt->frmsize.max_height);
+ 	/* Round up to macroblocks. */
+-	pix_mp->width = round_up(pix_mp->width, JPEG_MB_DIM);
+-	pix_mp->height = round_up(pix_mp->height, JPEG_MB_DIM);
++	pix_mp->width = round_up(pix_mp->width, fmt->frmsize.step_width);
++	pix_mp->height = round_up(pix_mp->height, fmt->frmsize.step_height);
+ 
+ 	/*
+ 	 * For compressed formats the application can specify
+@@ -248,8 +248,8 @@ vidioc_try_fmt_out_mplane(struct file *file, void *priv, struct v4l2_format *f)
+ 		       ctx->vpu_dst_fmt->frmsize.min_height,
+ 		       ctx->vpu_dst_fmt->frmsize.max_height);
+ 	/* Round up to macroblocks. */
+-	width = round_up(width, JPEG_MB_DIM);
+-	height = round_up(height, JPEG_MB_DIM);
++	width = round_up(width, ctx->vpu_dst_fmt->frmsize.step_width);
++	height = round_up(height, ctx->vpu_dst_fmt->frmsize.step_height);
+ 
+ 	/* Fill remaining fields */
+ 	v4l2_fill_pixfmt_mp(pix_mp, fmt->fourcc, width, height);
+@@ -338,10 +338,8 @@ vidioc_s_fmt_out_mplane(struct file *file, void *priv, struct v4l2_format *f)
+ 	ctx->dst_fmt.height = pix_mp->height;
+ 
+ 	vpu_debug(0, "OUTPUT codec mode: %d\n", ctx->vpu_src_fmt->codec_mode);
+-	vpu_debug(0, "fmt - w: %d, h: %d, mb - w: %d, h: %d\n",
+-		  pix_mp->width, pix_mp->height,
+-		  JPEG_MB_WIDTH(pix_mp->width),
+-		  JPEG_MB_HEIGHT(pix_mp->height));
++	vpu_debug(0, "fmt - w: %d, h: %d\n",
++		  pix_mp->width, pix_mp->height);
+ 	return 0;
+ }
+ 
+@@ -380,10 +378,8 @@ vidioc_s_fmt_cap_mplane(struct file *file, void *priv, struct v4l2_format *f)
+ 	ctx->dst_fmt = *pix_mp;
+ 
+ 	vpu_debug(0, "CAPTURE codec mode: %d\n", ctx->vpu_dst_fmt->codec_mode);
+-	vpu_debug(0, "fmt - w: %d, h: %d, mb - w: %d, h: %d\n",
+-		  pix_mp->width, pix_mp->height,
+-		  JPEG_MB_WIDTH(pix_mp->width),
+-		  JPEG_MB_HEIGHT(pix_mp->height));
++	vpu_debug(0, "fmt - w: %d, h: %d\n",
++		  pix_mp->width, pix_mp->height);
+ 
+ 	/*
+ 	 * Current raw format might have become invalid with newly
+
+From patchwork Mon Mar  4 19:25:24 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Ezequiel Garcia <ezequiel@collabora.com>
+X-Patchwork-Id: 10838351
+Return-Path: 
+ <linux-rockchip-bounces+patchwork-linux-rockchip=patchwork.kernel.org@lists.infradead.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id DE7A0180E
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:27:03 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id C3FE02B2A7
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:27:03 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id C22012B2B5; Mon,  4 Mar 2019 19:27:03 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-5.2 required=2.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,MAILING_LIST_MULTI,RCVD_IN_DNSWL_MED,UNPARSEABLE_RELAY
+	autolearn=unavailable version=3.3.1
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTPS id 1E2562B2AE
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:27:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20170209; h=Sender:
+	Content-Transfer-Encoding:Content-Type:Cc:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=VuMJ4pvpIa2ZLrQxAQPsW62Aibap8clYI5r7SvDGMtM=; b=sVBrCFYjBODsLD
+	Mah6rRuqENEZPwmYO3GzkNzV1pqHIwIu0t6vCnMWTV0GIrLCES9oYpv2c74+Aspr4n1U0ypEl86Kd
+	b6SaKcitJ56BnIiVQfF+6t3GIBKAXQdNcLQBUswM/W/6z0SIZMMEN45F8rr4yrkSMMAP4P1Q3Hil5
+	QMa9TpV6bzbpe/RtOQW6a0BKS+RMA6iTCJAzNJ/RoDEetef9i2MW9eeh0zZVUNSfPLUrIMHV+eSuN
+	inhX8ZXw276Pq6xwCliK4UQ9Z0TRWOrMcvgrm3oHwtBQMOWf1SoNhMerxitvQ5RKvJsVm6vAGNiBZ
+	NtuIBIDj9Ntk9QWzxScg==;
+Received: from localhost ([127.0.0.1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.90_1 #2 (Red Hat Linux))
+	id 1h0tEq-0003RF-N5; Mon, 04 Mar 2019 19:27:00 +0000
+Received: from bhuna.collabora.co.uk ([46.235.227.227])
+ by bombadil.infradead.org with esmtps (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1h0tEm-0003Nz-L3
+ for linux-rockchip@lists.infradead.org; Mon, 04 Mar 2019 19:26:58 +0000
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+ (Authenticated sender: ezequiel) with ESMTPSA id BBC60276DFA
+From: Ezequiel Garcia <ezequiel@collabora.com>
+To: linux-media@vger.kernel.org
+Subject: [PATCH v2 06/11] rockchip/vpu: Cleanup JPEG bounce buffer management
+Date: Mon,  4 Mar 2019 16:25:24 -0300
+Message-Id: <20190304192529.14200-7-ezequiel@collabora.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190304192529.14200-1-ezequiel@collabora.com>
+References: <20190304192529.14200-1-ezequiel@collabora.com>
+MIME-Version: 1.0
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20190304_112656_988778_4A2AADAB 
+X-CRM114-Status: GOOD (  16.36  )
+X-BeenThere: linux-rockchip@lists.infradead.org
+X-Mailman-Version: 2.1.21
+Precedence: list
+List-Id: Upstream kernel work for Rockchip platforms
+ <linux-rockchip.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip@lists.infradead.org>
+List-Help: <mailto:linux-rockchip-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=subscribe>
+Cc: Nicolas Dufresne <nicolas.dufresne@collabora.com>,
+ Heiko Stuebner <heiko@sntech.de>, Jonas Karlman <jonas@kwiboo.se>,
+ Tomasz Figa <tfiga@chromium.org>, linux-rockchip@lists.infradead.org,
+ Hans Verkuil <hans.verkuil@cisco.com>, kernel@collabora.com,
+ Ezequiel Garcia <ezequiel@collabora.com>
+Content-Type: text/plain; charset="us-ascii"
+Sender: "Linux-rockchip" <linux-rockchip-bounces@lists.infradead.org>
+Errors-To: 
+ linux-rockchip-bounces+patchwork-linux-rockchip=patchwork.kernel.org@lists.infradead.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+In order to make the code more generic, introduce a pair of start/stop
+codec operations, and use them to allocate and release the JPEG bounce
+buffer.
+
+Signed-off-by: Ezequiel Garcia <ezequiel@collabora.com>
+---
+ .../media/rockchip/vpu/rk3288_vpu_hw.c        |  2 ++
+ .../rockchip/vpu/rk3288_vpu_hw_jpeg_enc.c     |  4 +--
+ .../media/rockchip/vpu/rk3399_vpu_hw.c        |  2 ++
+ .../rockchip/vpu/rk3399_vpu_hw_jpeg_enc.c     |  4 +--
+ .../staging/media/rockchip/vpu/rockchip_vpu.h | 12 ++++----
+ .../media/rockchip/vpu/rockchip_vpu_drv.c     | 10 +++++--
+ .../media/rockchip/vpu/rockchip_vpu_enc.c     | 23 +++++----------
+ .../media/rockchip/vpu/rockchip_vpu_hw.h      | 28 +++++++++++++++++++
+ .../media/rockchip/vpu/rockchip_vpu_jpeg.c    | 25 +++++++++++++++++
+ 9 files changed, 81 insertions(+), 29 deletions(-)
+
+diff --git a/drivers/staging/media/rockchip/vpu/rk3288_vpu_hw.c b/drivers/staging/media/rockchip/vpu/rk3288_vpu_hw.c
+index a5e9d183fffd..056ee017c798 100644
+--- a/drivers/staging/media/rockchip/vpu/rk3288_vpu_hw.c
++++ b/drivers/staging/media/rockchip/vpu/rk3288_vpu_hw.c
+@@ -98,6 +98,8 @@ static const struct rockchip_vpu_codec_ops rk3288_vpu_codec_ops[] = {
+ 	[RK_VPU_MODE_JPEG_ENC] = {
+ 		.run = rk3288_vpu_jpeg_enc_run,
+ 		.reset = rk3288_vpu_enc_reset,
++		.start = rockchip_vpu_jpeg_enc_start,
++		.stop = rockchip_vpu_jpeg_enc_stop,
+ 	},
+ };
+ 
+diff --git a/drivers/staging/media/rockchip/vpu/rk3288_vpu_hw_jpeg_enc.c b/drivers/staging/media/rockchip/vpu/rk3288_vpu_hw_jpeg_enc.c
+index 06daea66fb49..b05b1fdcff90 100644
+--- a/drivers/staging/media/rockchip/vpu/rk3288_vpu_hw_jpeg_enc.c
++++ b/drivers/staging/media/rockchip/vpu/rk3288_vpu_hw_jpeg_enc.c
+@@ -37,9 +37,9 @@ static void rk3288_vpu_jpeg_enc_set_buffers(struct rockchip_vpu_dev *vpu,
+ 
+ 	WARN_ON(pix_fmt->num_planes > 3);
+ 
+-	vepu_write_relaxed(vpu, ctx->bounce_dma_addr,
++	vepu_write_relaxed(vpu, ctx->jpeg_enc_ctx.bounce_buffer.dma,
+ 			   VEPU_REG_ADDR_OUTPUT_STREAM);
+-	vepu_write_relaxed(vpu, ctx->bounce_size,
++	vepu_write_relaxed(vpu, ctx->jpeg_enc_ctx.bounce_buffer.size,
+ 			   VEPU_REG_STR_BUF_LIMIT);
+ 
+ 	if (pix_fmt->num_planes == 1) {
+diff --git a/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw.c b/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw.c
+index 6fdef61e2127..8469e474c975 100644
+--- a/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw.c
++++ b/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw.c
+@@ -98,6 +98,8 @@ static const struct rockchip_vpu_codec_ops rk3399_vpu_codec_ops[] = {
+ 	[RK_VPU_MODE_JPEG_ENC] = {
+ 		.run = rk3399_vpu_jpeg_enc_run,
+ 		.reset = rk3399_vpu_enc_reset,
++		.start = rockchip_vpu_jpeg_enc_start,
++		.stop = rockchip_vpu_jpeg_enc_stop,
+ 	},
+ };
+ 
+diff --git a/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw_jpeg_enc.c b/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw_jpeg_enc.c
+index 3d438797692e..fe92c40d0a84 100644
+--- a/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw_jpeg_enc.c
++++ b/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw_jpeg_enc.c
+@@ -69,9 +69,9 @@ static void rk3399_vpu_jpeg_enc_set_buffers(struct rockchip_vpu_dev *vpu,
+ 
+ 	WARN_ON(pix_fmt->num_planes > 3);
+ 
+-	vepu_write_relaxed(vpu, ctx->bounce_dma_addr,
++	vepu_write_relaxed(vpu, ctx->jpeg_enc_ctx.bounce_buffer.dma,
+ 			   VEPU_REG_ADDR_OUTPUT_STREAM);
+-	vepu_write_relaxed(vpu, ctx->bounce_size,
++	vepu_write_relaxed(vpu, ctx->jpeg_enc_ctx.bounce_buffer.size,
+ 			   VEPU_REG_STR_BUF_LIMIT);
+ 
+ 	if (pix_fmt->num_planes == 1) {
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu.h b/drivers/staging/media/rockchip/vpu/rockchip_vpu.h
+index 1ec2be483e27..76ee24abc141 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu.h
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu.h
+@@ -124,10 +124,7 @@ struct rockchip_vpu_dev {
+  * @jpeg_quality:	User-specified JPEG compression quality.
+  *
+  * @codec_ops:		Set of operations related to codec mode.
+- *
+- * @bounce_dma_addr:	Bounce buffer bus address.
+- * @bounce_buf:		Bounce buffer pointer.
+- * @bounce_size:	Bounce buffer size.
++ * @jpeg_enc_ctx:	JPEG-encoding context.
+  */
+ struct rockchip_vpu_ctx {
+ 	struct rockchip_vpu_dev *dev;
+@@ -146,9 +143,10 @@ struct rockchip_vpu_ctx {
+ 
+ 	const struct rockchip_vpu_codec_ops *codec_ops;
+ 
+-	dma_addr_t bounce_dma_addr;
+-	void *bounce_buf;
+-	size_t bounce_size;
++	/* Specific for particular codec modes. */
++	union {
++		struct rockchip_vpu_jpeg_enc_hw_ctx jpeg_enc_ctx;
++	};
+ };
+ 
+ /**
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c b/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
+index 5647b0bdac20..1a6dd36c71ab 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
+@@ -64,10 +64,16 @@ static void rockchip_vpu_job_finish(struct rockchip_vpu_dev *vpu,
+ 	avail_size = vb2_plane_size(&dst->vb2_buf, 0) -
+ 		     ctx->vpu_dst_fmt->header_size;
+ 	if (bytesused <= avail_size) {
+-		if (ctx->bounce_buf) {
++		/*
++		 * This works while JPEG is the only encoder this driver
++		 * supports. We will have to abstract this step, or get
++		 * rid of the bounce buffer before we can support
++		 * encoding other codecs.
++		 */
++		if (ctx->jpeg_enc_ctx.bounce_buffer.cpu) {
+ 			memcpy(vb2_plane_vaddr(&dst->vb2_buf, 0) +
+ 			       ctx->vpu_dst_fmt->header_size,
+-			       ctx->bounce_buf, bytesused);
++			       ctx->jpeg_enc_ctx.bounce_buffer.cpu, bytesused);
+ 		}
+ 		dst->vb2_buf.planes[0].bytesused =
+ 			ctx->vpu_dst_fmt->header_size + bytesused;
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu_enc.c b/drivers/staging/media/rockchip/vpu/rockchip_vpu_enc.c
+index ae1ff3d9b9d2..2b28403314bc 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu_enc.c
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu_enc.c
+@@ -514,6 +514,7 @@ static int rockchip_vpu_start_streaming(struct vb2_queue *q, unsigned int count)
+ {
+ 	struct rockchip_vpu_ctx *ctx = vb2_get_drv_priv(q);
+ 	enum rockchip_vpu_codec_mode codec_mode;
++	int ret = 0;
+ 
+ 	if (V4L2_TYPE_IS_OUTPUT(q->type))
+ 		ctx->sequence_out = 0;
+@@ -526,17 +527,10 @@ static int rockchip_vpu_start_streaming(struct vb2_queue *q, unsigned int count)
+ 	vpu_debug(4, "Codec mode = %d\n", codec_mode);
+ 	ctx->codec_ops = &ctx->dev->variant->codec_ops[codec_mode];
+ 
+-	/* A bounce buffer is needed for the JPEG payload */
+-	if (!V4L2_TYPE_IS_OUTPUT(q->type)) {
+-		ctx->bounce_size = ctx->dst_fmt.plane_fmt[0].sizeimage -
+-				  ctx->vpu_dst_fmt->header_size;
+-		ctx->bounce_buf = dma_alloc_attrs(ctx->dev->dev,
+-						  ctx->bounce_size,
+-						  &ctx->bounce_dma_addr,
+-						  GFP_KERNEL,
+-						  DMA_ATTR_ALLOC_SINGLE_PAGES);
+-	}
+-	return 0;
++	if (!V4L2_TYPE_IS_OUTPUT(q->type))
++		if (ctx->codec_ops && ctx->codec_ops->start)
++			ret = ctx->codec_ops->start(ctx);
++	return ret;
+ }
+ 
+ static void rockchip_vpu_stop_streaming(struct vb2_queue *q)
+@@ -544,11 +538,8 @@ static void rockchip_vpu_stop_streaming(struct vb2_queue *q)
+ 	struct rockchip_vpu_ctx *ctx = vb2_get_drv_priv(q);
+ 
+ 	if (!V4L2_TYPE_IS_OUTPUT(q->type))
+-		dma_free_attrs(ctx->dev->dev,
+-			       ctx->bounce_size,
+-			       ctx->bounce_buf,
+-			       ctx->bounce_dma_addr,
+-			       DMA_ATTR_ALLOC_SINGLE_PAGES);
++		if (ctx->codec_ops && ctx->codec_ops->stop)
++			ctx->codec_ops->stop(ctx);
+ 
+ 	/*
+ 	 * The mem2mem framework calls v4l2_m2m_cancel_job before
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu_hw.h b/drivers/staging/media/rockchip/vpu/rockchip_vpu_hw.h
+index 2b955da1be1a..e2e84526f263 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu_hw.h
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu_hw.h
+@@ -18,9 +18,33 @@ struct rockchip_vpu_ctx;
+ struct rockchip_vpu_buf;
+ struct rockchip_vpu_variant;
+ 
++/**
++ * struct rockchip_vpu_aux_buf - auxiliary DMA buffer for hardware data
++ * @cpu:	CPU pointer to the buffer.
++ * @dma:	DMA address of the buffer.
++ * @size:	Size of the buffer.
++ */
++struct rockchip_vpu_aux_buf {
++	void *cpu;
++	dma_addr_t dma;
++	size_t size;
++};
++
++/**
++ * struct rockchip_vpu_jpeg_enc_hw_ctx
++ * @bounce_buffer:	Bounce buffer
++ */
++struct rockchip_vpu_jpeg_enc_hw_ctx {
++	struct rockchip_vpu_aux_buf bounce_buffer;
++};
++
+ /**
+  * struct rockchip_vpu_codec_ops - codec mode specific operations
+  *
++ * @start:	If needed, can be used for initialization.
++ *		Optional and called from process context.
++ * @stop:	If needed, can be used to undo the .start phase.
++ *		Optional and called from process context.
+  * @run:	Start single {en,de)coding job. Called from atomic context
+  *		to indicate that a pair of buffers is ready and the hardware
+  *		should be programmed and started.
+@@ -28,6 +52,8 @@ struct rockchip_vpu_variant;
+  * @reset:	Reset the hardware in case of a timeout.
+  */
+ struct rockchip_vpu_codec_ops {
++	int (*start)(struct rockchip_vpu_ctx *ctx);
++	void (*stop)(struct rockchip_vpu_ctx *ctx);
+ 	void (*run)(struct rockchip_vpu_ctx *ctx);
+ 	void (*done)(struct rockchip_vpu_ctx *ctx, enum vb2_buffer_state);
+ 	void (*reset)(struct rockchip_vpu_ctx *ctx);
+@@ -54,5 +80,7 @@ void rockchip_vpu_irq_done(struct rockchip_vpu_dev *vpu,
+ 
+ void rk3288_vpu_jpeg_enc_run(struct rockchip_vpu_ctx *ctx);
+ void rk3399_vpu_jpeg_enc_run(struct rockchip_vpu_ctx *ctx);
++int rockchip_vpu_jpeg_enc_start(struct rockchip_vpu_ctx *ctx);
++void rockchip_vpu_jpeg_enc_stop(struct rockchip_vpu_ctx *ctx);
+ 
+ #endif /* ROCKCHIP_VPU_HW_H_ */
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu_jpeg.c b/drivers/staging/media/rockchip/vpu/rockchip_vpu_jpeg.c
+index 0ff0badc1f7a..3244cca4e915 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu_jpeg.c
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu_jpeg.c
+@@ -6,9 +6,11 @@
+  * Copyright (C) Jean-Francois Moine (http://moinejf.free.fr)
+  * Copyright (C) 2014 Philipp Zabel, Pengutronix
+  */
++#include <linux/dma-mapping.h>
+ #include <linux/kernel.h>
+ #include <linux/string.h>
+ #include "rockchip_vpu_jpeg.h"
++#include "rockchip_vpu.h"
+ 
+ #define LUMA_QUANT_OFF		7
+ #define CHROMA_QUANT_OFF	72
+@@ -288,3 +290,26 @@ void rockchip_vpu_jpeg_header_assemble(struct rockchip_vpu_jpeg_ctx *ctx)
+ 
+ 	jpeg_set_quality(buf, ctx->quality);
+ }
++
++int rockchip_vpu_jpeg_enc_start(struct rockchip_vpu_ctx *ctx)
++{
++	ctx->jpeg_enc_ctx.bounce_buffer.size = ctx->dst_fmt.plane_fmt[0].sizeimage -
++			  ctx->vpu_dst_fmt->header_size;
++	ctx->jpeg_enc_ctx.bounce_buffer.cpu = dma_alloc_attrs(ctx->dev->dev,
++					ctx->jpeg_enc_ctx.bounce_buffer.size,
++					&ctx->jpeg_enc_ctx.bounce_buffer.dma,
++					GFP_KERNEL,
++					DMA_ATTR_ALLOC_SINGLE_PAGES);
++	if (!ctx->jpeg_enc_ctx.bounce_buffer.cpu)
++		return -ENOMEM;
++	return 0;
++}
++
++void rockchip_vpu_jpeg_enc_stop(struct rockchip_vpu_ctx *ctx)
++{
++	dma_free_attrs(ctx->dev->dev,
++		       ctx->jpeg_enc_ctx.bounce_buffer.size,
++		       ctx->jpeg_enc_ctx.bounce_buffer.cpu,
++		       ctx->jpeg_enc_ctx.bounce_buffer.dma,
++		       DMA_ATTR_ALLOC_SINGLE_PAGES);
++}
+
+From patchwork Mon Mar  4 19:25:25 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Ezequiel Garcia <ezequiel@collabora.com>
+X-Patchwork-Id: 10838355
+Return-Path: 
+ <linux-rockchip-bounces+patchwork-linux-rockchip=patchwork.kernel.org@lists.infradead.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id 8307F13B5
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:27:07 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 6CC762B26C
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:27:07 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id 6A8952B2C0; Mon,  4 Mar 2019 19:27:07 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-5.2 required=2.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,MAILING_LIST_MULTI,RCVD_IN_DNSWL_MED,UNPARSEABLE_RELAY
+	autolearn=unavailable version=3.3.1
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTPS id A126C2B2C3
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:27:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20170209; h=Sender:
+	Content-Transfer-Encoding:Content-Type:Cc:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=LkBPm8XlT7rQeafuNgC71mKKd1fiYM2PXJWL5a0Zu4w=; b=PmSs7kzN7jxurh
+	VKU45v0QLYz3e6+IBondD9U0G6nejNBUJKmdDpHdCeAogoArr3y09v4VTL/yDkfdban9TB/tyiueZ
+	ek39EsYPL+f7AuneFmg/8MdCKQ/5X0hUfQCh6nVfJv9tejJS4ESpBj4Wurl7bqG4+Ln9+v5PdaQhD
+	RlRSaXcESzsb+1Z5UfjbIGy5Pn2B6yIkWW07gcVR0o3Anm++LgGoqJVhOxNMUDxmkrDJ3Vm7KWzyH
+	FtqVirA9pZHALfsnlyQ+4y6kxdfu+aswz/HvxLQVLa4x5fEGu0lea6kMmRvnqAl5fpbjLkKvdhjzc
+	voYB3usTeWAjRiM59yTg==;
+Received: from localhost ([127.0.0.1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.90_1 #2 (Red Hat Linux))
+	id 1h0tEu-0003Ta-7Q; Mon, 04 Mar 2019 19:27:04 +0000
+Received: from bhuna.collabora.co.uk ([46.235.227.227])
+ by bombadil.infradead.org with esmtps (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1h0tEq-0003Qe-0q
+ for linux-rockchip@lists.infradead.org; Mon, 04 Mar 2019 19:27:02 +0000
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+ (Authenticated sender: ezequiel) with ESMTPSA id 13D4D2822C6
+From: Ezequiel Garcia <ezequiel@collabora.com>
+To: linux-media@vger.kernel.org
+Subject: [PATCH v2 07/11] rockchip/vpu: Open-code media controller register
+Date: Mon,  4 Mar 2019 16:25:25 -0300
+Message-Id: <20190304192529.14200-8-ezequiel@collabora.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190304192529.14200-1-ezequiel@collabora.com>
+References: <20190304192529.14200-1-ezequiel@collabora.com>
+MIME-Version: 1.0
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20190304_112700_340373_65634DA0 
+X-CRM114-Status: GOOD (  17.96  )
+X-BeenThere: linux-rockchip@lists.infradead.org
+X-Mailman-Version: 2.1.21
+Precedence: list
+List-Id: Upstream kernel work for Rockchip platforms
+ <linux-rockchip.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip@lists.infradead.org>
+List-Help: <mailto:linux-rockchip-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=subscribe>
+Cc: Nicolas Dufresne <nicolas.dufresne@collabora.com>,
+ Heiko Stuebner <heiko@sntech.de>, Jonas Karlman <jonas@kwiboo.se>,
+ Tomasz Figa <tfiga@chromium.org>, linux-rockchip@lists.infradead.org,
+ Hans Verkuil <hans.verkuil@cisco.com>, kernel@collabora.com,
+ Ezequiel Garcia <ezequiel@collabora.com>
+Content-Type: text/plain; charset="us-ascii"
+Sender: "Linux-rockchip" <linux-rockchip-bounces@lists.infradead.org>
+Errors-To: 
+ linux-rockchip-bounces+patchwork-linux-rockchip=patchwork.kernel.org@lists.infradead.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+In preparation to support decoders, using a single memory-to-memory
+device, we need to roll our own media controller entities registration.
+
+Signed-off-by: Ezequiel Garcia <ezequiel@collabora.com>
+---
+ .../staging/media/rockchip/vpu/rockchip_vpu.h |  35 ++++
+ .../media/rockchip/vpu/rockchip_vpu_drv.c     | 181 ++++++++++++++++--
+ 2 files changed, 204 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu.h b/drivers/staging/media/rockchip/vpu/rockchip_vpu.h
+index 76ee24abc141..084f58cadda1 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu.h
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu.h
+@@ -71,6 +71,38 @@ enum rockchip_vpu_codec_mode {
+ 	RK_VPU_MODE_JPEG_ENC,
+ };
+ 
++/*
++ * struct rockchip_vpu_mc - media controller data
++ *
++ * @source:		&struct media_entity pointer with the source entity
++ *			Used only when the M2M device is registered via
++ *			v4l2_m2m_unregister_media_controller().
++ * @source_pad:		&struct media_pad with the source pad.
++ *			Used only when the M2M device is registered via
++ *			v4l2_m2m_unregister_media_controller().
++ * @sink:		&struct media_entity pointer with the sink entity
++ *			Used only when the M2M device is registered via
++ *			v4l2_m2m_unregister_media_controller().
++ * @sink_pad:		&struct media_pad with the sink pad.
++ *			Used only when the M2M device is registered via
++ *			v4l2_m2m_unregister_media_controller().
++ * @proc:		&struct media_entity pointer with the M2M device itself.
++ * @proc_pads:		&struct media_pad with the @proc pads.
++ *			Used only when the M2M device is registered via
++ *			v4l2_m2m_unregister_media_controller().
++ * @intf_devnode:	&struct media_intf devnode pointer with the interface
++ *			with controls the M2M device.
++ */
++struct rockchip_vpu_mc {
++	struct media_entity	*source;
++	struct media_pad	source_pad;
++	struct media_entity	sink;
++	struct media_pad	sink_pad;
++	struct media_entity	proc;
++	struct media_pad	proc_pads[2];
++	struct media_intf_devnode *intf_devnode;
++};
++
+ /**
+  * struct rockchip_vpu_dev - driver data
+  * @v4l2_dev:		V4L2 device to register video devices for.
+@@ -78,6 +110,8 @@ enum rockchip_vpu_codec_mode {
+  * @mdev:		media device associated to this device.
+  * @vfd_enc:		Video device for encoder.
+  * @pdev:		Pointer to VPU platform device.
++ * @mc:			Array of media controller topology structs
++ *			for encoder and decoder.
+  * @dev:		Pointer to device for convenient logging using
+  *			dev_ macros.
+  * @clocks:		Array of clock handles.
+@@ -95,6 +129,7 @@ struct rockchip_vpu_dev {
+ 	struct media_device mdev;
+ 	struct video_device *vfd_enc;
+ 	struct platform_device *pdev;
++	struct rockchip_vpu_mc mc[2];
+ 	struct device *dev;
+ 	struct clk_bulk_data clocks[ROCKCHIP_VPU_MAX_CLOCKS];
+ 	void __iomem *base;
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c b/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
+index 1a6dd36c71ab..af2481ca2228 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
+@@ -332,7 +332,7 @@ static int rockchip_vpu_video_device_register(struct rockchip_vpu_dev *vpu)
+ {
+ 	const struct of_device_id *match;
+ 	struct video_device *vfd;
+-	int function, ret;
++	int ret;
+ 
+ 	match = of_match_node(of_rockchip_vpu_match, vpu->dev->of_node);
+ 	vfd = video_device_alloc();
+@@ -359,21 +359,169 @@ static int rockchip_vpu_video_device_register(struct rockchip_vpu_dev *vpu)
+ 	}
+ 	v4l2_info(&vpu->v4l2_dev, "registered as /dev/video%d\n", vfd->num);
+ 
+-	function = MEDIA_ENT_F_PROC_VIDEO_ENCODER;
+-	ret = v4l2_m2m_register_media_controller(vpu->m2m_dev, vfd, function);
+-	if (ret) {
+-		v4l2_err(&vpu->v4l2_dev, "Failed to init mem2mem media controller\n");
+-		goto err_unreg_video;
+-	}
+ 	return 0;
+-
+-err_unreg_video:
+-	video_unregister_device(vfd);
+ err_free_dev:
+ 	video_device_release(vfd);
+ 	return ret;
+ }
+ 
++static int rockchip_vpu_register_entity(struct media_device *mdev,
++	struct media_entity *entity, const char *entity_name,
++	struct media_pad *pads, int num_pads, int function,
++	struct video_device *vdev)
++{
++	unsigned int len;
++	char *name;
++	int ret;
++
++	entity->obj_type = MEDIA_ENTITY_TYPE_BASE;
++	if (function == MEDIA_ENT_F_IO_V4L) {
++		entity->info.dev.major = VIDEO_MAJOR;
++		entity->info.dev.minor = vdev->minor;
++	}
++	len = strlen(vdev->name) + 2 + strlen(entity_name);
++	name = kmalloc(len, GFP_KERNEL);
++	if (!name)
++		return -ENOMEM;
++	snprintf(name, len, "%s-%s", vdev->name, entity_name);
++	entity->name = name;
++	entity->function = function;
++
++	ret = media_entity_pads_init(entity, num_pads, pads);
++	if (ret)
++		return ret;
++	ret = media_device_register_entity(mdev, entity);
++	if (ret)
++		return ret;
++
++	return 0;
++}
++
++static int rockchip_register_mc(struct media_device *mdev,
++				struct rockchip_vpu_mc *mc,
++				struct video_device *vdev,
++				int function)
++{
++	struct media_link *link;
++	int ret;
++
++	/* Create the three encoder entities with their pads */
++	mc->source = &vdev->entity;
++	mc->source_pad.flags = MEDIA_PAD_FL_SOURCE;
++	ret = rockchip_vpu_register_entity(mdev, mc->source,
++			"source", &mc->source_pad, 1, MEDIA_ENT_F_IO_V4L, vdev);
++	if (ret)
++		return ret;
++
++	mc->proc_pads[0].flags = MEDIA_PAD_FL_SINK;
++	mc->proc_pads[1].flags = MEDIA_PAD_FL_SOURCE;
++	ret = rockchip_vpu_register_entity(mdev, &mc->proc,
++			"proc", mc->proc_pads, 2, function, vdev);
++	if (ret)
++		goto err_rel_entity0;
++
++	mc->sink_pad.flags = MEDIA_PAD_FL_SINK;
++	ret = rockchip_vpu_register_entity(mdev, &mc->sink,
++			"sink", &mc->sink_pad, 1, MEDIA_ENT_F_IO_V4L, vdev);
++	if (ret)
++		goto err_rel_entity1;
++
++	/* Connect the three entities */
++	ret = media_create_pad_link(mc->source, 0, &mc->proc, 1,
++			MEDIA_LNK_FL_IMMUTABLE | MEDIA_LNK_FL_ENABLED);
++	if (ret)
++		goto err_rel_entity2;
++
++	ret = media_create_pad_link(&mc->proc, 0, &mc->sink, 0,
++			MEDIA_LNK_FL_IMMUTABLE | MEDIA_LNK_FL_ENABLED);
++	if (ret)
++		goto err_rm_links0;
++
++	/* Create video interface */
++	mc->intf_devnode = media_devnode_create(mdev,
++			MEDIA_INTF_T_V4L_VIDEO, 0,
++			VIDEO_MAJOR, vdev->minor);
++	if (!mc->intf_devnode) {
++		ret = -ENOMEM;
++		goto err_rm_links1;
++	}
++
++	/* Connect the two DMA engines to the interface */
++	link = media_create_intf_link(mc->source,
++			&mc->intf_devnode->intf,
++			MEDIA_LNK_FL_IMMUTABLE | MEDIA_LNK_FL_ENABLED);
++	if (!link) {
++		ret = -ENOMEM;
++		goto err_rm_devnode;
++	}
++
++	link = media_create_intf_link(&mc->sink,
++			&mc->intf_devnode->intf,
++			MEDIA_LNK_FL_IMMUTABLE | MEDIA_LNK_FL_ENABLED);
++	if (!link) {
++		ret = -ENOMEM;
++		goto err_rm_intf_link;
++	}
++	return 0;
++
++err_rm_intf_link:
++	media_remove_intf_links(&mc->intf_devnode->intf);
++err_rm_devnode:
++	media_devnode_remove(mc->intf_devnode);
++err_rm_links1:
++	media_entity_remove_links(&mc->sink);
++err_rm_links0:
++	media_entity_remove_links(&mc->proc);
++	media_entity_remove_links(mc->source);
++err_rel_entity2:
++	media_device_unregister_entity(&mc->proc);
++	kfree(mc->proc.name);
++err_rel_entity1:
++	media_device_unregister_entity(&mc->sink);
++	kfree(mc->sink.name);
++err_rel_entity0:
++	media_device_unregister_entity(mc->source);
++	kfree(mc->source->name);
++	return ret;
++}
++
++static void rockchip_unregister_mc(struct rockchip_vpu_mc *mc)
++{
++	media_remove_intf_links(&mc->intf_devnode->intf);
++	media_devnode_remove(mc->intf_devnode);
++	media_entity_remove_links(mc->source);
++	media_entity_remove_links(&mc->sink);
++	media_entity_remove_links(&mc->proc);
++	media_device_unregister_entity(mc->source);
++	media_device_unregister_entity(&mc->sink);
++	media_device_unregister_entity(&mc->proc);
++	kfree(mc->source->name);
++	kfree(mc->sink.name);
++	kfree(mc->proc.name);
++}
++
++static int rockchip_register_media_controller(struct rockchip_vpu_dev *vpu)
++{
++	int ret;
++
++	/* We have one memory-to-memory device, to hold a single queue
++	 * of memory-to-memory serialized jobs.
++	 * There is a set of pads and processing entities for the encoder,
++	 * and another set for the decoder.
++	 * Also, there are two V4L interface, one for each set of entities.
++	 */
++
++	if (vpu->vfd_enc) {
++		ret = rockchip_register_mc(&vpu->mdev, &vpu->mc[0],
++					   vpu->vfd_enc,
++					   MEDIA_ENT_F_PROC_VIDEO_ENCODER);
++		if (ret)
++			return ret;
++	}
++
++	return 0;
++}
++
+ static int rockchip_vpu_probe(struct platform_device *pdev)
+ {
+ 	const struct of_device_id *match;
+@@ -472,12 +620,21 @@ static int rockchip_vpu_probe(struct platform_device *pdev)
+ 		goto err_m2m_rel;
+ 	}
+ 
++	ret = rockchip_register_media_controller(vpu);
++	if (ret) {
++		v4l2_err(&vpu->v4l2_dev, "Failed to register media controller\n");
++		goto err_video_dev_unreg;
++	}
++
+ 	ret = media_device_register(&vpu->mdev);
+ 	if (ret) {
+ 		v4l2_err(&vpu->v4l2_dev, "Failed to register mem2mem media device\n");
+-		goto err_video_dev_unreg;
++		goto err_mc_unreg;
+ 	}
+ 	return 0;
++err_mc_unreg:
++	if (vpu->vfd_enc)
++		rockchip_unregister_mc(&vpu->mc[0]);
+ err_video_dev_unreg:
+ 	if (vpu->vfd_enc) {
+ 		video_unregister_device(vpu->vfd_enc);
+@@ -500,10 +657,10 @@ static int rockchip_vpu_remove(struct platform_device *pdev)
+ 	v4l2_info(&vpu->v4l2_dev, "Removing %s\n", pdev->name);
+ 
+ 	media_device_unregister(&vpu->mdev);
+-	v4l2_m2m_unregister_media_controller(vpu->m2m_dev);
+ 	v4l2_m2m_release(vpu->m2m_dev);
+ 	media_device_cleanup(&vpu->mdev);
+ 	if (vpu->vfd_enc) {
++		rockchip_unregister_mc(&vpu->mc[0]);
+ 		video_unregister_device(vpu->vfd_enc);
+ 		video_device_release(vpu->vfd_enc);
+ 	}
+
+From patchwork Mon Mar  4 19:25:26 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Ezequiel Garcia <ezequiel@collabora.com>
+X-Patchwork-Id: 10838357
+Return-Path: 
+ <linux-rockchip-bounces+patchwork-linux-rockchip=patchwork.kernel.org@lists.infradead.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id 38E8613B5
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:27:10 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 2289C2B281
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:27:10 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id 205E92B2BC; Mon,  4 Mar 2019 19:27:10 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-5.2 required=2.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,MAILING_LIST_MULTI,RCVD_IN_DNSWL_MED,UNPARSEABLE_RELAY
+	autolearn=unavailable version=3.3.1
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTPS id 7B6B52B28B
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:27:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20170209; h=Sender:
+	Content-Transfer-Encoding:Content-Type:Cc:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=ZcUrJ9pZjRTmBYxhIhIDO2KnFuxCTj4zcyOMQ1GwyAM=; b=S5mFx1YEx3zVSC
+	KaMl1QhSOaBUQTsIUCi6ib9YehBktIi1dsCvAUAQX2jh/fVSVFjNQ5aFfHysKw0oxDE7eRcUvbehX
+	ZeQSAMTXiKNn0imK2k3YUFufo8snEHjhAtxrbqxOQUZSmPkkxUxBTeg6K2hqdd18xB6Er1BJtWwpN
+	Z0czdLS0t6OSK8eidmfhebDVduzapCdssGQavXef3CB0rUQ4oAjAsxQ3grC4ntHli0rjpj74+jDZV
+	MPojuTmUbLIEhe4Md8sFBOy1P17lC7DKpjn1vbsxZNrKroEPcqttbo1geZSBz7TPhtD7XFYNPtdf4
+	elNZmPMw1e8s1MBG59ng==;
+Received: from localhost ([127.0.0.1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.90_1 #2 (Red Hat Linux))
+	id 1h0tEx-0003W6-1g; Mon, 04 Mar 2019 19:27:07 +0000
+Received: from bhuna.collabora.co.uk ([2a00:1098:0:82:1000:25:2eeb:e3e3])
+ by bombadil.infradead.org with esmtps (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1h0tEt-0003Se-8Y
+ for linux-rockchip@lists.infradead.org; Mon, 04 Mar 2019 19:27:05 +0000
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+ (Authenticated sender: ezequiel) with ESMTPSA id 7A524276DFA
+From: Ezequiel Garcia <ezequiel@collabora.com>
+To: linux-media@vger.kernel.org
+Subject: [PATCH v2 08/11] rockchip/vpu: Support the Request API
+Date: Mon,  4 Mar 2019 16:25:26 -0300
+Message-Id: <20190304192529.14200-9-ezequiel@collabora.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190304192529.14200-1-ezequiel@collabora.com>
+References: <20190304192529.14200-1-ezequiel@collabora.com>
+MIME-Version: 1.0
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20190304_112703_556014_9216D3CE 
+X-CRM114-Status: GOOD (  11.01  )
+X-BeenThere: linux-rockchip@lists.infradead.org
+X-Mailman-Version: 2.1.21
+Precedence: list
+List-Id: Upstream kernel work for Rockchip platforms
+ <linux-rockchip.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip@lists.infradead.org>
+List-Help: <mailto:linux-rockchip-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=subscribe>
+Cc: Nicolas Dufresne <nicolas.dufresne@collabora.com>,
+ Heiko Stuebner <heiko@sntech.de>, Jonas Karlman <jonas@kwiboo.se>,
+ Tomasz Figa <tfiga@chromium.org>, linux-rockchip@lists.infradead.org,
+ Hans Verkuil <hans.verkuil@cisco.com>, kernel@collabora.com,
+ Ezequiel Garcia <ezequiel@collabora.com>
+Content-Type: text/plain; charset="us-ascii"
+Sender: "Linux-rockchip" <linux-rockchip-bounces@lists.infradead.org>
+Errors-To: 
+ linux-rockchip-bounces+patchwork-linux-rockchip=patchwork.kernel.org@lists.infradead.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+Introduce support for the Request API. Although the JPEG encoder
+does not mandate using the Request API, it's perfectly possible to
+use it, if the application wants to.
+
+In addition, add helpers that will be used by video decoders.
+
+Signed-off-by: Ezequiel Garcia <ezequiel@collabora.com>
+---
+ .../rockchip/vpu/rk3399_vpu_hw_jpeg_enc.c     |  6 ++++
+ .../media/rockchip/vpu/rockchip_vpu_common.h  |  3 ++
+ .../media/rockchip/vpu/rockchip_vpu_drv.c     | 29 ++++++++++++++++++-
+ .../media/rockchip/vpu/rockchip_vpu_enc.c     | 18 ++++++++++++
+ 4 files changed, 55 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw_jpeg_enc.c b/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw_jpeg_enc.c
+index fe92c40d0a84..e11ee152b8ce 100644
+--- a/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw_jpeg_enc.c
++++ b/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw_jpeg_enc.c
+@@ -113,11 +113,15 @@ void rk3399_vpu_jpeg_enc_run(struct rockchip_vpu_ctx *ctx)
+ 	struct rockchip_vpu_dev *vpu = ctx->dev;
+ 	struct vb2_v4l2_buffer *src_buf, *dst_buf;
+ 	struct rockchip_vpu_jpeg_ctx jpeg_ctx;
++	struct media_request *src_req;
+ 	u32 reg;
+ 
+ 	src_buf = v4l2_m2m_next_src_buf(ctx->fh.m2m_ctx);
+ 	dst_buf = v4l2_m2m_next_dst_buf(ctx->fh.m2m_ctx);
+ 
++	src_req = src_buf->vb2_buf.req_obj.req;
++	v4l2_ctrl_request_setup(src_req, &ctx->ctrl_handler);
++
+ 	memset(&jpeg_ctx, 0, sizeof(jpeg_ctx));
+ 	jpeg_ctx.buffer = vb2_plane_vaddr(&dst_buf->vb2_buf, 0);
+ 	jpeg_ctx.width = ctx->dst_fmt.width;
+@@ -153,6 +157,8 @@ void rk3399_vpu_jpeg_enc_run(struct rockchip_vpu_ctx *ctx)
+ 		| VEPU_REG_ENCODE_FORMAT_JPEG
+ 		| VEPU_REG_ENCODE_ENABLE;
+ 
++	v4l2_ctrl_request_complete(src_req, &ctx->ctrl_handler);
++
+ 	/* Kick the watchdog and start encoding */
+ 	schedule_delayed_work(&vpu->watchdog_work, msecs_to_jiffies(2000));
+ 	vepu_write(vpu, reg, VEPU_REG_ENCODE_START);
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu_common.h b/drivers/staging/media/rockchip/vpu/rockchip_vpu_common.h
+index ca77668d9579..ac018136a7bc 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu_common.h
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu_common.h
+@@ -26,4 +26,7 @@ void rockchip_vpu_enc_reset_src_fmt(struct rockchip_vpu_dev *vpu,
+ void rockchip_vpu_enc_reset_dst_fmt(struct rockchip_vpu_dev *vpu,
+ 				    struct rockchip_vpu_ctx *ctx);
+ 
++void *rockchip_vpu_get_ctrl(struct rockchip_vpu_ctx *ctx, u32 id);
++dma_addr_t rockchip_vpu_get_ref(struct vb2_queue *q, u64 ts);
++
+ #endif /* ROCKCHIP_VPU_COMMON_H_ */
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c b/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
+index af2481ca2228..937e9cfb4568 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
+@@ -36,6 +36,24 @@ module_param_named(debug, rockchip_vpu_debug, int, 0644);
+ MODULE_PARM_DESC(debug,
+ 		 "Debug level - higher value produces more verbose messages");
+ 
++void *rockchip_vpu_get_ctrl(struct rockchip_vpu_ctx *ctx, u32 id)
++{
++	struct v4l2_ctrl *ctrl;
++
++	ctrl = v4l2_ctrl_find(&ctx->ctrl_handler, id);
++	return ctrl ? ctrl->p_cur.p : NULL;
++}
++
++dma_addr_t rockchip_vpu_get_ref(struct vb2_queue *q, u64 ts)
++{
++	int index;
++
++	index = vb2_find_timestamp(q, ts, 0);
++	if (index >= 0)
++		return vb2_dma_contig_plane_dma_addr(q->bufs[index], 0);
++	return 0;
++}
++
+ static void rockchip_vpu_job_finish(struct rockchip_vpu_dev *vpu,
+ 				    struct rockchip_vpu_ctx *ctx,
+ 				    unsigned int bytesused,
+@@ -164,6 +182,7 @@ enc_queue_init(void *priv, struct vb2_queue *src_vq, struct vb2_queue *dst_vq)
+ 	src_vq->timestamp_flags = V4L2_BUF_FLAG_TIMESTAMP_COPY;
+ 	src_vq->lock = &ctx->dev->vpu_mutex;
+ 	src_vq->dev = ctx->dev->v4l2_dev.dev;
++	src_vq->supports_requests = true;
+ 
+ 	ret = vb2_queue_init(src_vq);
+ 	if (ret)
+@@ -328,6 +347,11 @@ static const struct of_device_id of_rockchip_vpu_match[] = {
+ };
+ MODULE_DEVICE_TABLE(of, of_rockchip_vpu_match);
+ 
++static const struct media_device_ops rockchip_m2m_media_ops = {
++	.req_validate = vb2_request_validate,
++	.req_queue = v4l2_m2m_request_queue,
++};
++
+ static int rockchip_vpu_video_device_register(struct rockchip_vpu_dev *vpu)
+ {
+ 	const struct of_device_id *match;
+@@ -610,8 +634,11 @@ static int rockchip_vpu_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	vpu->mdev.dev = vpu->dev;
+-	strlcpy(vpu->mdev.model, DRIVER_NAME, sizeof(vpu->mdev.model));
++	strscpy(vpu->mdev.model, DRIVER_NAME, sizeof(vpu->mdev.model));
++	strscpy(vpu->mdev.bus_info, "platform:" DRIVER_NAME,
++		sizeof(vpu->mdev.bus_info));
+ 	media_device_init(&vpu->mdev);
++	vpu->mdev.ops = &rockchip_m2m_media_ops;
+ 	vpu->v4l2_dev.mdev = &vpu->mdev;
+ 
+ 	ret = rockchip_vpu_video_device_register(vpu);
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu_enc.c b/drivers/staging/media/rockchip/vpu/rockchip_vpu_enc.c
+index 2b28403314bc..1b5a675ef24f 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu_enc.c
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu_enc.c
+@@ -555,14 +555,32 @@ static void rockchip_vpu_stop_streaming(struct vb2_queue *q)
+ 			vbuf = v4l2_m2m_dst_buf_remove(ctx->fh.m2m_ctx);
+ 		if (!vbuf)
+ 			break;
++		v4l2_ctrl_request_complete(vbuf->vb2_buf.req_obj.req, &ctx->ctrl_handler);
+ 		v4l2_m2m_buf_done(vbuf, VB2_BUF_STATE_ERROR);
+ 	}
+ }
+ 
++static void rockchip_vpu_buf_request_complete(struct vb2_buffer *vb)
++{
++	struct rockchip_vpu_ctx *ctx = vb2_get_drv_priv(vb->vb2_queue);
++
++	v4l2_ctrl_request_complete(vb->req_obj.req, &ctx->ctrl_handler);
++}
++
++static int rockchip_vpu_buf_out_validate(struct vb2_buffer *vb)
++{
++	struct vb2_v4l2_buffer *vbuf = to_vb2_v4l2_buffer(vb);
++
++	vbuf->field = V4L2_FIELD_NONE;
++	return 0;
++}
++
+ const struct vb2_ops rockchip_vpu_enc_queue_ops = {
+ 	.queue_setup = rockchip_vpu_queue_setup,
+ 	.buf_prepare = rockchip_vpu_buf_prepare,
+ 	.buf_queue = rockchip_vpu_buf_queue,
++	.buf_out_validate = rockchip_vpu_buf_out_validate,
++	.buf_request_complete = rockchip_vpu_buf_request_complete,
+ 	.start_streaming = rockchip_vpu_start_streaming,
+ 	.stop_streaming = rockchip_vpu_stop_streaming,
+ 	.wait_prepare = vb2_ops_wait_prepare,
+
+From patchwork Mon Mar  4 19:25:27 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Ezequiel Garcia <ezequiel@collabora.com>
+X-Patchwork-Id: 10838367
+Return-Path: 
+ <linux-rockchip-bounces+patchwork-linux-rockchip=patchwork.kernel.org@lists.infradead.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id 651D5180E
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:27:18 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 4C3D22B2AE
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:27:18 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id 4A2ED2B26C; Mon,  4 Mar 2019 19:27:18 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-5.2 required=2.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,MAILING_LIST_MULTI,RCVD_IN_DNSWL_MED,UNPARSEABLE_RELAY
+	autolearn=unavailable version=3.3.1
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTPS id 334E82B2DE
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:27:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20170209; h=Sender:
+	Content-Transfer-Encoding:Content-Type:Cc:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=DgvKNVjNYLKR7O2gygAz5Rgw35opev/VSVHMnfbBr6E=; b=OVNpIzzaMD2Mhm
+	FRsNzVQ3WToXkPDa1u6mEptN+0eTQ0S9lvI2LrO+YM8T36XRC5M0Y1EHD2QkMhUxWlvbQOPDmJWmL
+	kfSVEqdY0CkNXL5WSR/qee2YwSA/Bbk/sKxoCyfvGFlCXMGF/qPSBktLaBXUj/2DduPeNP2P/wqSs
+	ZBsItGRcF8vebde0rsNSciLqr2lldMV5W3FnSx3VDuNVjzyslcltrzoyiQZIyFEyLBOMbp7kIW43V
+	0x2CXBav5jJIRSMZsYQTmjd/CNYjyejyFpen57gidsHSzOykXCi2ZQWZR80CkmRYu5hsoRR97n27a
+	XLCMjOofIjKBTXouQ46w==;
+Received: from localhost ([127.0.0.1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.90_1 #2 (Red Hat Linux))
+	id 1h0tF2-0003aQ-Mq; Mon, 04 Mar 2019 19:27:12 +0000
+Received: from bhuna.collabora.co.uk ([46.235.227.227])
+ by bombadil.infradead.org with esmtps (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1h0tEx-0003Vy-JY
+ for linux-rockchip@lists.infradead.org; Mon, 04 Mar 2019 19:27:11 +0000
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+ (Authenticated sender: ezequiel) with ESMTPSA id B78FC277A3B
+From: Ezequiel Garcia <ezequiel@collabora.com>
+To: linux-media@vger.kernel.org
+Subject: [PATCH v2 09/11] rockchip/vpu: Add decoder boilerplate
+Date: Mon,  4 Mar 2019 16:25:27 -0300
+Message-Id: <20190304192529.14200-10-ezequiel@collabora.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190304192529.14200-1-ezequiel@collabora.com>
+References: <20190304192529.14200-1-ezequiel@collabora.com>
+MIME-Version: 1.0
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20190304_112708_084061_F1D40A5F 
+X-CRM114-Status: GOOD (  19.87  )
+X-BeenThere: linux-rockchip@lists.infradead.org
+X-Mailman-Version: 2.1.21
+Precedence: list
+List-Id: Upstream kernel work for Rockchip platforms
+ <linux-rockchip.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip@lists.infradead.org>
+List-Help: <mailto:linux-rockchip-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=subscribe>
+Cc: Nicolas Dufresne <nicolas.dufresne@collabora.com>,
+ Heiko Stuebner <heiko@sntech.de>, Jonas Karlman <jonas@kwiboo.se>,
+ Tomasz Figa <tfiga@chromium.org>, linux-rockchip@lists.infradead.org,
+ Hans Verkuil <hans.verkuil@cisco.com>, kernel@collabora.com,
+ Ezequiel Garcia <ezequiel@collabora.com>
+Content-Type: text/plain; charset="us-ascii"
+Sender: "Linux-rockchip" <linux-rockchip-bounces@lists.infradead.org>
+Errors-To: 
+ linux-rockchip-bounces+patchwork-linux-rockchip=patchwork.kernel.org@lists.infradead.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+This commit adds the needed boilerplate code to support the VPU
+in decoding operation. Two v4l2 interfaces are exposed, one for
+encoding and one for decoding, but a single m2m device is shared
+by them, so jobs are properly serialized.
+
+Signed-off-by: Ezequiel Garcia <ezequiel@collabora.com>
+---
+ drivers/staging/media/rockchip/vpu/Makefile   |   1 +
+ .../media/rockchip/vpu/rk3399_vpu_hw.c        |  19 +
+ .../staging/media/rockchip/vpu/rockchip_vpu.h |  35 ++
+ .../media/rockchip/vpu/rockchip_vpu_common.h  |   6 +
+ .../media/rockchip/vpu/rockchip_vpu_dec.c     | 558 ++++++++++++++++++
+ .../media/rockchip/vpu/rockchip_vpu_drv.c     | 136 ++++-
+ 6 files changed, 743 insertions(+), 12 deletions(-)
+ create mode 100644 drivers/staging/media/rockchip/vpu/rockchip_vpu_dec.c
+
+diff --git a/drivers/staging/media/rockchip/vpu/Makefile b/drivers/staging/media/rockchip/vpu/Makefile
+index e9d733bb7632..b9041a139212 100644
+--- a/drivers/staging/media/rockchip/vpu/Makefile
++++ b/drivers/staging/media/rockchip/vpu/Makefile
+@@ -3,6 +3,7 @@ obj-$(CONFIG_VIDEO_ROCKCHIP_VPU) += rockchip-vpu.o
+ rockchip-vpu-y += \
+ 		rockchip_vpu_drv.o \
+ 		rockchip_vpu_enc.o \
++		rockchip_vpu_dec.o \
+ 		rk3288_vpu_hw.o \
+ 		rk3288_vpu_hw_jpeg_enc.o \
+ 		rk3399_vpu_hw.o \
+diff --git a/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw.c b/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw.c
+index 8469e474c975..0263584e616d 100644
+--- a/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw.c
++++ b/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw.c
+@@ -74,6 +74,24 @@ static irqreturn_t rk3399_vepu_irq(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
+ }
+ 
++static irqreturn_t rk3399_vdpu_irq(int irq, void *dev_id)
++{
++	struct rockchip_vpu_dev *vpu = dev_id;
++	enum vb2_buffer_state state;
++	u32 status;
++
++	status = vdpu_read(vpu, VDPU_REG_INTERRUPT);
++	state = (status & VDPU_REG_INTERRUPT_DEC_IRQ) ?
++		VB2_BUF_STATE_DONE : VB2_BUF_STATE_ERROR;
++
++	vdpu_write(vpu, 0, VDPU_REG_INTERRUPT);
++	vdpu_write(vpu, 0, VDPU_REG_AXI_CTRL);
++
++	rockchip_vpu_irq_done(vpu, 0, state);
++
++	return IRQ_HANDLED;
++}
++
+ static int rk3399_vpu_hw_init(struct rockchip_vpu_dev *vpu)
+ {
+ 	/* Bump ACLK to max. possible freq. to improve performance. */
+@@ -114,6 +132,7 @@ const struct rockchip_vpu_variant rk3399_vpu_variant = {
+ 	.codec = RK_VPU_CODEC_JPEG,
+ 	.codec_ops = rk3399_vpu_codec_ops,
+ 	.vepu_irq = rk3399_vepu_irq,
++	.vdpu_irq = rk3399_vdpu_irq,
+ 	.init = rk3399_vpu_hw_init,
+ 	.clk_names = {"aclk", "hclk"},
+ 	.num_clocks = 2
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu.h b/drivers/staging/media/rockchip/vpu/rockchip_vpu.h
+index 084f58cadda1..b383c89ecc17 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu.h
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu.h
+@@ -40,23 +40,31 @@ struct rockchip_vpu_codec_ops;
+  * struct rockchip_vpu_variant - information about VPU hardware variant
+  *
+  * @enc_offset:			Offset from VPU base to encoder registers.
++ * @dec_offset:			Offset from VPU base to decoder registers.
+  * @enc_fmts:			Encoder formats.
+  * @num_enc_fmts:		Number of encoder formats.
++ * @dec_fmts:			Decoder formats.
++ * @num_dec_fmts:		Number of decoder formats.
+  * @codec:			Supported codecs
+  * @codec_ops:			Codec ops.
+  * @init:			Initialize hardware.
+  * @vepu_irq:			encoder interrupt handler
++ * @vdpu_irq:			decoder interrupt handler
+  * @clk_names:			array of clock names
+  * @num_clocks:			number of clocks in the array
+  */
+ struct rockchip_vpu_variant {
+ 	unsigned int enc_offset;
++	unsigned int dec_offset;
+ 	const struct rockchip_vpu_fmt *enc_fmts;
+ 	unsigned int num_enc_fmts;
++	const struct rockchip_vpu_fmt *dec_fmts;
++	unsigned int num_dec_fmts;
+ 	unsigned int codec;
+ 	const struct rockchip_vpu_codec_ops *codec_ops;
+ 	int (*init)(struct rockchip_vpu_dev *vpu);
+ 	irqreturn_t (*vepu_irq)(int irq, void *priv);
++	irqreturn_t (*vdpu_irq)(int irq, void *priv);
+ 	const char *clk_names[ROCKCHIP_VPU_MAX_CLOCKS];
+ 	int num_clocks;
+ };
+@@ -109,6 +117,7 @@ struct rockchip_vpu_mc {
+  * @m2m_dev:		mem2mem device associated to this device.
+  * @mdev:		media device associated to this device.
+  * @vfd_enc:		Video device for encoder.
++ * @vfd_dec:		Video device for decoder.
+  * @pdev:		Pointer to VPU platform device.
+  * @mc:			Array of media controller topology structs
+  *			for encoder and decoder.
+@@ -117,6 +126,7 @@ struct rockchip_vpu_mc {
+  * @clocks:		Array of clock handles.
+  * @base:		Mapped address of VPU registers.
+  * @enc_base:		Mapped address of VPU encoder register for convenience.
++ * @dec_base:		Mapped address of VPU decoder register for convenience.
+  * @vpu_mutex:		Mutex to synchronize V4L2 calls.
+  * @irqlock:		Spinlock to synchronize access to data structures
+  *			shared with interrupt handlers.
+@@ -128,12 +138,14 @@ struct rockchip_vpu_dev {
+ 	struct v4l2_m2m_dev *m2m_dev;
+ 	struct media_device mdev;
+ 	struct video_device *vfd_enc;
++	struct video_device *vfd_dec;
+ 	struct platform_device *pdev;
+ 	struct rockchip_vpu_mc mc[2];
+ 	struct device *dev;
+ 	struct clk_bulk_data clocks[ROCKCHIP_VPU_MAX_CLOCKS];
+ 	void __iomem *base;
+ 	void __iomem *enc_base;
++	void __iomem *dec_base;
+ 
+ 	struct mutex vpu_mutex;	/* video_device lock */
+ 	spinlock_t irqlock;
+@@ -146,6 +158,7 @@ struct rockchip_vpu_dev {
+  *
+  * @dev:		VPU driver data to which the context belongs.
+  * @fh:			V4L2 file handler.
++ * @is_enc:		Encoder or decoder?
+  *
+  * @sequence_cap:       Sequence counter for capture queue
+  * @sequence_out:       Sequence counter for output queue
+@@ -164,6 +177,7 @@ struct rockchip_vpu_dev {
+ struct rockchip_vpu_ctx {
+ 	struct rockchip_vpu_dev *dev;
+ 	struct v4l2_fh fh;
++	unsigned int is_enc;
+ 
+ 	u32 sequence_cap;
+ 	u32 sequence_out;
+@@ -262,4 +276,25 @@ static inline u32 vepu_read(struct rockchip_vpu_dev *vpu, u32 reg)
+ 	return val;
+ }
+ 
++static inline void vdpu_write_relaxed(struct rockchip_vpu_dev *vpu,
++				      u32 val, u32 reg)
++{
++	vpu_debug(6, "0x%04x = 0x%08x\n", reg / 4, val);
++	writel_relaxed(val, vpu->dec_base + reg);
++}
++
++static inline void vdpu_write(struct rockchip_vpu_dev *vpu, u32 val, u32 reg)
++{
++	vpu_debug(6, "0x%04x = 0x%08x\n", reg / 4, val);
++	writel(val, vpu->dec_base + reg);
++}
++
++static inline u32 vdpu_read(struct rockchip_vpu_dev *vpu, u32 reg)
++{
++	u32 val = readl(vpu->dec_base + reg);
++
++	vpu_debug(6, "0x%04x = 0x%08x\n", reg / 4, val);
++	return val;
++}
++
+ #endif /* ROCKCHIP_VPU_H_ */
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu_common.h b/drivers/staging/media/rockchip/vpu/rockchip_vpu_common.h
+index ac018136a7bc..7e5fce3bf215 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu_common.h
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu_common.h
+@@ -19,12 +19,18 @@
+ #include "rockchip_vpu.h"
+ 
+ extern const struct v4l2_ioctl_ops rockchip_vpu_enc_ioctl_ops;
++extern const struct v4l2_ioctl_ops rockchip_vpu_dec_ioctl_ops;
+ extern const struct vb2_ops rockchip_vpu_enc_queue_ops;
++extern const struct vb2_ops rockchip_vpu_dec_queue_ops;
+ 
+ void rockchip_vpu_enc_reset_src_fmt(struct rockchip_vpu_dev *vpu,
+ 				    struct rockchip_vpu_ctx *ctx);
+ void rockchip_vpu_enc_reset_dst_fmt(struct rockchip_vpu_dev *vpu,
+ 				    struct rockchip_vpu_ctx *ctx);
++void rockchip_vpu_dec_reset_src_fmt(struct rockchip_vpu_dev *vpu,
++				    struct rockchip_vpu_ctx *ctx);
++void rockchip_vpu_dec_reset_dst_fmt(struct rockchip_vpu_dev *vpu,
++				    struct rockchip_vpu_ctx *ctx);
+ 
+ void *rockchip_vpu_get_ctrl(struct rockchip_vpu_ctx *ctx, u32 id);
+ dma_addr_t rockchip_vpu_get_ref(struct vb2_queue *q, u64 ts);
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu_dec.c b/drivers/staging/media/rockchip/vpu/rockchip_vpu_dec.c
+new file mode 100644
+index 000000000000..2632b629dc7b
+--- /dev/null
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu_dec.c
+@@ -0,0 +1,558 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Rockchip VPU codec driver
++ *
++ * Copyright (C) 2018 Collabora, Ltd.
++ * Copyright (C) 2018 Rockchip Electronics Co., Ltd.
++ *	Alpha Lin <Alpha.Lin@rock-chips.com>
++ *	Jeffy Chen <jeffy.chen@rock-chips.com>
++ *
++ * Copyright 2018 Google LLC.
++ *	Tomasz Figa <tfiga@chromium.org>
++ *
++ * Based on s5p-mfc driver by Samsung Electronics Co., Ltd.
++ * Copyright (C) 2010-2011 Samsung Electronics Co., Ltd.
++ */
++
++#include <linux/interrupt.h>
++#include <linux/io.h>
++#include <linux/module.h>
++#include <linux/pm_runtime.h>
++#include <linux/videodev2.h>
++#include <linux/workqueue.h>
++#include <media/v4l2-ctrls.h>
++#include <media/v4l2-event.h>
++#include <media/v4l2-mem2mem.h>
++#include <media/videobuf2-core.h>
++#include <media/videobuf2-dma-sg.h>
++
++#include "rockchip_vpu.h"
++#include "rockchip_vpu_hw.h"
++#include "rockchip_vpu_common.h"
++
++static const struct rockchip_vpu_fmt *
++rockchip_vpu_find_format(struct rockchip_vpu_ctx *ctx, u32 fourcc)
++{
++	struct rockchip_vpu_dev *dev = ctx->dev;
++	const struct rockchip_vpu_fmt *formats;
++	unsigned int num_fmts, i;
++
++	formats = dev->variant->dec_fmts;
++	num_fmts = dev->variant->num_dec_fmts;
++	for (i = 0; i < num_fmts; i++)
++		if (formats[i].fourcc == fourcc)
++			return &formats[i];
++	return NULL;
++}
++
++static const struct rockchip_vpu_fmt *
++rockchip_vpu_get_default_fmt(struct rockchip_vpu_ctx *ctx, bool bitstream)
++{
++	struct rockchip_vpu_dev *dev = ctx->dev;
++	const struct rockchip_vpu_fmt *formats;
++	unsigned int num_fmts, i;
++
++	formats = dev->variant->dec_fmts;
++	num_fmts = dev->variant->num_dec_fmts;
++	for (i = 0; i < num_fmts; i++)
++		if (bitstream == (formats[i].codec_mode != RK_VPU_MODE_NONE))
++			return &formats[i];
++	return NULL;
++}
++
++static int vidioc_querycap(struct file *file, void *priv,
++			   struct v4l2_capability *cap)
++{
++	struct rockchip_vpu_dev *vpu = video_drvdata(file);
++
++	strlcpy(cap->driver, vpu->dev->driver->name, sizeof(cap->driver));
++	strlcpy(cap->card, vpu->vfd_dec->name, sizeof(cap->card));
++	snprintf(cap->bus_info, sizeof(cap->bus_info), "platform: %s",
++		 vpu->dev->driver->name);
++	return 0;
++}
++
++static int vidioc_enum_framesizes(struct file *file, void *priv,
++				  struct v4l2_frmsizeenum *fsize)
++{
++	struct rockchip_vpu_ctx *ctx = fh_to_ctx(priv);
++	const struct rockchip_vpu_fmt *fmt;
++
++	if (fsize->index != 0) {
++		vpu_debug(0, "invalid frame size index (expected 0, got %d)\n",
++				fsize->index);
++		return -EINVAL;
++	}
++
++	fmt = rockchip_vpu_find_format(ctx, fsize->pixel_format);
++	if (!fmt) {
++		vpu_debug(0, "unsupported bitstream format (%08x)\n",
++				fsize->pixel_format);
++		return -EINVAL;
++	}
++
++	/* This only makes sense for codec formats */
++	if (fmt->codec_mode == RK_VPU_MODE_NONE)
++		return -EINVAL;
++
++	fsize->type = V4L2_FRMSIZE_TYPE_STEPWISE;
++	fsize->stepwise = fmt->frmsize;
++
++	return 0;
++}
++
++static int vidioc_enum_fmt_vid_cap_mplane(struct file *file, void *priv,
++					  struct v4l2_fmtdesc *f)
++{
++	struct rockchip_vpu_dev *dev = video_drvdata(file);
++	const struct rockchip_vpu_fmt *fmt;
++	const struct rockchip_vpu_fmt *formats;
++	int num_fmts, i, j = 0;
++
++	formats = dev->variant->dec_fmts;
++	num_fmts = dev->variant->num_dec_fmts;
++	for (i = 0; i < num_fmts; i++) {
++		/* Skip compressed formats */
++		if (formats[i].codec_mode != RK_VPU_MODE_NONE)
++			continue;
++		if (j == f->index) {
++			fmt = &formats[i];
++			f->pixelformat = fmt->fourcc;
++			return 0;
++		}
++		++j;
++	}
++	return -EINVAL;
++}
++
++static int vidioc_enum_fmt_vid_out_mplane(struct file *file, void *priv,
++					  struct v4l2_fmtdesc *f)
++{
++	struct rockchip_vpu_dev *dev = video_drvdata(file);
++	const struct rockchip_vpu_fmt *formats;
++	const struct rockchip_vpu_fmt *fmt;
++	int num_fmts, i, j = 0;
++
++	formats = dev->variant->dec_fmts;
++	num_fmts = dev->variant->num_dec_fmts;
++	for (i = 0; i < num_fmts; i++) {
++		if (formats[i].codec_mode == RK_VPU_MODE_NONE)
++			continue;
++		if (j == f->index) {
++			fmt = &formats[i];
++			f->pixelformat = fmt->fourcc;
++			return 0;
++		}
++		++j;
++	}
++	return -EINVAL;
++}
++
++static int vidioc_g_fmt_out_mplane(struct file *file, void *priv,
++				   struct v4l2_format *f)
++{
++	struct v4l2_pix_format_mplane *pix_mp = &f->fmt.pix_mp;
++	struct rockchip_vpu_ctx *ctx = fh_to_ctx(priv);
++
++	vpu_debug(4, "f->type = %d\n", f->type);
++
++	*pix_mp = ctx->src_fmt;
++
++	return 0;
++}
++
++static int vidioc_g_fmt_cap_mplane(struct file *file, void *priv,
++				   struct v4l2_format *f)
++{
++	struct v4l2_pix_format_mplane *pix_mp = &f->fmt.pix_mp;
++	struct rockchip_vpu_ctx *ctx = fh_to_ctx(priv);
++
++	vpu_debug(4, "f->type = %d\n", f->type);
++
++	*pix_mp = ctx->dst_fmt;
++
++	return 0;
++}
++
++static int
++vidioc_try_fmt_cap_mplane(struct file *file, void *priv, struct v4l2_format *f)
++{
++	struct rockchip_vpu_ctx *ctx = fh_to_ctx(priv);
++	struct v4l2_pix_format_mplane *pix_mp = &f->fmt.pix_mp;
++	const struct rockchip_vpu_fmt *fmt;
++	unsigned int width, height;
++
++	vpu_debug(4, "%c%c%c%c\n",
++		  (pix_mp->pixelformat & 0x7f),
++		  (pix_mp->pixelformat >> 8) & 0x7f,
++		  (pix_mp->pixelformat >> 16) & 0x7f,
++		  (pix_mp->pixelformat >> 24) & 0x7f);
++
++	fmt = rockchip_vpu_find_format(ctx, pix_mp->pixelformat);
++	if (!fmt) {
++		fmt = rockchip_vpu_get_default_fmt(ctx, false);
++		f->fmt.pix.pixelformat = fmt->fourcc;
++	}
++
++	pix_mp->field = V4L2_FIELD_NONE;
++	width = clamp(pix_mp->width,
++		      ctx->vpu_src_fmt->frmsize.min_width,
++		      ctx->vpu_src_fmt->frmsize.max_width);
++	height = clamp(pix_mp->height,
++		       ctx->vpu_src_fmt->frmsize.min_height,
++		       ctx->vpu_src_fmt->frmsize.max_height);
++	/* Round up to macroblocks. */
++	width = round_up(width, ctx->vpu_src_fmt->frmsize.step_width);
++	height = round_up(height, ctx->vpu_src_fmt->frmsize.step_height);
++
++	/* Fill remaining fields */
++	v4l2_fill_pixfmt_mp(pix_mp, fmt->fourcc, width, height);
++	return 0;
++}
++
++static int
++vidioc_try_fmt_out_mplane(struct file *file, void *priv, struct v4l2_format *f)
++{
++	struct rockchip_vpu_ctx *ctx = fh_to_ctx(priv);
++	struct v4l2_pix_format_mplane *pix_mp = &f->fmt.pix_mp;
++	const struct rockchip_vpu_fmt *fmt;
++
++	fmt = rockchip_vpu_find_format(ctx, pix_mp->pixelformat);
++	if (!fmt) {
++		fmt = rockchip_vpu_get_default_fmt(ctx, true);
++		f->fmt.pix.pixelformat = fmt->fourcc;
++	}
++
++	pix_mp->num_planes = 1;
++	pix_mp->field = V4L2_FIELD_NONE;
++	pix_mp->width = clamp(pix_mp->width,
++				fmt->frmsize.min_width,
++				fmt->frmsize.max_width);
++	pix_mp->height = clamp(pix_mp->height,
++				fmt->frmsize.min_height,
++				fmt->frmsize.max_height);
++	/* Round up to macroblocks. */
++	pix_mp->width = round_up(pix_mp->width, fmt->frmsize.step_width);
++	pix_mp->height = round_up(pix_mp->height, fmt->frmsize.step_height);
++
++	/*
++	 * For compressed formats the application can specify
++	 * sizeimage. If the application passes a zero sizeimage,
++	 * let's default to the maximum frame size.
++	 */
++	if (!pix_mp->plane_fmt[0].sizeimage)
++		pix_mp->plane_fmt[0].sizeimage = fmt->header_size +
++			pix_mp->width * pix_mp->height * fmt->max_depth;
++	return 0;
++}
++
++void rockchip_vpu_dec_reset_dst_fmt(struct rockchip_vpu_dev *vpu,
++				struct rockchip_vpu_ctx *ctx)
++{
++	struct v4l2_pix_format_mplane *fmt = &ctx->dst_fmt;
++	unsigned int width, height;
++
++	ctx->vpu_dst_fmt = rockchip_vpu_get_default_fmt(ctx, false);
++
++	memset(fmt, 0, sizeof(*fmt));
++
++	width = clamp(fmt->width, ctx->vpu_src_fmt->frmsize.min_width,
++		      ctx->vpu_src_fmt->frmsize.max_width);
++	height = clamp(fmt->height, ctx->vpu_src_fmt->frmsize.min_height,
++		       ctx->vpu_src_fmt->frmsize.max_height);
++	fmt->field = V4L2_FIELD_NONE;
++	fmt->colorspace = V4L2_COLORSPACE_JPEG,
++	fmt->ycbcr_enc = V4L2_YCBCR_ENC_DEFAULT;
++	fmt->quantization = V4L2_QUANTIZATION_DEFAULT;
++	fmt->xfer_func = V4L2_XFER_FUNC_DEFAULT;
++
++	v4l2_fill_pixfmt_mp(fmt, ctx->vpu_dst_fmt->fourcc, width, height);
++}
++
++void rockchip_vpu_dec_reset_src_fmt(struct rockchip_vpu_dev *vpu,
++				struct rockchip_vpu_ctx *ctx)
++{
++	struct v4l2_pix_format_mplane *fmt = &ctx->src_fmt;
++
++	ctx->vpu_src_fmt = rockchip_vpu_get_default_fmt(ctx, true);
++
++	memset(fmt, 0, sizeof(*fmt));
++
++	fmt->num_planes = 1;
++	fmt->width = clamp(fmt->width, ctx->vpu_src_fmt->frmsize.min_width,
++		      ctx->vpu_src_fmt->frmsize.max_width);
++	fmt->height = clamp(fmt->height, ctx->vpu_src_fmt->frmsize.min_height,
++		       ctx->vpu_src_fmt->frmsize.max_height);
++	fmt->pixelformat = ctx->vpu_src_fmt->fourcc;
++	fmt->field = V4L2_FIELD_NONE;
++	fmt->colorspace = V4L2_COLORSPACE_JPEG,
++	fmt->ycbcr_enc = V4L2_YCBCR_ENC_DEFAULT;
++	fmt->quantization = V4L2_QUANTIZATION_DEFAULT;
++	fmt->xfer_func = V4L2_XFER_FUNC_DEFAULT;
++
++	fmt->plane_fmt[0].sizeimage = ctx->vpu_src_fmt->header_size +
++		fmt->width * fmt->height * ctx->vpu_src_fmt->max_depth;
++}
++
++static int
++vidioc_s_fmt_out_mplane(struct file *file, void *priv, struct v4l2_format *f)
++{
++	struct v4l2_pix_format_mplane *pix_mp = &f->fmt.pix_mp;
++	struct rockchip_vpu_ctx *ctx = fh_to_ctx(priv);
++	struct rockchip_vpu_dev *vpu = ctx->dev;
++	struct vb2_queue *vq, *peer_vq;
++	int ret;
++
++	/* Change not allowed if queue is streaming. */
++	vq = v4l2_m2m_get_vq(ctx->fh.m2m_ctx, f->type);
++	if (vb2_is_streaming(vq))
++		return -EBUSY;
++
++	/*
++	 * Since format change on the OUTPUT queue will reset
++	 * the CAPTURE queue, we can't allow doing so
++	 * when the CAPTURE queue has buffers allocated.
++	 */
++	peer_vq = v4l2_m2m_get_vq(ctx->fh.m2m_ctx,
++				  V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
++	if (vb2_is_busy(peer_vq) &&
++	    (pix_mp->pixelformat != ctx->src_fmt.pixelformat ||
++	     pix_mp->height != ctx->src_fmt.height ||
++	     pix_mp->width != ctx->src_fmt.width))
++		return -EBUSY;
++
++	ret = vidioc_try_fmt_out_mplane(file, priv, f);
++	if (ret)
++		return ret;
++
++	ctx->vpu_src_fmt = rockchip_vpu_find_format(ctx, pix_mp->pixelformat);
++	ctx->src_fmt = *pix_mp;
++
++	vpu_debug(0, "OUTPUT codec mode: %d\n", ctx->vpu_src_fmt->codec_mode);
++	vpu_debug(0, "fmt - w: %d, h: %d\n",
++		  pix_mp->width, pix_mp->height);
++
++	rockchip_vpu_dec_reset_dst_fmt(vpu, ctx);
++	return 0;
++}
++
++static int
++vidioc_s_fmt_cap_mplane(struct file *file, void *priv, struct v4l2_format *f)
++{
++	struct v4l2_pix_format_mplane *pix_mp = &f->fmt.pix_mp;
++	struct rockchip_vpu_ctx *ctx = fh_to_ctx(priv);
++	struct vb2_queue *vq;
++	int ret;
++
++	/* Change not allowed if queue is streaming. */
++	vq = v4l2_m2m_get_vq(ctx->fh.m2m_ctx, f->type);
++	if (vb2_is_streaming(vq))
++		return -EBUSY;
++
++	ret = vidioc_try_fmt_cap_mplane(file, priv, f);
++	if (ret)
++		return ret;
++
++	ctx->vpu_dst_fmt = rockchip_vpu_find_format(ctx, pix_mp->pixelformat);
++	ctx->dst_fmt = *pix_mp;
++
++	vpu_debug(0, "CAPTURE codec mode: %d\n", ctx->vpu_dst_fmt->codec_mode);
++	vpu_debug(0, "fmt - w: %d, h: %d\n",
++		  pix_mp->width, pix_mp->height);
++	return 0;
++}
++
++const struct v4l2_ioctl_ops rockchip_vpu_dec_ioctl_ops = {
++	.vidioc_querycap = vidioc_querycap,
++	.vidioc_enum_framesizes = vidioc_enum_framesizes,
++
++	.vidioc_try_fmt_vid_cap_mplane = vidioc_try_fmt_cap_mplane,
++	.vidioc_try_fmt_vid_out_mplane = vidioc_try_fmt_out_mplane,
++	.vidioc_s_fmt_vid_out_mplane = vidioc_s_fmt_out_mplane,
++	.vidioc_s_fmt_vid_cap_mplane = vidioc_s_fmt_cap_mplane,
++	.vidioc_g_fmt_vid_out_mplane = vidioc_g_fmt_out_mplane,
++	.vidioc_g_fmt_vid_cap_mplane = vidioc_g_fmt_cap_mplane,
++	.vidioc_enum_fmt_vid_out_mplane = vidioc_enum_fmt_vid_out_mplane,
++	.vidioc_enum_fmt_vid_cap_mplane = vidioc_enum_fmt_vid_cap_mplane,
++
++	.vidioc_reqbufs = v4l2_m2m_ioctl_reqbufs,
++	.vidioc_querybuf = v4l2_m2m_ioctl_querybuf,
++	.vidioc_qbuf = v4l2_m2m_ioctl_qbuf,
++	.vidioc_dqbuf = v4l2_m2m_ioctl_dqbuf,
++	.vidioc_prepare_buf = v4l2_m2m_ioctl_prepare_buf,
++	.vidioc_create_bufs = v4l2_m2m_ioctl_create_bufs,
++	.vidioc_expbuf = v4l2_m2m_ioctl_expbuf,
++
++	.vidioc_subscribe_event = v4l2_ctrl_subscribe_event,
++	.vidioc_unsubscribe_event = v4l2_event_unsubscribe,
++
++	.vidioc_streamon = v4l2_m2m_ioctl_streamon,
++	.vidioc_streamoff = v4l2_m2m_ioctl_streamoff,
++};
++
++static int rockchip_vpu_queue_setup(struct vb2_queue *vq,
++				  unsigned int *num_buffers,
++				  unsigned int *num_planes,
++				  unsigned int sizes[],
++				  struct device *alloc_devs[])
++{
++	struct rockchip_vpu_ctx *ctx = vb2_get_drv_priv(vq);
++	struct v4l2_pix_format_mplane *pixfmt;
++	int i;
++
++	switch (vq->type) {
++	case V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE:
++		pixfmt = &ctx->dst_fmt;
++		break;
++	case V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE:
++		pixfmt = &ctx->src_fmt;
++		break;
++	default:
++		vpu_err("invalid queue type: %d\n", vq->type);
++		return -EINVAL;
++	}
++
++	if (*num_planes) {
++		if (*num_planes != pixfmt->num_planes)
++			return -EINVAL;
++		for (i = 0; i < pixfmt->num_planes; ++i)
++			if (sizes[i] < pixfmt->plane_fmt[i].sizeimage)
++				return -EINVAL;
++		return 0;
++	}
++
++	*num_planes = pixfmt->num_planes;
++	for (i = 0; i < pixfmt->num_planes; ++i)
++		sizes[i] = pixfmt->plane_fmt[i].sizeimage;
++	return 0;
++}
++
++static int rockchip_vpu_buf_prepare(struct vb2_buffer *vb)
++{
++	struct vb2_v4l2_buffer *vbuf = to_vb2_v4l2_buffer(vb);
++	struct vb2_queue *vq = vb->vb2_queue;
++	struct rockchip_vpu_ctx *ctx = vb2_get_drv_priv(vq);
++	const struct rockchip_vpu_fmt *vpu_fmt;
++	struct v4l2_pix_format_mplane *pixfmt;
++	unsigned int sz;
++	int ret = 0;
++	int i;
++
++	switch (vq->type) {
++	case V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE:
++		vpu_fmt = ctx->vpu_dst_fmt;
++		pixfmt = &ctx->dst_fmt;
++		break;
++	case V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE:
++		vpu_fmt = ctx->vpu_src_fmt;
++		pixfmt = &ctx->src_fmt;
++
++		if (vbuf->field == V4L2_FIELD_ANY)
++			vbuf->field = V4L2_FIELD_NONE;
++		if (vbuf->field != V4L2_FIELD_NONE) {
++			vpu_debug(4, "field %d not supported\n",
++				  vbuf->field);
++			return -EINVAL;
++		}
++		break;
++	default:
++		vpu_err("invalid queue type: %d\n", vq->type);
++		return -EINVAL;
++	}
++
++	for (i = 0; i < pixfmt->num_planes; ++i) {
++		sz = pixfmt->plane_fmt[i].sizeimage;
++		vpu_debug(4, "plane %d size: %ld, sizeimage: %u\n",
++			  i, vb2_plane_size(vb, i), sz);
++		if (vb2_plane_size(vb, i) < sz) {
++			vpu_err("plane %d is too small for output\n", i);
++			ret = -EINVAL;
++			break;
++		}
++	}
++
++	return ret;
++}
++
++static void rockchip_vpu_buf_queue(struct vb2_buffer *vb)
++{
++	struct rockchip_vpu_ctx *ctx = vb2_get_drv_priv(vb->vb2_queue);
++	struct vb2_v4l2_buffer *vbuf = to_vb2_v4l2_buffer(vb);
++
++	v4l2_m2m_buf_queue(ctx->fh.m2m_ctx, vbuf);
++}
++
++static int rockchip_vpu_start_streaming(struct vb2_queue *q, unsigned int count)
++{
++	struct rockchip_vpu_ctx *ctx = vb2_get_drv_priv(q);
++	enum rockchip_vpu_codec_mode codec_mode;
++	int ret = 0;
++
++	if (V4L2_TYPE_IS_OUTPUT(q->type))
++		ctx->sequence_out = 0;
++	else
++		ctx->sequence_cap = 0;
++
++	codec_mode = ctx->vpu_src_fmt->codec_mode;
++
++	vpu_debug(4, "Codec mode = %d\n", codec_mode);
++	ctx->codec_ops = &ctx->dev->variant->codec_ops[codec_mode];
++
++	if (V4L2_TYPE_IS_OUTPUT(q->type))
++		if (ctx->codec_ops && ctx->codec_ops->start)
++			ret = ctx->codec_ops->start(ctx);
++	return ret;
++}
++
++static void rockchip_vpu_stop_streaming(struct vb2_queue *q)
++{
++	struct rockchip_vpu_ctx *ctx = vb2_get_drv_priv(q);
++
++	if (V4L2_TYPE_IS_OUTPUT(q->type))
++		if (ctx->codec_ops && ctx->codec_ops->stop)
++			ctx->codec_ops->stop(ctx);
++
++	/* The mem2mem framework calls v4l2_m2m_cancel_job before
++	 * .stop_streaming, so there isn't any job running and
++	 * it is safe to return all the buffers.
++	 */
++	for (;;) {
++		struct vb2_v4l2_buffer *vbuf;
++
++		if (V4L2_TYPE_IS_OUTPUT(q->type))
++			vbuf = v4l2_m2m_src_buf_remove(ctx->fh.m2m_ctx);
++		else
++			vbuf = v4l2_m2m_dst_buf_remove(ctx->fh.m2m_ctx);
++		if (!vbuf)
++			break;
++		v4l2_ctrl_request_complete(vbuf->vb2_buf.req_obj.req, &ctx->ctrl_handler);
++		v4l2_m2m_buf_done(vbuf, VB2_BUF_STATE_ERROR);
++	}
++}
++
++static void rockchip_vpu_buf_request_complete(struct vb2_buffer *vb)
++{
++	struct rockchip_vpu_ctx *ctx = vb2_get_drv_priv(vb->vb2_queue);
++
++	v4l2_ctrl_request_complete(vb->req_obj.req, &ctx->ctrl_handler);
++}
++
++static int rockchip_vpu_buf_out_validate(struct vb2_buffer *vb)
++{
++	struct vb2_v4l2_buffer *vbuf = to_vb2_v4l2_buffer(vb);
++
++	vbuf->field = V4L2_FIELD_NONE;
++	return 0;
++}
++
++const struct vb2_ops rockchip_vpu_dec_queue_ops = {
++	.queue_setup = rockchip_vpu_queue_setup,
++	.buf_prepare = rockchip_vpu_buf_prepare,
++	.buf_queue = rockchip_vpu_buf_queue,
++	.buf_out_validate = rockchip_vpu_buf_out_validate,
++	.buf_request_complete = rockchip_vpu_buf_request_complete,
++	.start_streaming = rockchip_vpu_start_streaming,
++	.stop_streaming = rockchip_vpu_stop_streaming,
++	.wait_prepare = vb2_ops_wait_prepare,
++	.wait_finish = vb2_ops_wait_finish,
++};
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c b/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
+index 937e9cfb4568..27a9da86f1d0 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
+@@ -36,6 +36,11 @@ module_param_named(debug, rockchip_vpu_debug, int, 0644);
+ MODULE_PARM_DESC(debug,
+ 		 "Debug level - higher value produces more verbose messages");
+ 
++enum rockchip_vpu_type {
++	RK_VPU_ENCODER,
++	RK_VPU_DECODER,
++};
++
+ void *rockchip_vpu_get_ctrl(struct rockchip_vpu_ctx *ctx, u32 id)
+ {
+ 	struct v4l2_ctrl *ctrl;
+@@ -81,7 +86,11 @@ static void rockchip_vpu_job_finish(struct rockchip_vpu_dev *vpu,
+ 
+ 	avail_size = vb2_plane_size(&dst->vb2_buf, 0) -
+ 		     ctx->vpu_dst_fmt->header_size;
+-	if (bytesused <= avail_size) {
++	/* For decoders set bytesused as per the output picture. */
++	if (!ctx->is_enc) {
++		dst->vb2_buf.planes[0].bytesused =
++			ctx->dst_fmt.plane_fmt[0].sizeimage;
++	} else if (bytesused <= avail_size) {
+ 		/*
+ 		 * This works while JPEG is the only encoder this driver
+ 		 * supports. We will have to abstract this step, or get
+@@ -159,6 +168,44 @@ static struct v4l2_m2m_ops vpu_m2m_ops = {
+ 	.device_run = device_run,
+ };
+ 
++static int
++dec_queue_init(void *priv, struct vb2_queue *src_vq, struct vb2_queue *dst_vq)
++{
++	struct rockchip_vpu_ctx *ctx = priv;
++	int ret;
++
++	src_vq->type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
++	src_vq->io_modes = VB2_MMAP | VB2_DMABUF;
++	src_vq->drv_priv = ctx;
++	src_vq->ops = &rockchip_vpu_dec_queue_ops;
++	src_vq->mem_ops = &vb2_dma_contig_memops;
++	src_vq->dma_attrs = DMA_ATTR_ALLOC_SINGLE_PAGES |
++			    DMA_ATTR_NO_KERNEL_MAPPING;
++	src_vq->buf_struct_size = sizeof(struct v4l2_m2m_buffer);
++	src_vq->timestamp_flags = V4L2_BUF_FLAG_TIMESTAMP_COPY;
++	src_vq->lock = &ctx->dev->vpu_mutex;
++	src_vq->dev = ctx->dev->v4l2_dev.dev;
++	src_vq->supports_requests = true;
++
++	ret = vb2_queue_init(src_vq);
++	if (ret)
++		return ret;
++
++	dst_vq->type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
++	dst_vq->io_modes = VB2_MMAP | VB2_DMABUF;
++	dst_vq->drv_priv = ctx;
++	dst_vq->bidirectional = true;
++	dst_vq->ops = &rockchip_vpu_dec_queue_ops;
++	dst_vq->mem_ops = &vb2_dma_contig_memops;
++	dst_vq->dma_attrs = DMA_ATTR_ALLOC_SINGLE_PAGES;
++	dst_vq->buf_struct_size = sizeof(struct v4l2_m2m_buffer);
++	dst_vq->timestamp_flags = V4L2_BUF_FLAG_TIMESTAMP_COPY;
++	dst_vq->lock = &ctx->dev->vpu_mutex;
++	dst_vq->dev = ctx->dev->v4l2_dev.dev;
++
++	return vb2_queue_init(dst_vq);
++}
++
+ static int
+ enc_queue_init(void *priv, struct vb2_queue *src_vq, struct vb2_queue *dst_vq)
+ {
+@@ -277,11 +324,16 @@ static int rockchip_vpu_open(struct file *filp)
+ 		return -ENOMEM;
+ 
+ 	ctx->dev = vpu;
+-	if (vdev == vpu->vfd_enc)
++	if (vdev == vpu->vfd_enc) {
++		ctx->is_enc = 1;
+ 		ctx->fh.m2m_ctx = v4l2_m2m_ctx_init(vpu->m2m_dev, ctx,
+ 						    &enc_queue_init);
+-	else
++	} else if (vdev == vpu->vfd_dec) {
++		ctx->fh.m2m_ctx = v4l2_m2m_ctx_init(vpu->m2m_dev, ctx,
++						    &dec_queue_init);
++	} else {
+ 		ctx->fh.m2m_ctx = ERR_PTR(-ENODEV);
++	}
+ 	if (IS_ERR(ctx->fh.m2m_ctx)) {
+ 		ret = PTR_ERR(ctx->fh.m2m_ctx);
+ 		kfree(ctx);
+@@ -295,6 +347,9 @@ static int rockchip_vpu_open(struct file *filp)
+ 	if (vdev == vpu->vfd_enc) {
+ 		rockchip_vpu_enc_reset_dst_fmt(vpu, ctx);
+ 		rockchip_vpu_enc_reset_src_fmt(vpu, ctx);
++	} else {
++		rockchip_vpu_dec_reset_src_fmt(vpu, ctx);
++		rockchip_vpu_dec_reset_dst_fmt(vpu, ctx);
+ 	}
+ 
+ 	ret = rockchip_vpu_ctrls_setup(vpu, ctx);
+@@ -352,7 +407,8 @@ static const struct media_device_ops rockchip_m2m_media_ops = {
+ 	.req_queue = v4l2_m2m_request_queue,
+ };
+ 
+-static int rockchip_vpu_video_device_register(struct rockchip_vpu_dev *vpu)
++static int rockchip_vpu_video_device_register(struct rockchip_vpu_dev *vpu,
++					      enum rockchip_vpu_type type)
+ {
+ 	const struct of_device_id *match;
+ 	struct video_device *vfd;
+@@ -371,9 +427,16 @@ static int rockchip_vpu_video_device_register(struct rockchip_vpu_dev *vpu)
+ 	vfd->v4l2_dev = &vpu->v4l2_dev;
+ 	vfd->vfl_dir = VFL_DIR_M2M;
+ 	vfd->device_caps = V4L2_CAP_STREAMING | V4L2_CAP_VIDEO_M2M_MPLANE;
+-	vfd->ioctl_ops = &rockchip_vpu_enc_ioctl_ops;
+-	snprintf(vfd->name, sizeof(vfd->name), "%s-enc", match->compatible);
+-	vpu->vfd_enc = vfd;
++	vfd->ioctl_ops = (type == RK_VPU_ENCODER) ?
++			 &rockchip_vpu_enc_ioctl_ops :
++			 &rockchip_vpu_dec_ioctl_ops;
++	snprintf(vfd->name, sizeof(vfd->name), "%s-%s", match->compatible,
++		(type == RK_VPU_ENCODER) ? "enc" : "dec");
++
++	if (type == RK_VPU_ENCODER)
++		vpu->vfd_enc = vfd;
++	else
++		vpu->vfd_dec = vfd;
+ 	video_set_drvdata(vfd, vpu);
+ 
+ 	ret = video_register_device(vfd, VFL_TYPE_GRABBER, 0);
+@@ -543,6 +606,16 @@ static int rockchip_register_media_controller(struct rockchip_vpu_dev *vpu)
+ 			return ret;
+ 	}
+ 
++	if (vpu->vfd_dec) {
++		ret = rockchip_register_mc(&vpu->mdev, &vpu->mc[1],
++					   vpu->vfd_dec,
++					   MEDIA_ENT_F_PROC_VIDEO_DECODER);
++		if (ret) {
++			rockchip_unregister_mc(&vpu->mc[0]);
++			return ret;
++		}
++	}
++
+ 	return 0;
+ }
+ 
+@@ -579,6 +652,7 @@ static int rockchip_vpu_probe(struct platform_device *pdev)
+ 	if (IS_ERR(vpu->base))
+ 		return PTR_ERR(vpu->base);
+ 	vpu->enc_base = vpu->base + vpu->variant->enc_offset;
++	vpu->dec_base = vpu->base + vpu->variant->dec_offset;
+ 
+ 	ret = dma_set_coherent_mask(vpu->dev, DMA_BIT_MASK(32));
+ 	if (ret) {
+@@ -586,6 +660,23 @@ static int rockchip_vpu_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
++	if (vpu->variant->vdpu_irq) {
++		int irq;
++
++		irq = platform_get_irq_byname(vpu->pdev, "vdpu");
++		if (irq <= 0) {
++			dev_err(vpu->dev, "Could not get vdpu IRQ.\n");
++			return -ENXIO;
++		}
++
++		ret = devm_request_irq(vpu->dev, irq, vpu->variant->vdpu_irq,
++				       0, dev_name(vpu->dev), vpu);
++		if (ret) {
++			dev_err(vpu->dev, "Could not request vdpu IRQ.\n");
++			return ret;
++		}
++	}
++
+ 	if (vpu->variant->vepu_irq) {
+ 		int irq;
+ 
+@@ -641,10 +732,20 @@ static int rockchip_vpu_probe(struct platform_device *pdev)
+ 	vpu->mdev.ops = &rockchip_m2m_media_ops;
+ 	vpu->v4l2_dev.mdev = &vpu->mdev;
+ 
+-	ret = rockchip_vpu_video_device_register(vpu);
+-	if (ret) {
+-		dev_err(&pdev->dev, "Failed to register encoder\n");
+-		goto err_m2m_rel;
++	if (vpu->variant->enc_fmts) {
++		ret = rockchip_vpu_video_device_register(vpu, RK_VPU_ENCODER);
++		if (ret) {
++			dev_err(&pdev->dev, "Failed to register encoder\n");
++			goto err_m2m_enc_rel;
++		}
++	}
++
++	if (vpu->variant->dec_fmts) {
++		ret = rockchip_vpu_video_device_register(vpu, RK_VPU_DECODER);
++		if (ret) {
++			dev_err(&pdev->dev, "Failed to register decoder\n");
++			goto err_video_dev_unreg;
++		}
+ 	}
+ 
+ 	ret = rockchip_register_media_controller(vpu);
+@@ -660,14 +761,20 @@ static int rockchip_vpu_probe(struct platform_device *pdev)
+ 	}
+ 	return 0;
+ err_mc_unreg:
++	if (vpu->vfd_dec)
++		rockchip_unregister_mc(&vpu->mc[1]);
+ 	if (vpu->vfd_enc)
+ 		rockchip_unregister_mc(&vpu->mc[0]);
+ err_video_dev_unreg:
++	if (vpu->vfd_dec) {
++		video_unregister_device(vpu->vfd_dec);
++		video_device_release(vpu->vfd_dec);
++	}
+ 	if (vpu->vfd_enc) {
+ 		video_unregister_device(vpu->vfd_enc);
+ 		video_device_release(vpu->vfd_enc);
+ 	}
+-err_m2m_rel:
++err_m2m_enc_rel:
+ 	v4l2_m2m_release(vpu->m2m_dev);
+ err_v4l2_unreg:
+ 	v4l2_device_unregister(&vpu->v4l2_dev);
+@@ -691,6 +798,11 @@ static int rockchip_vpu_remove(struct platform_device *pdev)
+ 		video_unregister_device(vpu->vfd_enc);
+ 		video_device_release(vpu->vfd_enc);
+ 	}
++	if (vpu->vfd_dec) {
++		rockchip_unregister_mc(&vpu->mc[1]);
++		video_unregister_device(vpu->vfd_dec);
++		video_device_release(vpu->vfd_dec);
++	}
+ 	v4l2_device_unregister(&vpu->v4l2_dev);
+ 	clk_bulk_unprepare(vpu->variant->num_clocks, vpu->clocks);
+ 	pm_runtime_disable(vpu->dev);
+
+From patchwork Mon Mar  4 19:25:28 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Ezequiel Garcia <ezequiel@collabora.com>
+X-Patchwork-Id: 10838363
+Return-Path: 
+ <linux-rockchip-bounces+patchwork-linux-rockchip=patchwork.kernel.org@lists.infradead.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id C5DAF13B5
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:27:17 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id ADBB22B2AE
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:27:17 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id AC7302B2D3; Mon,  4 Mar 2019 19:27:17 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-5.2 required=2.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,MAILING_LIST_MULTI,RCVD_IN_DNSWL_MED,UNPARSEABLE_RELAY
+	autolearn=unavailable version=3.3.1
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTPS id 318572B2D2
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:27:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20170209; h=Sender:
+	Content-Transfer-Encoding:Content-Type:Cc:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=rAOdWgr9J/2KrKObPhae24nYJbltzq01iL8o92x9di0=; b=bENl+9lvOqNh65
+	w4m2F0Jm3dqjC6x2lGdYxwrE7RzTgheBGz8aIafvty/K3aN/jXVuaH5xN/ZmlckfbVHm2JLNPhOQo
+	J4ARANnTQ6CQPB/MihqxCFe8lGz4A8wUSvzbrP+U2gvwJ9oXLcZv+FQvcIOcuy/5H/bE7Dc9oG13Y
+	H5sJ1vUBLWZCwkI/08C1XGxb17WLfYku779Ontkuu8zZ+vT9TUo1LilFxW9+XCVO85Tygg8C9nrem
+	M+Gqh/NL4J5GxoJ807Z3KzhU0HiyXUv1I5mOGGDfkvYL9T5jxXqm2QUoLen7m2n+c0XOVfTwfvWGY
+	o8f6pdO0waRQnbwo8SXA==;
+Received: from localhost ([127.0.0.1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.90_1 #2 (Red Hat Linux))
+	id 1h0tF4-0003cO-Ko; Mon, 04 Mar 2019 19:27:14 +0000
+Received: from bhuna.collabora.co.uk ([2a00:1098:0:82:1000:25:2eeb:e3e3])
+ by bombadil.infradead.org with esmtps (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1h0tF0-0003ZW-Mw
+ for linux-rockchip@lists.infradead.org; Mon, 04 Mar 2019 19:27:12 +0000
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+ (Authenticated sender: ezequiel) with ESMTPSA id 0C9532807B6
+From: Ezequiel Garcia <ezequiel@collabora.com>
+To: linux-media@vger.kernel.org
+Subject: [PATCH v2 10/11] rockchip/vpu: Add support for non-standard controls
+Date: Mon,  4 Mar 2019 16:25:28 -0300
+Message-Id: <20190304192529.14200-11-ezequiel@collabora.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190304192529.14200-1-ezequiel@collabora.com>
+References: <20190304192529.14200-1-ezequiel@collabora.com>
+MIME-Version: 1.0
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20190304_112711_006149_1D073282 
+X-CRM114-Status: GOOD (  15.73  )
+X-BeenThere: linux-rockchip@lists.infradead.org
+X-Mailman-Version: 2.1.21
+Precedence: list
+List-Id: Upstream kernel work for Rockchip platforms
+ <linux-rockchip.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip@lists.infradead.org>
+List-Help: <mailto:linux-rockchip-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=subscribe>
+Cc: Nicolas Dufresne <nicolas.dufresne@collabora.com>,
+ Heiko Stuebner <heiko@sntech.de>, Jonas Karlman <jonas@kwiboo.se>,
+ Tomasz Figa <tfiga@chromium.org>, linux-rockchip@lists.infradead.org,
+ Hans Verkuil <hans.verkuil@cisco.com>, kernel@collabora.com,
+ Ezequiel Garcia <ezequiel@collabora.com>
+Content-Type: text/plain; charset="us-ascii"
+Sender: "Linux-rockchip" <linux-rockchip-bounces@lists.infradead.org>
+Errors-To: 
+ linux-rockchip-bounces+patchwork-linux-rockchip=patchwork.kernel.org@lists.infradead.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+Rework the way controls are registered by the driver,
+so it can support non-standard controls, such as those
+used by stateless codecs.
+
+Signed-off-by: Ezequiel Garcia <ezequiel@collabora.com>
+---
+ .../media/rockchip/vpu/rk3288_vpu_hw.c        |  2 +-
+ .../media/rockchip/vpu/rk3399_vpu_hw.c        |  2 +-
+ .../staging/media/rockchip/vpu/rockchip_vpu.h | 24 ++++++-
+ .../media/rockchip/vpu/rockchip_vpu_common.h  |  1 +
+ .../media/rockchip/vpu/rockchip_vpu_drv.c     | 65 +++++++++++++++++--
+ 5 files changed, 84 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/staging/media/rockchip/vpu/rk3288_vpu_hw.c b/drivers/staging/media/rockchip/vpu/rk3288_vpu_hw.c
+index 056ee017c798..630eded99c68 100644
+--- a/drivers/staging/media/rockchip/vpu/rk3288_vpu_hw.c
++++ b/drivers/staging/media/rockchip/vpu/rk3288_vpu_hw.c
+@@ -112,7 +112,7 @@ const struct rockchip_vpu_variant rk3288_vpu_variant = {
+ 	.enc_fmts = rk3288_vpu_enc_fmts,
+ 	.num_enc_fmts = ARRAY_SIZE(rk3288_vpu_enc_fmts),
+ 	.codec_ops = rk3288_vpu_codec_ops,
+-	.codec = RK_VPU_CODEC_JPEG,
++	.codec = RK_VPU_JPEG_ENCODER,
+ 	.vepu_irq = rk3288_vepu_irq,
+ 	.init = rk3288_vpu_hw_init,
+ 	.clk_names = {"aclk", "hclk"},
+diff --git a/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw.c b/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw.c
+index 0263584e616d..9eae1e6f1393 100644
+--- a/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw.c
++++ b/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw.c
+@@ -129,7 +129,7 @@ const struct rockchip_vpu_variant rk3399_vpu_variant = {
+ 	.enc_offset = 0x0,
+ 	.enc_fmts = rk3399_vpu_enc_fmts,
+ 	.num_enc_fmts = ARRAY_SIZE(rk3399_vpu_enc_fmts),
+-	.codec = RK_VPU_CODEC_JPEG,
++	.codec = RK_VPU_JPEG_ENCODER,
+ 	.codec_ops = rk3399_vpu_codec_ops,
+ 	.vepu_irq = rk3399_vepu_irq,
+ 	.vdpu_irq = rk3399_vdpu_irq,
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu.h b/drivers/staging/media/rockchip/vpu/rockchip_vpu.h
+index b383c89ecc17..a90fc2dfae99 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu.h
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu.h
+@@ -25,6 +25,7 @@
+ 
+ #include "rockchip_vpu_hw.h"
+ 
++#define ROCKCHIP_VPU_MAX_CTRLS          32
+ #define ROCKCHIP_VPU_MAX_CLOCKS		4
+ 
+ #define JPEG_MB_DIM			16
+@@ -34,7 +35,10 @@
+ struct rockchip_vpu_ctx;
+ struct rockchip_vpu_codec_ops;
+ 
+-#define RK_VPU_CODEC_JPEG BIT(0)
++#define RK_VPU_JPEG_ENCODER	BIT(0)
++#define RK_VPU_ENCODERS		0x0000ffff
++
++#define RK_VPU_DECODERS		0xffff0000
+ 
+ /**
+  * struct rockchip_vpu_variant - information about VPU hardware variant
+@@ -79,6 +83,20 @@ enum rockchip_vpu_codec_mode {
+ 	RK_VPU_MODE_JPEG_ENC,
+ };
+ 
++/*
++ * struct rockchip_vpu_ctrl - helper type to declare supported controls
++ * @id:		V4L2 control ID (V4L2_CID_xxx)
++ * @is_std:	boolean to distinguish standard from customs control.
++ * @codec:	codec id this control belong to (RK_VPU_JPEG_ENCODER, etc.)
++ * @cfg:	control configuration
++ */
++struct rockchip_vpu_ctrl {
++	unsigned int id;
++	unsigned int is_std;
++	unsigned int codec;
++	struct v4l2_ctrl_config cfg;
++};
++
+ /*
+  * struct rockchip_vpu_mc - media controller data
+  *
+@@ -169,6 +187,8 @@ struct rockchip_vpu_dev {
+  * @dst_fmt:		V4L2 pixel format of active destination format.
+  *
+  * @ctrl_handler:	Control handler used to register controls.
++ * @ctrls:		Array of supported controls.
++ * @num_ctrls:		Number of controls populated in the array.
+  * @jpeg_quality:	User-specified JPEG compression quality.
+  *
+  * @codec_ops:		Set of operations related to codec mode.
+@@ -188,6 +208,8 @@ struct rockchip_vpu_ctx {
+ 	struct v4l2_pix_format_mplane dst_fmt;
+ 
+ 	struct v4l2_ctrl_handler ctrl_handler;
++	struct v4l2_ctrl *ctrls[ROCKCHIP_VPU_MAX_CTRLS];
++	unsigned int num_ctrls;
+ 	int jpeg_quality;
+ 
+ 	const struct rockchip_vpu_codec_ops *codec_ops;
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu_common.h b/drivers/staging/media/rockchip/vpu/rockchip_vpu_common.h
+index 7e5fce3bf215..70b8ac1c7503 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu_common.h
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu_common.h
+@@ -23,6 +23,7 @@ extern const struct v4l2_ioctl_ops rockchip_vpu_dec_ioctl_ops;
+ extern const struct vb2_ops rockchip_vpu_enc_queue_ops;
+ extern const struct vb2_ops rockchip_vpu_dec_queue_ops;
+ 
++void *rockchip_vpu_find_control_data(struct rockchip_vpu_ctx *ctx, unsigned int id);
+ void rockchip_vpu_enc_reset_src_fmt(struct rockchip_vpu_dev *vpu,
+ 				    struct rockchip_vpu_ctx *ctx);
+ void rockchip_vpu_enc_reset_dst_fmt(struct rockchip_vpu_dev *vpu,
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c b/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
+index 27a9da86f1d0..f5c941f34c90 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
+@@ -276,26 +276,77 @@ static int rockchip_vpu_s_ctrl(struct v4l2_ctrl *ctrl)
+ 	return 0;
+ }
+ 
++void *rockchip_vpu_find_control_data(struct rockchip_vpu_ctx *ctx, unsigned int id)
++{
++	unsigned int i;
++
++	for (i = 0; i < ctx->num_ctrls; i++) {
++		if (!ctx->ctrls[i])
++			continue;
++		if (ctx->ctrls[i]->id == id)
++			return ctx->ctrls[i]->p_cur.p;
++	}
++	return NULL;
++}
++
+ static const struct v4l2_ctrl_ops rockchip_vpu_ctrl_ops = {
+ 	.s_ctrl = rockchip_vpu_s_ctrl,
+ };
+ 
++static struct rockchip_vpu_ctrl controls[] = {
++	{
++		.id = V4L2_CID_JPEG_COMPRESSION_QUALITY,
++		.codec = RK_VPU_JPEG_ENCODER,
++		.is_std = 1,
++		.cfg = {
++			.min = 5,
++			.max = 100,
++			.step = 1,
++			.def = 50,
++		},
++	},
++};
++
+ static int rockchip_vpu_ctrls_setup(struct rockchip_vpu_dev *vpu,
+ 				    struct rockchip_vpu_ctx *ctx)
+ {
+-	v4l2_ctrl_handler_init(&ctx->ctrl_handler, 1);
+-	if (vpu->variant->codec & RK_VPU_CODEC_JPEG) {
+-		v4l2_ctrl_new_std(&ctx->ctrl_handler, &rockchip_vpu_ctrl_ops,
+-				  V4L2_CID_JPEG_COMPRESSION_QUALITY,
+-				  5, 100, 1, 50);
++	int j, i, num_ctrls = ARRAY_SIZE(controls);
++	int allowed_codecs;
++
++	if (ctx->is_enc)
++		allowed_codecs = vpu->variant->codec & RK_VPU_ENCODERS;
++	else
++		allowed_codecs = vpu->variant->codec & RK_VPU_DECODERS;
++
++	if (num_ctrls > ARRAY_SIZE(ctx->ctrls)) {
++		vpu_err("context control array not large enough\n");
++		return -EINVAL;
++	}
++
++	v4l2_ctrl_handler_init(&ctx->ctrl_handler, num_ctrls);
++
++	for (i = 0, j = 0; i < num_ctrls; i++) {
++		if (!(allowed_codecs & controls[i].codec))
++			continue;
++		if (controls[i].is_std) {
++			v4l2_ctrl_new_std(&ctx->ctrl_handler, &rockchip_vpu_ctrl_ops,
++					  controls[i].id, controls[i].cfg.min, controls[i].cfg.max,
++					  controls[i].cfg.step, controls[i].cfg.def);
++		} else {
++			controls[i].cfg.id = controls[i].id;
++			ctx->ctrls[j++] = v4l2_ctrl_new_custom(&ctx->ctrl_handler,
++							       &controls[i].cfg, NULL);
++		}
++
+ 		if (ctx->ctrl_handler.error) {
+-			vpu_err("Adding JPEG control failed %d\n",
++			vpu_err("Adding control (%d) failed %d\n",
++				controls[i].id,
+ 				ctx->ctrl_handler.error);
+ 			v4l2_ctrl_handler_free(&ctx->ctrl_handler);
+ 			return ctx->ctrl_handler.error;
+ 		}
+ 	}
+-
++	ctx->num_ctrls = j;
+ 	return v4l2_ctrl_handler_setup(&ctx->ctrl_handler);
+ }
+ 
+
+From patchwork Mon Mar  4 19:25:29 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Ezequiel Garcia <ezequiel@collabora.com>
+X-Patchwork-Id: 10838369
+Return-Path: 
+ <linux-rockchip-bounces+patchwork-linux-rockchip=patchwork.kernel.org@lists.infradead.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id E977317E0
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:27:22 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id CD3DE2B2CA
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:27:22 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id CAD762B2E8; Mon,  4 Mar 2019 19:27:22 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-5.2 required=2.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,MAILING_LIST_MULTI,RCVD_IN_DNSWL_MED,UNPARSEABLE_RELAY
+	autolearn=unavailable version=3.3.1
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTPS id BB4BB2B2E2
+	for <patchwork-linux-rockchip@patchwork.kernel.org>;
+ Mon,  4 Mar 2019 19:27:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20170209; h=Sender:
+	Content-Transfer-Encoding:Content-Type:Cc:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=A36GYqwYzXW1SeJuV850T/tVVqLo7cVawzyueCZ6CgA=; b=Chte9Ufwcu9JKF
+	t/gmFBgvxlpTYofsg1lxuOUrsJN7H53KC357Ts5VWyfa61Ld5STuTEjm6NGhx3OeU8zTzxfs3egaI
+	kTtur34Oec8iFkFIx5ES/s4Um+Q66ABT5/L6sKnH+KoonUdU8rv01QvoOGtm2LKp12YLkcJ7nv7pV
+	lfngdijDA/rNllHQ2Ylo60y/WkZ75KSfb/NacZLnjlLAew+8LaBCupWwJwNc4Q/LUqwHGBp9YaK8r
+	tUSsYFhfDqMl+/59rX8GGQRex1DYF9SEcWs6VYmrwTvwh0bOda/JL7FJjr2nlNycVr79DP+hQxiMZ
+	8a1Xdxzz77ZkHhrQFYZg==;
+Received: from localhost ([127.0.0.1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.90_1 #2 (Red Hat Linux))
+	id 1h0tF8-0003ex-4t; Mon, 04 Mar 2019 19:27:18 +0000
+Received: from bhuna.collabora.co.uk ([46.235.227.227])
+ by bombadil.infradead.org with esmtps (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1h0tF4-0003b9-4L
+ for linux-rockchip@lists.infradead.org; Mon, 04 Mar 2019 19:27:17 +0000
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+ (Authenticated sender: ezequiel) with ESMTPSA id 2ED79276DFA
+From: Ezequiel Garcia <ezequiel@collabora.com>
+To: linux-media@vger.kernel.org
+Subject: [PATCH v2 11/11] rockchip/vpu: Add support for MPEG-2 decoding
+Date: Mon,  4 Mar 2019 16:25:29 -0300
+Message-Id: <20190304192529.14200-12-ezequiel@collabora.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190304192529.14200-1-ezequiel@collabora.com>
+References: <20190304192529.14200-1-ezequiel@collabora.com>
+MIME-Version: 1.0
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20190304_112714_442721_EF2DF5FF 
+X-CRM114-Status: GOOD (  17.90  )
+X-BeenThere: linux-rockchip@lists.infradead.org
+X-Mailman-Version: 2.1.21
+Precedence: list
+List-Id: Upstream kernel work for Rockchip platforms
+ <linux-rockchip.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip@lists.infradead.org>
+List-Help: <mailto:linux-rockchip-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=subscribe>
+Cc: Nicolas Dufresne <nicolas.dufresne@collabora.com>,
+ Heiko Stuebner <heiko@sntech.de>, Jonas Karlman <jonas@kwiboo.se>,
+ Tomasz Figa <tfiga@chromium.org>, linux-rockchip@lists.infradead.org,
+ Hans Verkuil <hans.verkuil@cisco.com>, kernel@collabora.com,
+ Ezequiel Garcia <ezequiel@collabora.com>
+Content-Type: text/plain; charset="us-ascii"
+Sender: "Linux-rockchip" <linux-rockchip-bounces@lists.infradead.org>
+Errors-To: 
+ linux-rockchip-bounces+patchwork-linux-rockchip=patchwork.kernel.org@lists.infradead.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+From: Jonas Karlman <jonas@kwiboo.se>
+
+Add MPEG-2 decoding, only on RK3399. Other SoCs
+and support for other codecs will be added in the future.
+
+Signed-off-by: Jonas Karlman <jonas@kwiboo.se>
+Signed-off-by: Ezequiel Garcia <ezequiel@collabora.com>
+---
+ drivers/staging/media/rockchip/vpu/Makefile   |   4 +-
+ .../media/rockchip/vpu/rk3399_vpu_hw.c        |  40 ++-
+ .../rockchip/vpu/rk3399_vpu_hw_mpeg2_dec.c    | 263 ++++++++++++++++++
+ .../staging/media/rockchip/vpu/rockchip_vpu.h |   9 +
+ .../media/rockchip/vpu/rockchip_vpu_drv.c     |  12 +
+ .../media/rockchip/vpu/rockchip_vpu_hw.h      |  14 +
+ .../media/rockchip/vpu/rockchip_vpu_mpeg2.c   |  61 ++++
+ 7 files changed, 401 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/staging/media/rockchip/vpu/rk3399_vpu_hw_mpeg2_dec.c
+ create mode 100644 drivers/staging/media/rockchip/vpu/rockchip_vpu_mpeg2.c
+
+diff --git a/drivers/staging/media/rockchip/vpu/Makefile b/drivers/staging/media/rockchip/vpu/Makefile
+index b9041a139212..86e57776f0ec 100644
+--- a/drivers/staging/media/rockchip/vpu/Makefile
++++ b/drivers/staging/media/rockchip/vpu/Makefile
+@@ -8,4 +8,6 @@ rockchip-vpu-y += \
+ 		rk3288_vpu_hw_jpeg_enc.o \
+ 		rk3399_vpu_hw.o \
+ 		rk3399_vpu_hw_jpeg_enc.o \
+-		rockchip_vpu_jpeg.o
++		rockchip_vpu_jpeg.o \
++		rk3399_vpu_hw_mpeg2_dec.o \
++		rockchip_vpu_mpeg2.o
+diff --git a/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw.c b/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw.c
+index 9eae1e6f1393..0ea184162a6c 100644
+--- a/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw.c
++++ b/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw.c
+@@ -55,6 +55,26 @@ static const struct rockchip_vpu_fmt rk3399_vpu_enc_fmts[] = {
+ 	},
+ };
+ 
++static const struct rockchip_vpu_fmt rk3399_vpu_dec_fmts[] = {
++	{
++		.fourcc = V4L2_PIX_FMT_NV12,
++		.codec_mode = RK_VPU_MODE_NONE,
++	},
++	{
++		.fourcc = V4L2_PIX_FMT_MPEG2_SLICE,
++		.codec_mode = RK_VPU_MODE_MPEG2_DEC,
++		.max_depth = 2,
++		.frmsize = {
++			.min_width = 48,
++			.max_width = 1920,
++			.step_width = MPEG2_MB_DIM,
++			.min_height = 48,
++			.max_height = 1088,
++			.step_height = MPEG2_MB_DIM,
++		},
++	},
++};
++
+ static irqreturn_t rk3399_vepu_irq(int irq, void *dev_id)
+ {
+ 	struct rockchip_vpu_dev *vpu = dev_id;
+@@ -108,6 +128,15 @@ static void rk3399_vpu_enc_reset(struct rockchip_vpu_ctx *ctx)
+ 	vepu_write(vpu, 0, VEPU_REG_AXI_CTRL);
+ }
+ 
++static void rk3399_vpu_dec_reset(struct rockchip_vpu_ctx *ctx)
++{
++	struct rockchip_vpu_dev *vpu = ctx->dev;
++
++	vdpu_write(vpu, VDPU_REG_INTERRUPT_DEC_IRQ_DIS, VDPU_REG_INTERRUPT);
++	vdpu_write(vpu, 0, VDPU_REG_EN_FLAGS);
++	vdpu_write(vpu, 1, VDPU_REG_SOFT_RESET);
++}
++
+ /*
+  * Supported codec ops.
+  */
+@@ -119,6 +148,12 @@ static const struct rockchip_vpu_codec_ops rk3399_vpu_codec_ops[] = {
+ 		.start = rockchip_vpu_jpeg_enc_start,
+ 		.stop = rockchip_vpu_jpeg_enc_stop,
+ 	},
++	[RK_VPU_MODE_MPEG2_DEC] = {
++		.run = rk3399_vpu_mpeg2_dec_run,
++		.reset = rk3399_vpu_dec_reset,
++		.start = rockchip_vpu_mpeg2_dec_start,
++		.stop = rockchip_vpu_mpeg2_dec_stop,
++	},
+ };
+ 
+ /*
+@@ -129,7 +164,10 @@ const struct rockchip_vpu_variant rk3399_vpu_variant = {
+ 	.enc_offset = 0x0,
+ 	.enc_fmts = rk3399_vpu_enc_fmts,
+ 	.num_enc_fmts = ARRAY_SIZE(rk3399_vpu_enc_fmts),
+-	.codec = RK_VPU_JPEG_ENCODER,
++	.dec_offset = 0x400,
++	.dec_fmts = rk3399_vpu_dec_fmts,
++	.num_dec_fmts = ARRAY_SIZE(rk3399_vpu_dec_fmts),
++	.codec = RK_VPU_JPEG_ENCODER | RK_VPU_MPEG2_DECODER,
+ 	.codec_ops = rk3399_vpu_codec_ops,
+ 	.vepu_irq = rk3399_vepu_irq,
+ 	.vdpu_irq = rk3399_vdpu_irq,
+diff --git a/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw_mpeg2_dec.c b/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw_mpeg2_dec.c
+new file mode 100644
+index 000000000000..d1e32e963082
+--- /dev/null
++++ b/drivers/staging/media/rockchip/vpu/rk3399_vpu_hw_mpeg2_dec.c
+@@ -0,0 +1,263 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Rockchip VPU codec driver
++ *
++ * Copyright (C) 2018 Rockchip Electronics Co., Ltd.
++ */
++
++#include <asm/unaligned.h>
++#include <linux/bitfield.h>
++#include <media/v4l2-mem2mem.h>
++#include "rockchip_vpu.h"
++#include "rockchip_vpu_common.h"
++#include "rockchip_vpu_hw.h"
++
++#define VDPU_SWREG(nr)			((nr) * 4)
++
++#define VDPU_REG_DEC_OUT_BASE		VDPU_SWREG(63)
++#define VDPU_REG_RLC_VLC_BASE		VDPU_SWREG(64)
++#define VDPU_REG_QTABLE_BASE		VDPU_SWREG(61)
++#define VDPU_REG_REFER0_BASE		VDPU_SWREG(131)
++#define VDPU_REG_REFER2_BASE		VDPU_SWREG(134)
++#define VDPU_REG_REFER3_BASE		VDPU_SWREG(135)
++#define VDPU_REG_REFER1_BASE		VDPU_SWREG(148)
++#define VDPU_REG_DEC_E(v)		((v) ? BIT(0) : 0)
++
++#define VDPU_REG_DEC_ADV_PRE_DIS(v)	((v) ? BIT(11) : 0)
++#define VDPU_REG_DEC_SCMD_DIS(v)	((v) ? BIT(10) : 0)
++#define VDPU_REG_FILTERING_DIS(v)	((v) ? BIT(8) : 0)
++#define VDPU_REG_DEC_LATENCY(v)		(((v) << 1) & GENMASK(6, 1))
++
++#define VDPU_REG_INIT_QP(v)		(((v) << 25) & GENMASK(30, 25))
++#define VDPU_REG_STREAM_LEN(v)		(((v) << 0) & GENMASK(23, 0))
++
++#define VDPU_REG_APF_THRESHOLD(v)	(((v) << 17) & GENMASK(30, 17))
++#define VDPU_REG_STARTMB_X(v)		(((v) << 8) & GENMASK(16, 8))
++#define VDPU_REG_STARTMB_Y(v)		(((v) << 0) & GENMASK(7, 0))
++
++#define VDPU_REG_DEC_MODE(v)		(((v) << 0) & GENMASK(3, 0))
++
++#define VDPU_REG_DEC_STRENDIAN_E(v)	((v) ? BIT(5) : 0)
++#define VDPU_REG_DEC_STRSWAP32_E(v)	((v) ? BIT(4) : 0)
++#define VDPU_REG_DEC_OUTSWAP32_E(v)	((v) ? BIT(3) : 0)
++#define VDPU_REG_DEC_INSWAP32_E(v)	((v) ? BIT(2) : 0)
++#define VDPU_REG_DEC_OUT_ENDIAN(v)	((v) ? BIT(1) : 0)
++#define VDPU_REG_DEC_IN_ENDIAN(v)	((v) ? BIT(0) : 0)
++
++#define VDPU_REG_DEC_DATA_DISC_E(v)	((v) ? BIT(22) : 0)
++#define VDPU_REG_DEC_MAX_BURST(v)	(((v) << 16) & GENMASK(20, 16))
++#define VDPU_REG_DEC_AXI_WR_ID(v)	(((v) << 8) & GENMASK(15, 8))
++#define VDPU_REG_DEC_AXI_RD_ID(v)	(((v) << 0) & GENMASK(7, 0))
++
++#define VDPU_REG_RLC_MODE_E(v)		((v) ? BIT(20) : 0)
++#define VDPU_REG_PIC_INTERLACE_E(v)	((v) ? BIT(17) : 0)
++#define VDPU_REG_PIC_FIELDMODE_E(v)	((v) ? BIT(16) : 0)
++#define VDPU_REG_PIC_B_E(v)		((v) ? BIT(15) : 0)
++#define VDPU_REG_PIC_INTER_E(v)		((v) ? BIT(14) : 0)
++#define VDPU_REG_PIC_TOPFIELD_E(v)	((v) ? BIT(13) : 0)
++#define VDPU_REG_FWD_INTERLACE_E(v)	((v) ? BIT(12) : 0)
++#define VDPU_REG_WRITE_MVS_E(v)		((v) ? BIT(10) : 0)
++#define VDPU_REG_DEC_TIMEOUT_E(v)	((v) ? BIT(5) : 0)
++#define VDPU_REG_DEC_CLK_GATE_E(v)	((v) ? BIT(4) : 0)
++
++#define VDPU_REG_PIC_MB_WIDTH(v)	(((v) << 23) & GENMASK(31, 23))
++#define VDPU_REG_PIC_MB_HEIGHT_P(v)	(((v) << 11) & GENMASK(18, 11))
++#define VDPU_REG_ALT_SCAN_E(v)		((v) ? BIT(6) : 0)
++#define VDPU_REG_TOPFIELDFIRST_E(v)	((v) ? BIT(5) : 0)
++
++#define VDPU_REG_STRM_START_BIT(v)	(((v) << 26) & GENMASK(31, 26))
++#define VDPU_REG_QSCALE_TYPE(v)		((v) ? BIT(24) : 0)
++#define VDPU_REG_CON_MV_E(v)		((v) ? BIT(4) : 0)
++#define VDPU_REG_INTRA_DC_PREC(v)	(((v) << 2) & GENMASK(3, 2))
++#define VDPU_REG_INTRA_VLC_TAB(v)	((v) ? BIT(1) : 0)
++#define VDPU_REG_FRAME_PRED_DCT(v)	((v) ? BIT(0) : 0)
++
++#define VDPU_REG_ALT_SCAN_FLAG_E(v)	((v) ? BIT(19) : 0)
++#define VDPU_REG_FCODE_FWD_HOR(v)	(((v) << 15) & GENMASK(18, 15))
++#define VDPU_REG_FCODE_FWD_VER(v)	(((v) << 11) & GENMASK(14, 11))
++#define VDPU_REG_FCODE_BWD_HOR(v)	(((v) << 7) & GENMASK(10, 7))
++#define VDPU_REG_FCODE_BWD_VER(v)	(((v) << 3) & GENMASK(6, 3))
++#define VDPU_REG_MV_ACCURACY_FWD(v)	((v) ? BIT(2) : 0)
++#define VDPU_REG_MV_ACCURACY_BWD(v)	((v) ? BIT(1) : 0)
++
++#define PICT_TOP_FIELD     1
++#define PICT_BOTTOM_FIELD  2
++#define PICT_FRAME         3
++
++static void
++rk3399_vpu_mpeg2_dec_set_quantization(struct rockchip_vpu_dev *vpu,
++				      struct rockchip_vpu_ctx *ctx)
++{
++	struct v4l2_ctrl_mpeg2_quantization *quantization;
++
++	quantization = rockchip_vpu_get_ctrl(ctx,
++				V4L2_CID_MPEG_VIDEO_MPEG2_QUANTIZATION);
++	rockchip_vpu_mpeg2_dec_copy_qtable(ctx->mpeg2_dec_ctx.qtable.cpu, quantization);
++	vdpu_write_relaxed(vpu, ctx->mpeg2_dec_ctx.qtable.dma, VDPU_REG_QTABLE_BASE);
++}
++
++static void rk3399_vpu_mpeg2_dec_set_buffers(struct rockchip_vpu_dev *vpu,
++					     struct rockchip_vpu_ctx *ctx,
++					     struct vb2_buffer *src_buf,
++					     struct vb2_buffer *dst_buf,
++					     const struct v4l2_mpeg2_sequence *sequence,
++					     const struct v4l2_mpeg2_picture *picture,
++					     const struct v4l2_ctrl_mpeg2_slice_params *slice_params)
++{
++	dma_addr_t forward_addr = 0, backward_addr = 0;
++	dma_addr_t current_addr, addr;
++	struct vb2_queue *vq;
++
++	vq = v4l2_m2m_get_dst_vq(ctx->fh.m2m_ctx);
++
++	switch (picture->picture_coding_type) {
++	case V4L2_MPEG2_PICTURE_CODING_TYPE_B:
++		backward_addr = rockchip_vpu_get_ref(vq, slice_params->backward_ref_ts);
++		/* fall-through */
++	case V4L2_MPEG2_PICTURE_CODING_TYPE_P:
++		forward_addr = rockchip_vpu_get_ref(vq, slice_params->forward_ref_ts);
++	}
++
++	/* Source bitstream buffer */
++	addr = vb2_dma_contig_plane_dma_addr(src_buf, 0);
++	vdpu_write_relaxed(vpu, addr, VDPU_REG_RLC_VLC_BASE);
++
++	/* Destination frame buffer */
++	addr = vb2_dma_contig_plane_dma_addr(dst_buf, 0);
++	current_addr = addr;
++
++	if (picture->picture_structure == PICT_BOTTOM_FIELD)
++		addr += DIV_ROUND_UP(sequence->horizontal_size, 16) << 4;
++	vdpu_write_relaxed(vpu, addr, VDPU_REG_DEC_OUT_BASE);
++
++	if (!forward_addr)
++		forward_addr = current_addr;
++	if (!backward_addr)
++		backward_addr = current_addr;
++
++	/* Set forward ref frame (top/bottom field) */
++	if (picture->picture_structure == PICT_FRAME ||
++	    picture->picture_coding_type == V4L2_MPEG2_PICTURE_CODING_TYPE_B ||
++	    (picture->picture_structure == PICT_TOP_FIELD && picture->top_field_first) ||
++	    (picture->picture_structure == PICT_BOTTOM_FIELD && !picture->top_field_first)) {
++		vdpu_write_relaxed(vpu, forward_addr, VDPU_REG_REFER0_BASE);
++		vdpu_write_relaxed(vpu, forward_addr, VDPU_REG_REFER1_BASE);
++	} else if (picture->picture_structure == PICT_TOP_FIELD) {
++		vdpu_write_relaxed(vpu, forward_addr, VDPU_REG_REFER0_BASE);
++		vdpu_write_relaxed(vpu, current_addr, VDPU_REG_REFER1_BASE);
++	} else if (picture->picture_structure == PICT_BOTTOM_FIELD) {
++		vdpu_write_relaxed(vpu, current_addr, VDPU_REG_REFER0_BASE);
++		vdpu_write_relaxed(vpu, forward_addr, VDPU_REG_REFER1_BASE);
++	}
++
++	/* Set backward ref frame (top/bottom field) */
++	vdpu_write_relaxed(vpu, backward_addr, VDPU_REG_REFER2_BASE);
++	vdpu_write_relaxed(vpu, backward_addr, VDPU_REG_REFER3_BASE);
++}
++
++void rk3399_vpu_mpeg2_dec_run(struct rockchip_vpu_ctx *ctx)
++{
++	struct rockchip_vpu_dev *vpu = ctx->dev;
++	struct vb2_v4l2_buffer *src_buf, *dst_buf;
++	const struct v4l2_ctrl_mpeg2_slice_params *slice_params;
++	const struct v4l2_mpeg2_sequence *sequence;
++	const struct v4l2_mpeg2_picture *picture;
++	u32 reg;
++
++	src_buf = v4l2_m2m_next_src_buf(ctx->fh.m2m_ctx);
++	dst_buf = v4l2_m2m_next_dst_buf(ctx->fh.m2m_ctx);
++
++	/* Apply request controls if any */
++	v4l2_ctrl_request_setup(src_buf->vb2_buf.req_obj.req,
++				&ctx->ctrl_handler);
++
++	slice_params = rockchip_vpu_get_ctrl(ctx,
++				V4L2_CID_MPEG_VIDEO_MPEG2_SLICE_PARAMS);
++	if (!slice_params)
++		return;
++	sequence = &slice_params->sequence;
++	picture = &slice_params->picture;
++
++	reg = VDPU_REG_DEC_ADV_PRE_DIS(0) |
++	      VDPU_REG_DEC_SCMD_DIS(0) |
++	      VDPU_REG_FILTERING_DIS(1) |
++	      VDPU_REG_DEC_LATENCY(0);
++	vdpu_write_relaxed(vpu, reg, VDPU_SWREG(50));
++
++	reg = VDPU_REG_INIT_QP(1) |
++	      VDPU_REG_STREAM_LEN(slice_params->bit_size >> 3);
++	vdpu_write_relaxed(vpu, reg, VDPU_SWREG(51));
++
++	reg = VDPU_REG_APF_THRESHOLD(8) |
++	      VDPU_REG_STARTMB_X(0) |
++	      VDPU_REG_STARTMB_Y(0);
++	vdpu_write_relaxed(vpu, reg, VDPU_SWREG(52));
++
++	reg = VDPU_REG_DEC_MODE(5);
++	vdpu_write_relaxed(vpu, reg, VDPU_SWREG(53));
++
++	reg = VDPU_REG_DEC_STRENDIAN_E(1) |
++	      VDPU_REG_DEC_STRSWAP32_E(1) |
++	      VDPU_REG_DEC_OUTSWAP32_E(1) |
++	      VDPU_REG_DEC_INSWAP32_E(1) |
++	      VDPU_REG_DEC_OUT_ENDIAN(1) |
++	      VDPU_REG_DEC_IN_ENDIAN(1);
++	vdpu_write_relaxed(vpu, reg, VDPU_SWREG(54));
++
++	reg = VDPU_REG_DEC_DATA_DISC_E(0) |
++	      VDPU_REG_DEC_MAX_BURST(16) |
++	      VDPU_REG_DEC_AXI_WR_ID(0) |
++	      VDPU_REG_DEC_AXI_RD_ID(0);
++	vdpu_write_relaxed(vpu, reg, VDPU_SWREG(56));
++
++	reg = VDPU_REG_RLC_MODE_E(0) |
++	      VDPU_REG_PIC_INTERLACE_E(!sequence->progressive_sequence) |
++	      VDPU_REG_PIC_FIELDMODE_E(picture->picture_structure != PICT_FRAME) |
++	      VDPU_REG_PIC_B_E(picture->picture_coding_type == V4L2_MPEG2_PICTURE_CODING_TYPE_B) |
++	      VDPU_REG_PIC_INTER_E(picture->picture_coding_type != V4L2_MPEG2_PICTURE_CODING_TYPE_I) |
++	      VDPU_REG_PIC_TOPFIELD_E(picture->picture_structure == PICT_TOP_FIELD) |
++	      VDPU_REG_FWD_INTERLACE_E(0) |
++	      VDPU_REG_WRITE_MVS_E(0) |
++	      VDPU_REG_DEC_TIMEOUT_E(1) |
++	      VDPU_REG_DEC_CLK_GATE_E(1);
++	vdpu_write_relaxed(vpu, reg, VDPU_SWREG(57));
++
++	reg = VDPU_REG_PIC_MB_WIDTH(DIV_ROUND_UP(sequence->horizontal_size, 16)) |
++	      VDPU_REG_PIC_MB_HEIGHT_P(DIV_ROUND_UP(sequence->vertical_size, 16)) |
++	      VDPU_REG_ALT_SCAN_E(picture->alternate_scan) |
++	      VDPU_REG_TOPFIELDFIRST_E(picture->top_field_first);
++	vdpu_write_relaxed(vpu, reg, VDPU_SWREG(120));
++
++	reg = VDPU_REG_STRM_START_BIT(slice_params->data_bit_offset) |
++	      VDPU_REG_QSCALE_TYPE(picture->q_scale_type) |
++	      VDPU_REG_CON_MV_E(picture->concealment_motion_vectors) |
++	      VDPU_REG_INTRA_DC_PREC(picture->intra_dc_precision) |
++	      VDPU_REG_INTRA_VLC_TAB(picture->intra_vlc_format) |
++	      VDPU_REG_FRAME_PRED_DCT(picture->frame_pred_frame_dct);
++	vdpu_write_relaxed(vpu, reg, VDPU_SWREG(122));
++
++	reg = VDPU_REG_ALT_SCAN_FLAG_E(picture->alternate_scan) |
++	      VDPU_REG_FCODE_FWD_HOR(picture->f_code[0][0]) |
++	      VDPU_REG_FCODE_FWD_VER(picture->f_code[0][1]) |
++	      VDPU_REG_FCODE_BWD_HOR(picture->f_code[1][0]) |
++	      VDPU_REG_FCODE_BWD_VER(picture->f_code[1][1]) |
++	      VDPU_REG_MV_ACCURACY_FWD(1) |
++	      VDPU_REG_MV_ACCURACY_BWD(1);
++	vdpu_write_relaxed(vpu, reg, VDPU_SWREG(136));
++
++	rk3399_vpu_mpeg2_dec_set_quantization(vpu, ctx);
++
++	rk3399_vpu_mpeg2_dec_set_buffers(vpu, ctx, &src_buf->vb2_buf,
++					 &dst_buf->vb2_buf,
++					 sequence, picture, slice_params);
++
++	/* Controls no longer in-use, we can complete them */
++	v4l2_ctrl_request_complete(src_buf->vb2_buf.req_obj.req,
++				   &ctx->ctrl_handler);
++
++	/* Kick the watchdog and start decoding */
++	schedule_delayed_work(&vpu->watchdog_work, msecs_to_jiffies(2000));
++
++	reg = vdpu_read(vpu, VDPU_SWREG(57)) | VDPU_REG_DEC_E(1);
++	vdpu_write(vpu, reg, VDPU_SWREG(57));
++}
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu.h b/drivers/staging/media/rockchip/vpu/rockchip_vpu.h
+index a90fc2dfae99..2e178b745c64 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu.h
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu.h
+@@ -28,6 +28,10 @@
+ #define ROCKCHIP_VPU_MAX_CTRLS          32
+ #define ROCKCHIP_VPU_MAX_CLOCKS		4
+ 
++#define MPEG2_MB_DIM			16
++#define MPEG2_MB_WIDTH(w)		DIV_ROUND_UP(w, MPEG2_MB_DIM)
++#define MPEG2_MB_HEIGHT(h)		DIV_ROUND_UP(h, MPEG2_MB_DIM)
++
+ #define JPEG_MB_DIM			16
+ #define JPEG_MB_WIDTH(w)		DIV_ROUND_UP(w, JPEG_MB_DIM)
+ #define JPEG_MB_HEIGHT(h)		DIV_ROUND_UP(h, JPEG_MB_DIM)
+@@ -38,6 +42,7 @@ struct rockchip_vpu_codec_ops;
+ #define RK_VPU_JPEG_ENCODER	BIT(0)
+ #define RK_VPU_ENCODERS		0x0000ffff
+ 
++#define RK_VPU_MPEG2_DECODER	BIT(16)
+ #define RK_VPU_DECODERS		0xffff0000
+ 
+ /**
+@@ -77,10 +82,12 @@ struct rockchip_vpu_variant {
+  * enum rockchip_vpu_codec_mode - codec operating mode.
+  * @RK_VPU_MODE_NONE:  No operating mode. Used for RAW video formats.
+  * @RK_VPU_MODE_JPEG_ENC: JPEG encoder.
++ * @RK_VPU_MODE_MPEG2_DEC: MPEG-2 decoder.
+  */
+ enum rockchip_vpu_codec_mode {
+ 	RK_VPU_MODE_NONE = -1,
+ 	RK_VPU_MODE_JPEG_ENC,
++	RK_VPU_MODE_MPEG2_DEC,
+ };
+ 
+ /*
+@@ -193,6 +200,7 @@ struct rockchip_vpu_dev {
+  *
+  * @codec_ops:		Set of operations related to codec mode.
+  * @jpeg_enc_ctx:	JPEG-encoding context.
++ * @mpeg2_dec_ctx:	MPEG-2-decoding context.
+  */
+ struct rockchip_vpu_ctx {
+ 	struct rockchip_vpu_dev *dev;
+@@ -217,6 +225,7 @@ struct rockchip_vpu_ctx {
+ 	/* Specific for particular codec modes. */
+ 	union {
+ 		struct rockchip_vpu_jpeg_enc_hw_ctx jpeg_enc_ctx;
++		struct rockchip_vpu_mpeg2_dec_hw_ctx mpeg2_dec_ctx;
+ 	};
+ };
+ 
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c b/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
+index f5c941f34c90..c01fb1f67d82 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu_drv.c
+@@ -304,6 +304,18 @@ static struct rockchip_vpu_ctrl controls[] = {
+ 			.step = 1,
+ 			.def = 50,
+ 		},
++	}, {
++		.id = V4L2_CID_MPEG_VIDEO_MPEG2_SLICE_PARAMS,
++		.codec = RK_VPU_MPEG2_DECODER,
++		.cfg = {
++			.elem_size = sizeof(struct v4l2_ctrl_mpeg2_slice_params),
++		},
++	}, {
++		.id = V4L2_CID_MPEG_VIDEO_MPEG2_QUANTIZATION,
++		.codec = RK_VPU_MPEG2_DECODER,
++		.cfg = {
++			.elem_size = sizeof(struct v4l2_ctrl_mpeg2_quantization),
++		},
+ 	},
+ };
+ 
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu_hw.h b/drivers/staging/media/rockchip/vpu/rockchip_vpu_hw.h
+index e2e84526f263..fa0a17840da7 100644
+--- a/drivers/staging/media/rockchip/vpu/rockchip_vpu_hw.h
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu_hw.h
+@@ -38,6 +38,14 @@ struct rockchip_vpu_jpeg_enc_hw_ctx {
+ 	struct rockchip_vpu_aux_buf bounce_buffer;
+ };
+ 
++/**
++ * struct rockchip_vpu_mpeg2_dec_hw_ctx
++ * @qtable:		Quantization table
++ */
++struct rockchip_vpu_mpeg2_dec_hw_ctx {
++	struct rockchip_vpu_aux_buf qtable;
++};
++
+ /**
+  * struct rockchip_vpu_codec_ops - codec mode specific operations
+  *
+@@ -83,4 +91,10 @@ void rk3399_vpu_jpeg_enc_run(struct rockchip_vpu_ctx *ctx);
+ int rockchip_vpu_jpeg_enc_start(struct rockchip_vpu_ctx *ctx);
+ void rockchip_vpu_jpeg_enc_stop(struct rockchip_vpu_ctx *ctx);
+ 
++void rk3399_vpu_mpeg2_dec_run(struct rockchip_vpu_ctx *ctx);
++void rockchip_vpu_mpeg2_dec_copy_qtable(u8 *qtable,
++	const struct v4l2_ctrl_mpeg2_quantization *ctrl);
++int rockchip_vpu_mpeg2_dec_start(struct rockchip_vpu_ctx *ctx);
++void rockchip_vpu_mpeg2_dec_stop(struct rockchip_vpu_ctx *ctx);
++
+ #endif /* ROCKCHIP_VPU_HW_H_ */
+diff --git a/drivers/staging/media/rockchip/vpu/rockchip_vpu_mpeg2.c b/drivers/staging/media/rockchip/vpu/rockchip_vpu_mpeg2.c
+new file mode 100644
+index 000000000000..0c3fefbeee63
+--- /dev/null
++++ b/drivers/staging/media/rockchip/vpu/rockchip_vpu_mpeg2.c
+@@ -0,0 +1,61 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Rockchip VPU codec driver
++ *
++ * Copyright (C) 2018 Rockchip Electronics Co., Ltd.
++ */
++
++#include "rockchip_vpu.h"
++
++static const u8 zigzag[64] = {
++	0,   1,  8, 16,  9,  2,  3, 10,
++	17, 24, 32, 25, 18, 11,  4,  5,
++	12, 19, 26, 33, 40, 48, 41, 34,
++	27, 20, 13,  6,  7, 14, 21, 28,
++	35, 42, 49, 56, 57, 50, 43, 36,
++	29, 22, 15, 23, 30, 37, 44, 51,
++	58, 59, 52, 45, 38, 31, 39, 46,
++	53, 60, 61, 54, 47, 55, 62, 63
++};
++
++void rockchip_vpu_mpeg2_dec_copy_qtable(u8 *qtable,
++	const struct v4l2_ctrl_mpeg2_quantization *ctrl)
++{
++	int i, n;
++
++	if (!qtable || !ctrl)
++		return;
++
++	for (i = 0; i < ARRAY_SIZE(zigzag); i++) {
++		n = zigzag[i];
++		qtable[n + 0] = ctrl->intra_quantiser_matrix[i];
++		qtable[n + 64] = ctrl->non_intra_quantiser_matrix[i];
++		qtable[n + 128] = ctrl->chroma_intra_quantiser_matrix[i];
++		qtable[n + 192] = ctrl->chroma_non_intra_quantiser_matrix[i];
++	}
++}
++
++int rockchip_vpu_mpeg2_dec_start(struct rockchip_vpu_ctx *ctx)
++{
++	struct rockchip_vpu_dev *vpu = ctx->dev;
++
++	ctx->mpeg2_dec_ctx.qtable.size = ARRAY_SIZE(zigzag) * 4;
++	ctx->mpeg2_dec_ctx.qtable.cpu =
++		dma_alloc_coherent(vpu->dev,
++				   ctx->mpeg2_dec_ctx.qtable.size,
++				   &ctx->mpeg2_dec_ctx.qtable.dma,
++				   GFP_KERNEL);
++	if (!ctx->mpeg2_dec_ctx.qtable.cpu)
++		return -ENOMEM;
++	return 0;
++}
++
++void rockchip_vpu_mpeg2_dec_stop(struct rockchip_vpu_ctx *ctx)
++{
++	struct rockchip_vpu_dev *vpu = ctx->dev;
++
++	dma_free_coherent(vpu->dev,
++			  ctx->mpeg2_dec_ctx.qtable.size,
++			  ctx->mpeg2_dec_ctx.qtable.cpu,
++			  ctx->mpeg2_dec_ctx.qtable.dma);
++}
