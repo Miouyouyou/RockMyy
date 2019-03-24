@@ -1,3 +1,5 @@
+# THIS BRANCH IS NOT READY
+
 If you appreciate this project, support me on Patreon or Liberapay !
 
 [![Gimme Bitcoins](https://raw.githubusercontent.com/Miouyouyou/RockMyy/master/.img/bitcoin.png)](./.img/bitcoin-qrcode.png)
