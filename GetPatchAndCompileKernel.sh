@@ -14,7 +14,7 @@ export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
 
 export GITHUB_REPO=Miouyouyou/RockMyy
-export GIT_BRANCH=RandyLi-Patches-Test
+export GIT_BRANCH=master
 
 export DTB_FILES="
 rk3288-evb-act8846.dtb
