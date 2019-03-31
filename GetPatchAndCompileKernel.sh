@@ -8,11 +8,11 @@ if [ -z ${MAKEOPTS+x} ]; then
 fi
 
 export KERNEL_SERIES=v5.1
-export KERNEL_BRANCH=v5.1-rc1
+export KERNEL_BRANCH=v5.1-rc2
 export LOCALVERSION=-RockMyy32-Frosty
 
 export GITHUB_REPO=Miouyouyou/RockMyy
-export GIT_BRANCH=RandyLi-Patches-Test
+export GIT_BRANCH=Panfrost
 
 export DTB_FILES="
 rk3288-evb-act8846.dtb
