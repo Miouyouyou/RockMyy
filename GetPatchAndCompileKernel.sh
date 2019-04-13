@@ -8,7 +8,7 @@ if [ -z ${MAKEOPTS+x} ]; then
 fi
 
 export KERNEL_SERIES=v5.1
-export KERNEL_BRANCH=v5.1-rc3
+export KERNEL_BRANCH=v5.1-rc4
 export LOCALVERSION=-RockMyy32-Blobby
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
@@ -81,11 +81,9 @@ export KERNEL_DTS_PATCHES="
 0013-ARM-DTS-rk3288-tinker-Enabling-SDIO-and-Wifi.patch
 0014-ARM-DTS-rk3288-tinker-Setup-the-Bluetooth-UART-pins.patch
 0015-ARM-DTSI-rk3288-tinker-Improving-the-CPU-max-voltage.patch
-0016-ARM-DTSI-rk3288-tinker-Setting-up-the-SD-regulators.patch
 0017-ARM-DTS-rk3288-tinker-Defined-the-I2C-interfaces.patch
 0018-ARM-DTS-rk3288-tinker-Defining-the-SPI-interface.patch
 0019-ARM-DTSI-rk3288-tinker-Defining-SDMMC-properties.patch
-0022-dts-rk3288-veyron-chromebook-dedicate-npll-to-VOP0-H.patch
 0023-dts-rk3288-support-for-dedicating-npll-to-a-vop.patch
 0024-arm-dts-veyron-Added-a-flag-to-disable-cache-flush-d.patch
 "
