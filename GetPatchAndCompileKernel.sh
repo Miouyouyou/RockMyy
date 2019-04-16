@@ -1,20 +1,21 @@
 export ARCH=arm
 export CROSS_COMPILE=arm-linux-gnueabihf-
 
-export KERNEL_GIT_URL='git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
+export KERNEL_GIT_URL='https://github.com/Kwiboo/linux-rockchip'
 
 if [ -z ${MAKEOPTS+x} ]; then
 	export MAKEOPTS=-j16
 fi
 
 export KERNEL_SERIES=v5.1
-export KERNEL_BRANCH=v5.1-rc4
+export KERNEL_BRANCH=rockchip-5.x-hdmi-sound
 export LOCALVERSION=-RockMyy32-Blobby
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
 
+# The place where the patches are fetched from.
 export GITHUB_REPO=Miouyouyou/RockMyy
-export GIT_BRANCH=master
+export GIT_BRANCH=VPU-V4L2-5.x
 
 export DTB_FILES="
 rk3288-evb-act8846.dtb
@@ -53,39 +54,12 @@ export CONFIG_FILE_URL=$BASE_FILES_URL/config/$KERNEL_SERIES/config-latest
 
 export KERNEL_PATCHES="
 0001-drivers-Integrating-Mali-Midgard-video-and-gpu-drive.patch
-0002-clk-rockchip-add-all-known-operating-points-to-the-a.patch
-0003-clk-rockchip-rk3288-prefer-vdpu-for-vcodec-clock-sou.patch
 0004-Remove-the-dependency-to-the-clk_mali-symbol.patch
 0005-drivers-mmc-dw-mci-rockchip-Handle-ASUS-Tinkerboard.patch
-0006-soc-rockchip-power-domain-export-idle-request.patch
-0007-drivers-wifi-ath9k-reverse-do-not-use-bulk-on-EP3-and-EP4.patch
-0008-clk-rockchip-rk3288-Support-for-dedicating-NPLL-to-a.patch
-0010-block-partitions-efi-Ignore-GPT-flags-on-Veyron-Chro.patch
-0011-block-partitions-efi-Ignore-bizarre-Chromebook-GPT-p.patch
-0012-mmc-Added-a-flag-to-disable-cache-flush-during-reset.patch
-0013-spi-Added-support-for-Tinkerboard-s-SPI-interface.patch
 "
 
 export KERNEL_DTS_PATCHES="
 0001-dts-rk3288-miqi-Enabling-the-Mali-GPU-node.patch
-0002-ARM-dts-rockchip-fix-the-regulator-s-voltage-range-o.patch
-0003-ARM-dts-rockchip-add-the-MiQi-board-s-fan-definition.patch
-0004-ARM-dts-rockchip-add-support-for-1800-MHz-operation-.patch
-0005-Readapt-ARM-dts-rockchip-miqi-add-turbo-mode-operati.patch
-0006-ARM-DTSI-rk3288-Missing-GRF-handles.patch
-0007-RK3288-DTSI-rk3288-Add-missing-SPI2-pinctrl.patch
-0009-ARM-DTSI-rk3288-Adding-cells-addresses-and-size.patch
-0010-ARM-DTSI-rk3288-Adding-missing-EDP-power-domain.patch
-0011-ARM-DTSI-rk3288-Adding-missing-VOPB-registers.patch
-0012-ARM-DTSI-rk3288-Fixed-the-SPDIF-node-address.patch
-0013-ARM-DTS-rk3288-tinker-Enabling-SDIO-and-Wifi.patch
-0014-ARM-DTS-rk3288-tinker-Setup-the-Bluetooth-UART-pins.patch
-0015-ARM-DTSI-rk3288-tinker-Improving-the-CPU-max-voltage.patch
-0017-ARM-DTS-rk3288-tinker-Defined-the-I2C-interfaces.patch
-0018-ARM-DTS-rk3288-tinker-Defining-the-SPI-interface.patch
-0019-ARM-DTSI-rk3288-tinker-Defining-SDMMC-properties.patch
-0023-dts-rk3288-support-for-dedicating-npll-to-a-vop.patch
-0024-arm-dts-veyron-Added-a-flag-to-disable-cache-flush-d.patch
 "
 
 export KERNEL_DOCUMENTATION_PATCHES="
