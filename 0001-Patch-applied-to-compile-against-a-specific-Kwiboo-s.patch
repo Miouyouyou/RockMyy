@@ -1,0 +1,65 @@
+From 884d2216d6356d0317c8424152e9262821ae06c0 Mon Sep 17 00:00:00 2001
+From: Miouyouyou Myy <myy@miouyouyou.fr>
+Date: Sun, 12 May 2019 00:45:59 +0000
+Subject: [PATCH] Patch applied to compile against a specific Kwiboo's kernel
+ branch
+
+Signed-off-by: Miouyouyou Myy <myy@miouyouyou.fr>
+---
+ configure                | 12 ++++++------
+ libavcodec/mpeg2-ctrls.h |  2 +-
+ 2 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/configure b/configure
+index 9252ca5..3e13a75 100755
+--- a/configure
++++ b/configure
+@@ -2804,8 +2804,8 @@ h264_dxva2_hwaccel_deps="dxva2"
+ h264_dxva2_hwaccel_select="h264_decoder"
+ h264_nvdec_hwaccel_deps="nvdec"
+ h264_nvdec_hwaccel_select="h264_decoder"
+-h264_v4l2request_hwaccel_deps="v4l2_request h264_v4l2_request"
+-h264_v4l2request_hwaccel_select="h264_decoder"
++#h264_v4l2request_hwaccel_deps="v4l2_request h264_v4l2_request"
++#h264_v4l2request_hwaccel_select="h264_decoder"
+ h264_vaapi_hwaccel_deps="vaapi"
+ h264_vaapi_hwaccel_select="h264_decoder"
+ h264_vdpau_hwaccel_deps="vdpau"
+@@ -2820,8 +2820,8 @@ hevc_dxva2_hwaccel_deps="dxva2 DXVA_PicParams_HEVC"
+ hevc_dxva2_hwaccel_select="hevc_decoder"
+ hevc_nvdec_hwaccel_deps="nvdec"
+ hevc_nvdec_hwaccel_select="hevc_decoder"
+-hevc_v4l2request_hwaccel_deps="v4l2_request hevc_v4l2_request"
+-hevc_v4l2request_hwaccel_select="hevc_decoder"
++#hevc_v4l2request_hwaccel_deps="v4l2_request hevc_v4l2_request"
++#hevc_v4l2request_hwaccel_select="hevc_decoder"
+ hevc_vaapi_hwaccel_deps="vaapi VAPictureParameterBufferHEVC"
+ hevc_vaapi_hwaccel_select="hevc_decoder"
+ hevc_vdpau_hwaccel_deps="vdpau VdpPictureInfoHEVC"
+@@ -6243,8 +6243,8 @@ check_cc vp8_v4l2_m2m linux/videodev2.h "int i = V4L2_PIX_FMT_VP8;"
+ check_cc vp9_v4l2_m2m linux/videodev2.h "int i = V4L2_PIX_FMT_VP9;"
+ 
+ check_func_headers "linux/media.h linux/videodev2.h" v4l2_timeval_to_ns
+-check_cc h264_v4l2_request linux/videodev2.h "int i = V4L2_PIX_FMT_H264_SLICE_RAW;"
+-check_cc hevc_v4l2_request linux/videodev2.h "int i = V4L2_PIX_FMT_HEVC_SLICE;"
++#check_cc h264_v4l2_request linux/videodev2.h "int i = V4L2_PIX_FMT_H264_SLICE_RAW;"
++#check_cc hevc_v4l2_request linux/videodev2.h "int i = V4L2_PIX_FMT_HEVC_SLICE;"
+ check_cc mpeg2_v4l2_request linux/videodev2.h "int i = V4L2_PIX_FMT_MPEG2_SLICE;"
+ 
+ check_header sys/videoio.h
+diff --git a/libavcodec/mpeg2-ctrls.h b/libavcodec/mpeg2-ctrls.h
+index 6601455..5fa3cdb 100644
+--- a/libavcodec/mpeg2-ctrls.h
++++ b/libavcodec/mpeg2-ctrls.h
+@@ -8,7 +8,7 @@
+  * become part of the official public API.
+  */
+ 
+-#ifndef _MPEG2_CTRLS_H_
++#ifdef _MPEG2_CTRLS_H_
+ #define _MPEG2_CTRLS_H_
+ 
+ #define V4L2_CID_MPEG_VIDEO_MPEG2_SLICE_PARAMS		(V4L2_CID_MPEG_BASE+250)
+-- 
+2.17.1
+

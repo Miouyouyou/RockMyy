@@ -56,6 +56,7 @@ export KERNEL_PATCHES="
 0001-drivers-Integrating-Mali-Midgard-video-and-gpu-drive.patch
 0004-Remove-the-dependency-to-the-clk_mali-symbol.patch
 0005-drivers-mmc-dw-mci-rockchip-Handle-ASUS-Tinkerboard.patch
+0014-uapi-videodev2-Added-the-SLICED-formats-definitions.patch
 "
 
 export KERNEL_DTS_PATCHES="

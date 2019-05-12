@@ -1,0 +1,31 @@
+From 5e7e4a0f729884e13e9119ecaf5897650652c3b8 Mon Sep 17 00:00:00 2001
+From: "Miouyouyou (Myy)" <myy@miouyouyou.fr>
+Date: Sun, 12 May 2019 02:59:29 +0200
+Subject: [PATCH] uapi: videodev2: Added the SLICED formats definitions
+
+In order to compile Kwiboo's FFMPEG with v4l2_requests correctly
+
+Signed-off-by: Miouyouyou (Myy) <myy@miouyouyou.fr>
+---
+ include/uapi/linux/videodev2.h | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/include/uapi/linux/videodev2.h b/include/uapi/linux/videodev2.h
+index 7d88864fa..61c61e377 100644
+--- a/include/uapi/linux/videodev2.h
++++ b/include/uapi/linux/videodev2.h
+@@ -721,6 +721,11 @@ struct v4l2_pix_format {
+ #define V4L2_META_FMT_UVC         v4l2_fourcc('U', 'V', 'C', 'H') /* UVC Payload Header metadata */
+ #define V4L2_META_FMT_D4XX        v4l2_fourcc('D', '4', 'X', 'X') /* D4XX Payload Header metadata */
+ 
++/* Slices formats... removed afterwards */
++#define V4L2_PIX_FMT_HEVC_SLICE v4l2_fourcc('S', '2', '6', '5') /* HEVC parsed slices */
++#define V4L2_PIX_FMT_H264_SLICE v4l2_fourcc('S', '2', '6', '4') /* H264 parsed slices */
++#define V4L2_PIX_FMT_H264_SLICE_RAW v4l2_fourcc('S', '2', '6', '4') /* H264 parsed slices */
++
+ /* priv field value to indicates that subsequent fields are valid. */
+ #define V4L2_PIX_FMT_PRIV_MAGIC		0xfeedcafe
+ 
+-- 
+2.16.4
+
