@@ -1,14 +1,14 @@
 export ARCH=arm
 export CROSS_COMPILE=arm-linux-gnueabihf-
 
-export KERNEL_GIT_URL='https://github.com/Kwiboo/linux-rockchip'
+export KERNEL_GIT_URL='https://github.com/bbrezillon/linux'
 
 if [ -z ${MAKEOPTS+x} ]; then
 	export MAKEOPTS=-j16
 fi
 
 export KERNEL_SERIES=v5.1
-export KERNEL_BRANCH=rockchip-5.x-vpu
+export KERNEL_BRANCH=rk-vpu1-h264
 export LOCALVERSION=-RockMyy32-Blobby
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
@@ -56,7 +56,6 @@ export KERNEL_PATCHES="
 0001-drivers-Integrating-Mali-Midgard-video-and-gpu-drive.patch
 0004-Remove-the-dependency-to-the-clk_mali-symbol.patch
 0005-drivers-mmc-dw-mci-rockchip-Handle-ASUS-Tinkerboard.patch
-0014-uapi-videodev2-Added-the-SLICED-formats-definitions.patch
 "
 
 export KERNEL_DTS_PATCHES="
