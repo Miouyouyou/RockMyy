@@ -8,7 +8,7 @@ if [ -z ${MAKEOPTS+x} ]; then
 fi
 
 export KERNEL_SERIES=v5.1
-export KERNEL_BRANCH=v5.1
+export KERNEL_BRANCH=v5.1-rc5
 export LOCALVERSION=-RockMyy32-Blobby
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
@@ -40,6 +40,7 @@ rk3288-veyron-speedy.dtb
 export PATCHES_DIR=patches
 export KERNEL_PATCHES_DIR=$PATCHES_DIR/kernel/$KERNEL_SERIES
 export KERNEL_PATCHES_DTS_DIR=$KERNEL_PATCHES_DIR/DTS
+export KERNEL_PATCHES_VPU_DIR=$KERNEL_PATCHES_DIR/VPU
 export MALI_PATCHES_DIR=$PATCHES_DIR/Midgard/$MALI_VERSION
 export KERNEL_DOCUMENTATION_PATCHES_DIR=$KERNEL_PATCHES_DIR/Documentation
 export CONFIG_FILE_PATH=config/$KERNEL_SERIES/config-latest
@@ -47,6 +48,7 @@ export CONFIG_FILE_PATH=config/$KERNEL_SERIES/config-latest
 export BASE_FILES_URL=https://raw.githubusercontent.com/$GITHUB_REPO/$GIT_BRANCH
 export KERNEL_PATCHES_DIR_URL=$BASE_FILES_URL/$KERNEL_PATCHES_DIR
 export KERNEL_DTS_PATCHES_DIR_URL=$BASE_FILES_URL/$KERNEL_PATCHES_DTS_DIR
+export KERNEL_VPU_PATCHES_DIR_URL=$BASE_FILES_URL/$KERNEL_PATCHES_VPU_DIR
 export KERNEL_DOCUMENTATION_PATCHES_DIR_URL=$BASE_FILES_URL/$KERNEL_DOCUMENTATION_PATCHES_DIR
 export MALI_PATCHES_DIR_URL=$BASE_FILES_URL/$MALI_PATCHES_DIR
 export CONFIG_FILE_URL=$BASE_FILES_URL/config/$KERNEL_SERIES/config-latest
@@ -64,6 +66,22 @@ export KERNEL_PATCHES="
 0011-block-partitions-efi-Ignore-bizarre-Chromebook-GPT-p.patch
 0012-mmc-Added-a-flag-to-disable-cache-flush-during-reset.patch
 0013-spi-Added-support-for-Tinkerboard-s-SPI-interface.patch
+"
+
+export KERNEL_VPU_PATCHES="
+0001-Rockchip-VPU-H264-Beta-and-MPEG2-support.patch
+0002-V4L2-and-Rockchip-H264-VP8-headers-and-export-Powerd.patch
+0003-UAPI-changes.patch
+0004-sort_r-Added-for-Rockchip-H264-support.patch
+0005-Rockchip-VPU-changes.patch
+0006-Rockchip-RK3288-clock-modifications.patch
+0007-Videobuf2-Removing-REQUEUING.patch
+0008-V4L2-New-formats-functions-and-structures.patch
+0009-Export-rockchip_pmu_idle_request.patch
+0010-Very-minor-modification.patch
+0011-The-CX2341X-driver.-I-don-t-know-if-s-useful.patch
+0012-RK3399-changes.patch
+0013-Referenced-in-some-files.patch
 "
 
 export KERNEL_DTS_PATCHES="
@@ -181,15 +199,18 @@ if [ ! -e "PATCHED" ]; then
 
 	# Download and apply the various kernel and Mali kernel-space driver patches
 	if [ ! -d "../patches" ]; then
-		download_and_apply_patches $KERNEL_PATCHES_DIR_URL $KERNEL_PATCHES
+		#download_and_apply_patches $KERNEL_PATCHES_DIR_URL $KERNEL_PATCHES
 		download_and_apply_patches $KERNEL_DTS_PATCHES_DIR_URL $KERNEL_DTS_PATCHES
 		#download_and_apply_patches $KERNEL_DOCUMENTATION_PATCHES_DIR_URL $KERNEL_DOCUMENTATION_PATCHES
 		download_and_apply_patches $MALI_PATCHES_DIR_URL $MALI_PATCHES
+		download_and_apply_patches $KERNEL_VPU_PATCHES_DIR_URL $KERNEL_VPU_PATCHES
 	else
-		copy_and_apply_patches ../$KERNEL_PATCHES_DIR $KERNEL_PATCHES
+		#copy_and_apply_patches ../$KERNEL_PATCHES_DIR $KERNEL_PATCHES
 		copy_and_apply_patches ../$KERNEL_PATCHES_DTS_DIR $KERNEL_DTS_PATCHES
 		#copy_and_apply_patches ../$KERNEL_DOCUMENTATION_PATCHES_DIR $KERNEL_DOCUMENTATION_PATCHES
 		copy_and_apply_patches ../$MALI_PATCHES_DIR $MALI_PATCHES
+		echo "${KERNEL_PATCHES_VPU_DIR}"
+		copy_and_apply_patches ../$KERNEL_PATCHES_VPU_DIR $KERNEL_VPU_PATCHES
 	fi
 
 
