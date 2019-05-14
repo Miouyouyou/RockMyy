@@ -1,0 +1,49 @@
+From 0bb68c103bae08b3ccac5a054b58571227325e62 Mon Sep 17 00:00:00 2001
+From: "Miouyouyou (Myy)" <myy@miouyouyou.fr>
+Date: Tue, 14 May 2019 22:11:40 +0200
+Subject: [PATCH 09/12] Export rockchip_pmu_idle_request
+
+A common one...
+
+Signed-off-by: Miouyouyou (Myy) <myy@miouyouyou.fr>
+---
+ drivers/soc/rockchip/pm_domains.c | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+diff --git a/drivers/soc/rockchip/pm_domains.c b/drivers/soc/rockchip/pm_domains.c
+index 847c7c482..3e2e252cb 100644
+--- a/drivers/soc/rockchip/pm_domains.c
++++ b/drivers/soc/rockchip/pm_domains.c
+@@ -199,6 +199,29 @@ static int rockchip_pmu_set_idle_request(struct rockchip_pm_domain *pd,
+ 	return 0;
+ }
+ 
++int rockchip_pmu_idle_request(struct device *dev, bool idle)
++{
++	struct generic_pm_domain *genpd;
++	struct rockchip_pm_domain *pd;
++	int ret;
++
++	if (IS_ERR_OR_NULL(dev))
++		return -EINVAL;
++
++	if (IS_ERR_OR_NULL(dev->pm_domain))
++		return -EINVAL;
++
++	genpd = pd_to_genpd(dev->pm_domain);
++	pd = to_rockchip_pd(genpd);
++
++	mutex_lock(&pd->pmu->mutex);
++	ret = rockchip_pmu_set_idle_request(pd, idle);
++	mutex_unlock(&pd->pmu->mutex);
++
++	return ret;
++}
++EXPORT_SYMBOL(rockchip_pmu_idle_request);
++
+ static int rockchip_pmu_save_qos(struct rockchip_pm_domain *pd)
+ {
+ 	int i;
+-- 
+2.16.4
+

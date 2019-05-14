@@ -1,0 +1,123 @@
+From 015306e910f52cd7c6e2000dc1e2385807ec06c5 Mon Sep 17 00:00:00 2001
+From: "Miouyouyou (Myy)" <myy@miouyouyou.fr>
+Date: Tue, 14 May 2019 22:08:33 +0200
+Subject: [PATCH 07/12] Videobuf2 : Removing REQUEUING
+
+Signed-off-by: Miouyouyou (Myy) <myy@miouyouyou.fr>
+---
+ drivers/media/common/videobuf2/videobuf2-core.c | 24 ++++++++++++------------
+ drivers/media/common/videobuf2/videobuf2-v4l2.c |  7 +++++--
+ 2 files changed, 17 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/media/common/videobuf2/videobuf2-core.c b/drivers/media/common/videobuf2/videobuf2-core.c
+index 15b6b9c0a..b98ec6e1a 100644
+--- a/drivers/media/common/videobuf2/videobuf2-core.c
++++ b/drivers/media/common/videobuf2/videobuf2-core.c
+@@ -915,8 +915,7 @@ void vb2_buffer_done(struct vb2_buffer *vb, enum vb2_buffer_state state)
+ 
+ 	if (WARN_ON(state != VB2_BUF_STATE_DONE &&
+ 		    state != VB2_BUF_STATE_ERROR &&
+-		    state != VB2_BUF_STATE_QUEUED &&
+-		    state != VB2_BUF_STATE_REQUEUEING))
++		    state != VB2_BUF_STATE_QUEUED))
+ 		state = VB2_BUF_STATE_ERROR;
+ 
+ #ifdef CONFIG_VIDEO_ADV_DEBUG
+@@ -929,8 +928,7 @@ void vb2_buffer_done(struct vb2_buffer *vb, enum vb2_buffer_state state)
+ 	dprintk(4, "done processing on buffer %d, state: %d\n",
+ 			vb->index, state);
+ 
+-	if (state != VB2_BUF_STATE_QUEUED &&
+-	    state != VB2_BUF_STATE_REQUEUEING) {
++	if (state != VB2_BUF_STATE_QUEUED) {
+ 		/* sync buffers */
+ 		for (plane = 0; plane < vb->num_planes; ++plane)
+ 			call_void_memop(vb, finish, vb->planes[plane].mem_priv);
+@@ -938,8 +936,7 @@ void vb2_buffer_done(struct vb2_buffer *vb, enum vb2_buffer_state state)
+ 	}
+ 
+ 	spin_lock_irqsave(&q->done_lock, flags);
+-	if (state == VB2_BUF_STATE_QUEUED ||
+-	    state == VB2_BUF_STATE_REQUEUEING) {
++	if (state == VB2_BUF_STATE_QUEUED) {
+ 		vb->state = VB2_BUF_STATE_QUEUED;
+ 	} else {
+ 		/* Add the buffer to the done buffers list */
+@@ -949,8 +946,6 @@ void vb2_buffer_done(struct vb2_buffer *vb, enum vb2_buffer_state state)
+ 	atomic_dec(&q->owned_by_drv_count);
+ 
+ 	if (state != VB2_BUF_STATE_QUEUED && vb->req_obj.req) {
+-		/* This is not supported at the moment */
+-		WARN_ON(state == VB2_BUF_STATE_REQUEUEING);
+ 		media_request_object_unbind(&vb->req_obj);
+ 		media_request_object_put(&vb->req_obj);
+ 	}
+@@ -962,10 +957,6 @@ void vb2_buffer_done(struct vb2_buffer *vb, enum vb2_buffer_state state)
+ 	switch (state) {
+ 	case VB2_BUF_STATE_QUEUED:
+ 		return;
+-	case VB2_BUF_STATE_REQUEUEING:
+-		if (q->start_streaming_called)
+-			__enqueue_in_driver(vb);
+-		return;
+ 	default:
+ 		/* Inform any processes that may be waiting for buffers */
+ 		wake_up(&q->done_wq);
+@@ -1516,6 +1507,12 @@ int vb2_core_qbuf(struct vb2_queue *q, unsigned int index, void *pb,
+ 
+ 	vb = q->bufs[index];
+ 
++	if (!req && vb->state != VB2_BUF_STATE_IN_REQUEST &&
++	    q->requires_requests) {
++		dprintk(1, "qbuf requires a request\n");
++		return -EBADR;
++	}
++
+ 	if ((req && q->uses_qbuf) ||
+ 	    (!req && vb->state != VB2_BUF_STATE_IN_REQUEST &&
+ 	     q->uses_requests)) {
+@@ -2247,6 +2244,9 @@ int vb2_core_queue_init(struct vb2_queue *q)
+ 	    WARN_ON(!q->ops->buf_queue))
+ 		return -EINVAL;
+ 
++	if (WARN_ON(q->requires_requests && !q->supports_requests))
++		return -EINVAL;
++
+ 	INIT_LIST_HEAD(&q->queued_list);
+ 	INIT_LIST_HEAD(&q->done_list);
+ 	spin_lock_init(&q->done_lock);
+diff --git a/drivers/media/common/videobuf2/videobuf2-v4l2.c b/drivers/media/common/videobuf2/videobuf2-v4l2.c
+index d09dee20e..b11a779e9 100644
+--- a/drivers/media/common/videobuf2/videobuf2-v4l2.c
++++ b/drivers/media/common/videobuf2/videobuf2-v4l2.c
+@@ -381,6 +381,10 @@ static int vb2_queue_or_prepare_buf(struct vb2_queue *q, struct media_device *md
+ 		return 0;
+ 
+ 	if (!(b->flags & V4L2_BUF_FLAG_REQUEST_FD)) {
++		if (q->requires_requests) {
++			dprintk(1, "%s: queue requires requests\n", opname);
++			return -EBADR;
++		}
+ 		if (q->uses_requests) {
+ 			dprintk(1, "%s: queue uses requests\n", opname);
+ 			return -EBUSY;
+@@ -388,7 +392,7 @@ static int vb2_queue_or_prepare_buf(struct vb2_queue *q, struct media_device *md
+ 		return 0;
+ 	} else if (!q->supports_requests) {
+ 		dprintk(1, "%s: queue does not support requests\n", opname);
+-		return -EACCES;
++		return -EBADR;
+ 	} else if (q->uses_qbuf) {
+ 		dprintk(1, "%s: queue does not use requests\n", opname);
+ 		return -EBUSY;
+@@ -543,7 +547,6 @@ static void __fill_v4l2_buffer(struct vb2_buffer *vb, void *pb)
+ 		break;
+ 	case VB2_BUF_STATE_PREPARING:
+ 	case VB2_BUF_STATE_DEQUEUED:
+-	case VB2_BUF_STATE_REQUEUEING:
+ 		/* nothing */
+ 		break;
+ 	}
+-- 
+2.16.4
+
