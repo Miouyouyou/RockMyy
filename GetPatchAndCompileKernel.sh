@@ -56,10 +56,8 @@ export CONFIG_FILE_URL=$BASE_FILES_URL/config/$KERNEL_SERIES/config-latest
 export KERNEL_PATCHES="
 0001-drivers-Integrating-Mali-Midgard-video-and-gpu-drive.patch
 0002-clk-rockchip-add-all-known-operating-points-to-the-a.patch
-0003-clk-rockchip-rk3288-prefer-vdpu-for-vcodec-clock-sou.patch
 0004-Remove-the-dependency-to-the-clk_mali-symbol.patch
 0005-drivers-mmc-dw-mci-rockchip-Handle-ASUS-Tinkerboard.patch
-0006-soc-rockchip-power-domain-export-idle-request.patch
 0007-drivers-wifi-ath9k-reverse-do-not-use-bulk-on-EP3-and-EP4.patch
 0008-clk-rockchip-rk3288-Support-for-dedicating-NPLL-to-a.patch
 0010-block-partitions-efi-Ignore-GPT-flags-on-Veyron-Chro.patch
@@ -194,13 +192,13 @@ if [ ! -e "PATCHED" ]; then
 
 	# Download and apply the various kernel and Mali kernel-space driver patches
 	if [ ! -d "../patches" ]; then
-		#download_and_apply_patches $KERNEL_PATCHES_DIR_URL $KERNEL_PATCHES
+		download_and_apply_patches $KERNEL_PATCHES_DIR_URL $KERNEL_PATCHES
 		download_and_apply_patches $KERNEL_DTS_PATCHES_DIR_URL $KERNEL_DTS_PATCHES
 		#download_and_apply_patches $KERNEL_DOCUMENTATION_PATCHES_DIR_URL $KERNEL_DOCUMENTATION_PATCHES
 		download_and_apply_patches $MALI_PATCHES_DIR_URL $MALI_PATCHES
 		download_and_apply_patches $KERNEL_VPU_PATCHES_DIR_URL $KERNEL_VPU_PATCHES
 	else
-		#copy_and_apply_patches ../$KERNEL_PATCHES_DIR $KERNEL_PATCHES
+		copy_and_apply_patches ../$KERNEL_PATCHES_DIR $KERNEL_PATCHES
 		copy_and_apply_patches ../$KERNEL_PATCHES_DTS_DIR $KERNEL_DTS_PATCHES
 		#copy_and_apply_patches ../$KERNEL_DOCUMENTATION_PATCHES_DIR $KERNEL_DOCUMENTATION_PATCHES
 		copy_and_apply_patches ../$MALI_PATCHES_DIR $MALI_PATCHES
