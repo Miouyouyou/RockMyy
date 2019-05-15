@@ -1,17 +1,32 @@
-From fbd9fc4cc65708fcb6d7b530748835d14d295042 Mon Sep 17 00:00:00 2001
+From 231fbedd00d0964117abd49a8801fbc818fb2d4b Mon Sep 17 00:00:00 2001
 From: "Miouyouyou (Myy)" <myy@miouyouyou.fr>
-Date: Tue, 14 May 2019 22:10:43 +0200
-Subject: [PATCH 08/12] V4L2: New formats, functions and structures
+Date: Wed, 15 May 2019 20:14:59 +0200
+Subject: [PATCH 3/8] include: V4L2: Add new pixel and frames formats.
+
+Notably H264, VP8 and ... FWHT which stands for :
+Fast Walsh-Hadamard transform
+
+Taken from bbrazillon rk-vpu1-h264 (WIP draft branch)
+https://github.com/bbrezillon/linux/commits/rk-vpu1-h264
+
+Patch butchered by myself.
 
 Signed-off-by: Miouyouyou (Myy) <myy@miouyouyou.fr>
 ---
  drivers/media/v4l2-core/v4l2-common.c | 216 ++++++++++++++++++++++++++++++++++
  drivers/media/v4l2-core/v4l2-ctrls.c  | 170 ++++++++++++++++++++++++--
- drivers/media/v4l2-core/v4l2-device.c |  19 ++-
- drivers/media/v4l2-core/v4l2-fwnode.c |  17 ++-
  drivers/media/v4l2-core/v4l2-ioctl.c  |   6 +-
- drivers/media/v4l2-core/v4l2-subdev.c |  22 ++--
- 6 files changed, 417 insertions(+), 33 deletions(-)
+ include/media/fwht-ctrls.h            |  31 +++++
+ include/media/h264-ctrls.h            | 198 +++++++++++++++++++++++++++++++
+ include/media/v4l2-common.h           |  35 ++++++
+ include/media/v4l2-ctrls.h            |  21 +++-
+ include/media/vp8-ctrls.h             | 106 +++++++++++++++++
+ include/uapi/linux/v4l2-controls.h    |   4 +
+ include/uapi/linux/videodev2.h        |   2 +
+ 10 files changed, 775 insertions(+), 14 deletions(-)
+ create mode 100644 include/media/fwht-ctrls.h
+ create mode 100644 include/media/h264-ctrls.h
+ create mode 100644 include/media/vp8-ctrls.h
 
 diff --git a/drivers/media/v4l2-core/v4l2-common.c b/drivers/media/v4l2-core/v4l2-common.c
 index 663730f08..37bfc984a 100644
@@ -545,100 +560,6 @@ index b79d3bbd8..3d2dd1385 100644
  }
  EXPORT_SYMBOL(v4l2_ctrl_request_setup);
  
-diff --git a/drivers/media/v4l2-core/v4l2-device.c b/drivers/media/v4l2-core/v4l2-device.c
-index e0ddb9a52..7cca0de1b 100644
---- a/drivers/media/v4l2-core/v4l2-device.c
-+++ b/drivers/media/v4l2-core/v4l2-device.c
-@@ -216,10 +216,18 @@ int v4l2_device_register_subdev(struct v4l2_device *v4l2_dev,
- }
- EXPORT_SYMBOL_GPL(v4l2_device_register_subdev);
- 
-+static void v4l2_subdev_release(struct v4l2_subdev *sd)
-+{
-+	struct module *owner = !sd->owner_v4l2_dev ? sd->owner : NULL;
-+
-+	if (sd->internal_ops && sd->internal_ops->release)
-+		sd->internal_ops->release(sd);
-+	module_put(owner);
-+}
-+
- static void v4l2_device_release_subdev_node(struct video_device *vdev)
- {
--	struct v4l2_subdev *sd = video_get_drvdata(vdev);
--	sd->devnode = NULL;
-+	v4l2_subdev_release(video_get_drvdata(vdev));
- 	kfree(vdev);
- }
- 
-@@ -318,8 +326,9 @@ void v4l2_device_unregister_subdev(struct v4l2_subdev *sd)
- 		media_device_unregister_entity(&sd->entity);
- 	}
- #endif
--	video_unregister_device(sd->devnode);
--	if (!sd->owner_v4l2_dev)
--		module_put(sd->owner);
-+	if (sd->devnode)
-+		video_unregister_device(sd->devnode);
-+	else
-+		v4l2_subdev_release(sd);
- }
- EXPORT_SYMBOL_GPL(v4l2_device_unregister_subdev);
-diff --git a/drivers/media/v4l2-core/v4l2-fwnode.c b/drivers/media/v4l2-core/v4l2-fwnode.c
-index 20571846e..ea1ed88f9 100644
---- a/drivers/media/v4l2-core/v4l2-fwnode.c
-+++ b/drivers/media/v4l2-core/v4l2-fwnode.c
-@@ -163,7 +163,7 @@ static int v4l2_fwnode_endpoint_parse_csi2_bus(struct fwnode_handle *fwnode,
- 		}
- 
- 		if (use_default_lane_mapping)
--			pr_debug("using default lane mapping\n");
-+			pr_debug("no lane mapping given, using defaults\n");
- 	}
- 
- 	rval = fwnode_property_read_u32_array(fwnode, "data-lanes", NULL, 0);
-@@ -175,6 +175,10 @@ static int v4l2_fwnode_endpoint_parse_csi2_bus(struct fwnode_handle *fwnode,
- 					       num_data_lanes);
- 
- 		have_data_lanes = true;
-+		if (use_default_lane_mapping) {
-+			pr_debug("data-lanes property exists; disabling default mapping\n");
-+			use_default_lane_mapping = false;
-+		}
- 	}
- 
- 	for (i = 0; i < num_data_lanes; i++) {
-@@ -225,6 +229,10 @@ static int v4l2_fwnode_endpoint_parse_csi2_bus(struct fwnode_handle *fwnode,
- 	if (bus_type == V4L2_MBUS_CSI2_DPHY ||
- 	    bus_type == V4L2_MBUS_CSI2_CPHY || lanes_used ||
- 	    have_clk_lane || (flags & ~V4L2_MBUS_CSI2_CONTINUOUS_CLOCK)) {
-+		/* Only D-PHY has a clock lane. */
-+		unsigned int dfl_data_lane_index =
-+			bus_type == V4L2_MBUS_CSI2_DPHY;
-+
- 		bus->flags = flags;
- 		if (bus_type == V4L2_MBUS_UNKNOWN)
- 			vep->bus_type = V4L2_MBUS_CSI2_DPHY;
-@@ -233,7 +241,7 @@ static int v4l2_fwnode_endpoint_parse_csi2_bus(struct fwnode_handle *fwnode,
- 		if (use_default_lane_mapping) {
- 			bus->clock_lane = 0;
- 			for (i = 0; i < num_data_lanes; i++)
--				bus->data_lanes[i] = 1 + i;
-+				bus->data_lanes[i] = dfl_data_lane_index + i;
- 		} else {
- 			bus->clock_lane = clock_lane;
- 			for (i = 0; i < num_data_lanes; i++)
-@@ -820,7 +828,10 @@ static int v4l2_fwnode_reference_parse(struct device *dev,
-  * underneath the fwnode identified by the previous tuple, etc. until you
-  * reached the fwnode you need.
-  *
-- * An example with a graph, as defined in Documentation/acpi/dsd/graph.txt:
-+ * THIS EXAMPLE EXISTS MERELY TO DOCUMENT THIS FUNCTION. DO NOT USE IT AS A
-+ * REFERENCE IN HOW ACPI TABLES SHOULD BE WRITTEN!! See documentation under
-+ * Documentation/acpi/dsd instead and especially graph.txt,
-+ * data-node-references.txt and leds.txt .
-  *
-  *	Scope (\_SB.PCI0.I2C2)
-  *	{
 diff --git a/drivers/media/v4l2-core/v4l2-ioctl.c b/drivers/media/v4l2-core/v4l2-ioctl.c
 index f6d663934..92e14fa90 100644
 --- a/drivers/media/v4l2-core/v4l2-ioctl.c
@@ -673,70 +594,490 @@ index f6d663934..92e14fa90 100644
  	fmt->flags = flags;
  }
  
-diff --git a/drivers/media/v4l2-core/v4l2-subdev.c b/drivers/media/v4l2-core/v4l2-subdev.c
-index f5f0d71ec..d75815ab0 100644
---- a/drivers/media/v4l2-core/v4l2-subdev.c
-+++ b/drivers/media/v4l2-core/v4l2-subdev.c
-@@ -18,6 +18,7 @@
- 
- #include <linux/ioctl.h>
- #include <linux/mm.h>
-+#include <linux/module.h>
- #include <linux/slab.h>
- #include <linux/types.h>
- #include <linux/videodev2.h>
-@@ -54,9 +55,6 @@ static int subdev_open(struct file *file)
- 	struct video_device *vdev = video_devdata(file);
- 	struct v4l2_subdev *sd = vdev_to_v4l2_subdev(vdev);
- 	struct v4l2_subdev_fh *subdev_fh;
--#if defined(CONFIG_MEDIA_CONTROLLER)
--	struct media_entity *entity = NULL;
--#endif
- 	int ret;
- 
- 	subdev_fh = kzalloc(sizeof(*subdev_fh), GFP_KERNEL);
-@@ -73,12 +71,15 @@ static int subdev_open(struct file *file)
- 	v4l2_fh_add(&subdev_fh->vfh);
- 	file->private_data = &subdev_fh->vfh;
- #if defined(CONFIG_MEDIA_CONTROLLER)
--	if (sd->v4l2_dev->mdev) {
--		entity = media_entity_get(&sd->entity);
--		if (!entity) {
-+	if (sd->v4l2_dev->mdev && sd->entity.graph_obj.mdev->dev) {
-+		struct module *owner;
+diff --git a/include/media/fwht-ctrls.h b/include/media/fwht-ctrls.h
+new file mode 100644
+index 000000000..615027410
+--- /dev/null
++++ b/include/media/fwht-ctrls.h
+@@ -0,0 +1,31 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * These are the FWHT state controls for use with stateless FWHT
++ * codec drivers.
++ *
++ * It turns out that these structs are not stable yet and will undergo
++ * more changes. So keep them private until they are stable and ready to
++ * become part of the official public API.
++ */
 +
-+		owner = sd->entity.graph_obj.mdev->dev->driver->owner;
-+		if (!try_module_get(owner)) {
- 			ret = -EBUSY;
- 			goto err;
- 		}
-+		subdev_fh->owner = owner;
- 	}
- #endif
++#ifndef _FWHT_CTRLS_H_
++#define _FWHT_CTRLS_H_
++
++#define V4L2_CTRL_TYPE_FWHT_PARAMS 0x0105
++
++#define V4L2_CID_MPEG_VIDEO_FWHT_PARAMS	(V4L2_CID_MPEG_BASE + 292)
++
++struct v4l2_ctrl_fwht_params {
++	__u64 backward_ref_ts;
++	__u32 version;
++	__u32 width;
++	__u32 height;
++	__u32 flags;
++	__u32 colorspace;
++	__u32 xfer_func;
++	__u32 ycbcr_enc;
++	__u32 quantization;
++};
++
++
++#endif
+diff --git a/include/media/h264-ctrls.h b/include/media/h264-ctrls.h
+new file mode 100644
+index 000000000..4ec98dfc0
+--- /dev/null
++++ b/include/media/h264-ctrls.h
+@@ -0,0 +1,198 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * These are the H.264 state controls for use with stateless H.264
++ * codec drivers.
++ *
++ * It turns out that these structs are not stable yet and will undergo
++ * more changes. So keep them private until they are stable and ready to
++ * become part of the official public API.
++ */
++
++#ifndef _H264_CTRLS_H_
++#define _H264_CTRLS_H_
++
++#include <linux/videodev2.h>
++
++/* Our pixel format isn't stable at the moment */
++#define V4L2_PIX_FMT_H264_SLICE_RAW v4l2_fourcc('S', '2', '6', '4') /* H264 parsed slices */
++#define V4L2_PIX_FMT_H264_SLICE_ANNEXB v4l2_fourcc('B', '2', '6', '4') /* H264, annex B parsed slices */
++
++/*
++ * This is put insanely high to avoid conflicting with controls that
++ * would be added during the phase where those controls are not
++ * stable. It should be fixed eventually.
++ */
++#define V4L2_CID_MPEG_VIDEO_H264_SPS		(V4L2_CID_MPEG_BASE+1000)
++#define V4L2_CID_MPEG_VIDEO_H264_PPS		(V4L2_CID_MPEG_BASE+1001)
++#define V4L2_CID_MPEG_VIDEO_H264_SCALING_MATRIX	(V4L2_CID_MPEG_BASE+1002)
++#define V4L2_CID_MPEG_VIDEO_H264_SLICE_PARAMS	(V4L2_CID_MPEG_BASE+1003)
++#define V4L2_CID_MPEG_VIDEO_H264_DECODE_PARAMS	(V4L2_CID_MPEG_BASE+1004)
++
++/* enum v4l2_ctrl_type type values */
++#define V4L2_CTRL_TYPE_H264_SPS			0x0110
++#define V4L2_CTRL_TYPE_H264_PPS			0x0111
++#define V4L2_CTRL_TYPE_H264_SCALING_MATRIX	0x0112
++#define V4L2_CTRL_TYPE_H264_SLICE_PARAMS	0x0113
++#define V4L2_CTRL_TYPE_H264_DECODE_PARAMS	0x0114
++
++#define V4L2_H264_SPS_CONSTRAINT_SET0_FLAG			0x01
++#define V4L2_H264_SPS_CONSTRAINT_SET1_FLAG			0x02
++#define V4L2_H264_SPS_CONSTRAINT_SET2_FLAG			0x04
++#define V4L2_H264_SPS_CONSTRAINT_SET3_FLAG			0x08
++#define V4L2_H264_SPS_CONSTRAINT_SET4_FLAG			0x10
++#define V4L2_H264_SPS_CONSTRAINT_SET5_FLAG			0x20
++
++#define V4L2_H264_SPS_FLAG_SEPARATE_COLOUR_PLANE		0x01
++#define V4L2_H264_SPS_FLAG_QPPRIME_Y_ZERO_TRANSFORM_BYPASS	0x02
++#define V4L2_H264_SPS_FLAG_DELTA_PIC_ORDER_ALWAYS_ZERO		0x04
++#define V4L2_H264_SPS_FLAG_GAPS_IN_FRAME_NUM_VALUE_ALLOWED	0x08
++#define V4L2_H264_SPS_FLAG_FRAME_MBS_ONLY			0x10
++#define V4L2_H264_SPS_FLAG_MB_ADAPTIVE_FRAME_FIELD		0x20
++#define V4L2_H264_SPS_FLAG_DIRECT_8X8_INFERENCE			0x40
++
++struct v4l2_ctrl_h264_sps {
++	__u8 profile_idc;
++	__u8 constraint_set_flags;
++	__u8 level_idc;
++	__u8 seq_parameter_set_id;
++	__u8 chroma_format_idc;
++	__u8 bit_depth_luma_minus8;
++	__u8 bit_depth_chroma_minus8;
++	__u8 log2_max_frame_num_minus4;
++	__u8 pic_order_cnt_type;
++	__u8 log2_max_pic_order_cnt_lsb_minus4;
++	__u8 max_num_ref_frames;
++	__u8 num_ref_frames_in_pic_order_cnt_cycle;
++	__s32 offset_for_ref_frame[255];
++	__s32 offset_for_non_ref_pic;
++	__s32 offset_for_top_to_bottom_field;
++	__u16 pic_width_in_mbs_minus1;
++	__u16 pic_height_in_map_units_minus1;
++	__u32 flags;
++};
++
++#define V4L2_H264_PPS_FLAG_ENTROPY_CODING_MODE				0x0001
++#define V4L2_H264_PPS_FLAG_BOTTOM_FIELD_PIC_ORDER_IN_FRAME_PRESENT	0x0002
++#define V4L2_H264_PPS_FLAG_WEIGHTED_PRED				0x0004
++#define V4L2_H264_PPS_FLAG_DEBLOCKING_FILTER_CONTROL_PRESENT		0x0008
++#define V4L2_H264_PPS_FLAG_CONSTRAINED_INTRA_PRED			0x0010
++#define V4L2_H264_PPS_FLAG_REDUNDANT_PIC_CNT_PRESENT			0x0020
++#define V4L2_H264_PPS_FLAG_TRANSFORM_8X8_MODE				0x0040
++#define V4L2_H264_PPS_FLAG_PIC_SCALING_MATRIX_PRESENT			0x0080
++
++struct v4l2_ctrl_h264_pps {
++	__u8 pic_parameter_set_id;
++	__u8 seq_parameter_set_id;
++	__u8 num_slice_groups_minus1;
++	__u8 num_ref_idx_l0_default_active_minus1;
++	__u8 num_ref_idx_l1_default_active_minus1;
++	__u8 weighted_bipred_idc;
++	__s8 pic_init_qp_minus26;
++	__s8 pic_init_qs_minus26;
++	__s8 chroma_qp_index_offset;
++	__s8 second_chroma_qp_index_offset;
++	__u16 flags;
++};
++
++struct v4l2_ctrl_h264_scaling_matrix {
++	__u8 scaling_list_4x4[6][16];
++	__u8 scaling_list_8x8[6][64];
++};
++
++struct v4l2_h264_weight_factors {
++	__s16 luma_weight[32];
++	__s16 luma_offset[32];
++	__s16 chroma_weight[32][2];
++	__s16 chroma_offset[32][2];
++};
++
++struct v4l2_h264_pred_weight_table {
++	__u16 luma_log2_weight_denom;
++	__u16 chroma_log2_weight_denom;
++	struct v4l2_h264_weight_factors weight_factors[2];
++};
++
++#define V4L2_H264_SLICE_TYPE_P				0
++#define V4L2_H264_SLICE_TYPE_B				1
++#define V4L2_H264_SLICE_TYPE_I				2
++#define V4L2_H264_SLICE_TYPE_SP				3
++#define V4L2_H264_SLICE_TYPE_SI				4
++
++#define V4L2_H264_SLICE_FLAG_FIELD_PIC			0x01
++#define V4L2_H264_SLICE_FLAG_BOTTOM_FIELD		0x02
++#define V4L2_H264_SLICE_FLAG_DIRECT_SPATIAL_MV_PRED	0x04
++#define V4L2_H264_SLICE_FLAG_SP_FOR_SWITCH		0x08
++
++struct v4l2_ctrl_h264_slice_params {
++	/* Size in bytes, including header */
++	__u32 size;
++	/* Offset in bits to slice_data() from the beginning of this slice. */
++	__u32 header_bit_size;
++
++	__u16 first_mb_in_slice;
++	__u8 slice_type;
++	__u8 pic_parameter_set_id;
++	__u8 colour_plane_id;
++	__u8 redundant_pic_cnt;
++	__u16 frame_num;
++	__u16 idr_pic_id;
++	__u16 pic_order_cnt_lsb;
++	__s32 delta_pic_order_cnt_bottom;
++	__s32 delta_pic_order_cnt0;
++	__s32 delta_pic_order_cnt1;
++
++	struct v4l2_h264_pred_weight_table pred_weight_table;
++	/* Size in bits of dec_ref_pic_marking() syntax element. */
++	__u32 dec_ref_pic_marking_bit_size;
++	/* Size in bits of pic order count syntax. */
++	__u32 pic_order_cnt_bit_size;
++
++	__u8 cabac_init_idc;
++	__s8 slice_qp_delta;
++	__s8 slice_qs_delta;
++	__u8 disable_deblocking_filter_idc;
++	__s8 slice_alpha_c0_offset_div2;
++	__s8 slice_beta_offset_div2;
++	__u8 num_ref_idx_l0_active_minus1;
++	__u8 num_ref_idx_l1_active_minus1;
++	__u32 slice_group_change_cycle;
++
++	/*
++	 * Entries on each list are indices into
++	 * v4l2_ctrl_h264_decode_params.dpb[].
++	 */
++	__u8 ref_pic_list0[32];
++	__u8 ref_pic_list1[32];
++
++	__u32 flags;
++};
++
++#define V4L2_H264_DPB_ENTRY_FLAG_VALID		0x01
++#define V4L2_H264_DPB_ENTRY_FLAG_ACTIVE		0x02
++#define V4L2_H264_DPB_ENTRY_FLAG_LONG_TERM	0x04
++
++struct v4l2_h264_dpb_entry {
++	__u64 reference_ts;
++	__u16 frame_num;
++	__u16 pic_num;
++	/* Note that field is indicated by v4l2_buffer.field */
++	__s32 top_field_order_cnt;
++	__s32 bottom_field_order_cnt;
++	__u32 flags; /* V4L2_H264_DPB_ENTRY_FLAG_* */
++};
++
++#define V4L2_H264_DECODE_PARAM_FLAG_IDR_PIC	0x01
++
++struct v4l2_ctrl_h264_decode_params {
++	struct v4l2_h264_dpb_entry dpb[16];
++	__u16 num_slices;
++	__u16 nal_ref_idc;
++	__u8 ref_pic_list_p0[32];
++	__u8 ref_pic_list_b0[32];
++	__u8 ref_pic_list_b1[32];
++	__s32 top_field_order_cnt;
++	__s32 bottom_field_order_cnt;
++	__u32 flags; /* V4L2_H264_DECODE_PARAM_FLAG_* */
++};
++
++#endif
+diff --git a/include/media/v4l2-common.h b/include/media/v4l2-common.h
+index 2b93cb281..e826b154b 100644
+--- a/include/media/v4l2-common.h
++++ b/include/media/v4l2-common.h
+@@ -392,4 +392,39 @@ int v4l2_s_parm_cap(struct video_device *vdev,
+ 	((u64)(a).numerator * (b).denominator OP	\
+ 	(u64)(b).numerator * (a).denominator)
  
-@@ -91,9 +92,7 @@ static int subdev_open(struct file *file)
- 	return 0;
++/* ------------------------------------------------------------------------- */
++
++/* Pixel format and FourCC helpers */
++
++/**
++ * struct v4l2_format_info - information about a V4L2 format
++ * @format: 4CC format identifier (V4L2_PIX_FMT_*)
++ * @mem_planes: Number of memory planes, which includes the alpha plane (1 to 4).
++ * @comp_planes: Number of component planes, which includes the alpha plane (1 to 4).
++ * @bpp: Array of per-plane bytes per pixel
++ * @hdiv: Horizontal chroma subsampling factor
++ * @vdiv: Vertical chroma subsampling factor
++ * @block_w: Per-plane macroblock pixel width (optional)
++ * @block_h: Per-plane macroblock pixel height (optional)
++ */
++struct v4l2_format_info {
++	u32 format;
++	u8 mem_planes;
++	u8 comp_planes;
++	u8 bpp[4];
++	u8 hdiv;
++	u8 vdiv;
++	u8 block_w[4];
++	u8 block_h[4];
++};
++
++const struct v4l2_format_info *v4l2_format_info(u32 format);
++
++void v4l2_apply_frmsize_constraints(u32 *width, u32 *height,
++				    const struct v4l2_frmsize_stepwise *frmsize);
++int v4l2_fill_pixfmt(struct v4l2_pix_format *pixfmt, u32 pixelformat,
++		     u32 width, u32 height);
++int v4l2_fill_pixfmt_mp(struct v4l2_pix_format_mplane *pixfmt, u32 pixelformat,
++			u32 width, u32 height);
++
+ #endif /* V4L2_COMMON_H_ */
+diff --git a/include/media/v4l2-ctrls.h b/include/media/v4l2-ctrls.h
+index e5cae37ce..825bfce44 100644
+--- a/include/media/v4l2-ctrls.h
++++ b/include/media/v4l2-ctrls.h
+@@ -23,10 +23,13 @@
+ #include <media/media-request.h>
  
- err:
--#if defined(CONFIG_MEDIA_CONTROLLER)
--	media_entity_put(entity);
--#endif
-+	module_put(subdev_fh->owner);
- 	v4l2_fh_del(&subdev_fh->vfh);
- 	v4l2_fh_exit(&subdev_fh->vfh);
- 	subdev_fh_free(subdev_fh);
-@@ -111,10 +110,7 @@ static int subdev_close(struct file *file)
+ /*
+- * Include the mpeg2 stateless codec compound control definitions.
++ * Include the stateless codec compound control definitions.
+  * This will move to the public headers once this API is fully stable.
+  */
+ #include <media/mpeg2-ctrls.h>
++#include <media/fwht-ctrls.h>
++#include <media/h264-ctrls.h>
++#include <media/vp8-ctrls.h>
  
- 	if (sd->internal_ops && sd->internal_ops->close)
- 		sd->internal_ops->close(sd, subdev_fh);
--#if defined(CONFIG_MEDIA_CONTROLLER)
--	if (sd->v4l2_dev->mdev)
--		media_entity_put(&sd->entity);
--#endif
-+	module_put(subdev_fh->owner);
- 	v4l2_fh_del(vfh);
- 	v4l2_fh_exit(vfh);
- 	subdev_fh_free(subdev_fh);
+ /* forward references */
+ struct file;
+@@ -49,6 +52,13 @@ struct poll_table_struct;
+  * @p_char:			Pointer to a string.
+  * @p_mpeg2_slice_params:	Pointer to a MPEG2 slice parameters structure.
+  * @p_mpeg2_quantization:	Pointer to a MPEG2 quantization data structure.
++ * @p_fwht_params:		Pointer to a FWHT stateless parameters structure.
++ * @p_h264_sps:			Pointer to a struct v4l2_ctrl_h264_sps.
++ * @p_h264_pps:			Pointer to a struct v4l2_ctrl_h264_pps.
++ * @p_h264_scaling_matrix:	Pointer to a struct v4l2_ctrl_h264_scaling_matrix.
++ * @p_h264_slice_params:	Pointer to a struct v4l2_ctrl_h264_slice_params.
++ * @p_h264_decode_params:	Pointer to a struct v4l2_ctrl_h264_decode_params.
++ * @p_vp8_frame_header:		Pointer to a VP8 frame header structure.
+  * @p:				Pointer to a compound value.
+  */
+ union v4l2_ctrl_ptr {
+@@ -60,6 +70,13 @@ union v4l2_ctrl_ptr {
+ 	char *p_char;
+ 	struct v4l2_ctrl_mpeg2_slice_params *p_mpeg2_slice_params;
+ 	struct v4l2_ctrl_mpeg2_quantization *p_mpeg2_quantization;
++	struct v4l2_ctrl_fwht_params *p_fwht_params;
++	struct v4l2_ctrl_h264_sps *p_h264_sps;
++	struct v4l2_ctrl_h264_pps *p_h264_pps;
++	struct v4l2_ctrl_h264_scaling_matrix *p_h264_scaling_matrix;
++	struct v4l2_ctrl_h264_slice_params *p_h264_slice_params;
++	struct v4l2_ctrl_h264_decode_params *p_h264_decode_params;
++	struct v4l2_ctrl_vp8_frame_header *p_vp8_frame_header;
+ 	void *p;
+ };
+ 
+@@ -1127,7 +1144,7 @@ __poll_t v4l2_ctrl_poll(struct file *file, struct poll_table_struct *wait);
+  * applying control values in a request is only applicable to memory-to-memory
+  * devices.
+  */
+-void v4l2_ctrl_request_setup(struct media_request *req,
++int v4l2_ctrl_request_setup(struct media_request *req,
+ 			     struct v4l2_ctrl_handler *parent);
+ 
+ /**
+diff --git a/include/media/vp8-ctrls.h b/include/media/vp8-ctrls.h
+new file mode 100644
+index 000000000..de6b3297c
+--- /dev/null
++++ b/include/media/vp8-ctrls.h
+@@ -0,0 +1,106 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * TODO: Make sure structs have no holes
++ * and are 4-byte aligned.
++ */
++
++#ifndef _VP8_CTRLS_H_
++#define _VP8_CTRLS_H_
++
++#include <linux/v4l2-controls.h>
++
++#define V4L2_CID_MPEG_VIDEO_VP8_FRAME_HDR (V4L2_CID_MPEG_BASE + 590)
++#define V4L2_CTRL_TYPE_VP8_FRAME_HDR 0x301
++
++#define V4L2_VP8_SEGMNT_HDR_FLAG_ENABLED              0x01
++#define V4L2_VP8_SEGMNT_HDR_FLAG_UPDATE_MAP           0x02
++#define V4L2_VP8_SEGMNT_HDR_FLAG_UPDATE_FEATURE_DATA  0x04
++
++struct v4l2_vp8_segment_header {
++	__u8 segment_feature_mode;
++	__s8 quant_update[4];
++	__s8 lf_update[4];
++	__u8 segment_probs[3];
++	__u8 flags;
++};
++
++#define V4L2_VP8_LF_HDR_ADJ_ENABLE	0x01
++#define V4L2_VP8_LF_HDR_DELTA_UPDATE	0x02
++struct v4l2_vp8_loopfilter_header {
++	__u8 type;
++	__u8 level;
++	__u8 sharpness_level;
++	__s8 ref_frm_delta_magnitude[4];
++	__s8 mb_mode_delta_magnitude[4];
++	__u8 flags;
++};
++
++struct v4l2_vp8_quantization_header {
++	__u8 y_ac_qi;
++	__s8 y_dc_delta;
++	__s8 y2_dc_delta;
++	__s8 y2_ac_delta;
++	__s8 uv_dc_delta;
++	__s8 uv_ac_delta;
++	__u16 dequant_factors[4][3][2];
++};
++
++struct v4l2_vp8_entropy_header {
++	__u8 coeff_probs[4][8][3][11];
++	__u8 y_mode_probs[4];
++	__u8 uv_mode_probs[3];
++	__u8 mv_probs[2][19];
++};
++
++#define V4L2_VP8_FRAME_HDR_FLAG_EXPERIMENTAL		0x01
++#define V4L2_VP8_FRAME_HDR_FLAG_SHOW_FRAME		0x02
++#define V4L2_VP8_FRAME_HDR_FLAG_MB_NO_SKIP_COEFF	0x04
++struct v4l2_ctrl_vp8_frame_header {
++	/* 0: keyframe, 1: not a keyframe */
++	__u8 key_frame;
++	__u8 version;
++
++	/* Populated also if not a key frame */
++	__u16 width;
++	__u8 horizontal_scale;
++	__u16 height;
++	__u8 vertical_scale;
++
++	struct v4l2_vp8_segment_header segment_header;
++	struct v4l2_vp8_loopfilter_header lf_header;
++	struct v4l2_vp8_quantization_header quant_header;
++	struct v4l2_vp8_entropy_header entropy_header;
++
++	__u8 sign_bias_golden;
++	__u8 sign_bias_alternate;
++
++	__u8 prob_skip_false;
++	__u8 prob_intra;
++	__u8 prob_last;
++	__u8 prob_gf;
++
++	__u32 first_part_size;
++	__u32 first_part_offset;
++	/*
++	 * Offset in bits of MB data in first partition,
++	 * i.e. bit offset starting from first_part_offset.
++	 */
++	__u32 macroblock_bit_offset;
++
++	__u8 num_dct_parts;
++	__u32 dct_part_sizes[8];
++
++	__u8 bool_dec_range;
++	__u8 bool_dec_value;
++	__u8 bool_dec_count;
++
++	/* v4l2_buffer indices of reference frames */
++	/* TODO: Replace with u64 timestamp, as being discussed on the ML */
++	__u32 last_frame;
++	__u32 golden_frame;
++	__u32 alt_frame;
++
++	__u8 flags;
++};
++
++#endif
+diff --git a/include/uapi/linux/v4l2-controls.h b/include/uapi/linux/v4l2-controls.h
+index 06479f2fb..78816ec88 100644
+--- a/include/uapi/linux/v4l2-controls.h
++++ b/include/uapi/linux/v4l2-controls.h
+@@ -404,6 +404,10 @@ enum v4l2_mpeg_video_multi_slice_mode {
+ #define V4L2_CID_MPEG_VIDEO_MV_V_SEARCH_RANGE		(V4L2_CID_MPEG_BASE+228)
+ #define V4L2_CID_MPEG_VIDEO_FORCE_KEY_FRAME		(V4L2_CID_MPEG_BASE+229)
+ 
++/* CIDs for the FWHT codec as used by the vicodec driver. */
++#define V4L2_CID_FWHT_I_FRAME_QP             (V4L2_CID_MPEG_BASE + 290)
++#define V4L2_CID_FWHT_P_FRAME_QP             (V4L2_CID_MPEG_BASE + 291)
++
+ #define V4L2_CID_MPEG_VIDEO_H263_I_FRAME_QP		(V4L2_CID_MPEG_BASE+300)
+ #define V4L2_CID_MPEG_VIDEO_H263_P_FRAME_QP		(V4L2_CID_MPEG_BASE+301)
+ #define V4L2_CID_MPEG_VIDEO_H263_B_FRAME_QP		(V4L2_CID_MPEG_BASE+302)
+diff --git a/include/uapi/linux/videodev2.h b/include/uapi/linux/videodev2.h
+index 1db220da3..0b8a8ec4a 100644
+--- a/include/uapi/linux/videodev2.h
++++ b/include/uapi/linux/videodev2.h
+@@ -666,9 +666,11 @@ struct v4l2_pix_format {
+ #define V4L2_PIX_FMT_VC1_ANNEX_G v4l2_fourcc('V', 'C', '1', 'G') /* SMPTE 421M Annex G compliant stream */
+ #define V4L2_PIX_FMT_VC1_ANNEX_L v4l2_fourcc('V', 'C', '1', 'L') /* SMPTE 421M Annex L compliant stream */
+ #define V4L2_PIX_FMT_VP8      v4l2_fourcc('V', 'P', '8', '0') /* VP8 */
++#define V4L2_PIX_FMT_VP8_FRAME v4l2_fourcc('V', 'P', '8', 'F') /* VP8 parsed frames */
+ #define V4L2_PIX_FMT_VP9      v4l2_fourcc('V', 'P', '9', '0') /* VP9 */
+ #define V4L2_PIX_FMT_HEVC     v4l2_fourcc('H', 'E', 'V', 'C') /* HEVC aka H.265 */
+ #define V4L2_PIX_FMT_FWHT     v4l2_fourcc('F', 'W', 'H', 'T') /* Fast Walsh Hadamard Transform (vicodec) */
++#define V4L2_PIX_FMT_FWHT_STATELESS     v4l2_fourcc('S', 'F', 'W', 'H') /* Stateless FWHT (vicodec) */
+ 
+ /*  Vendor-specific formats   */
+ #define V4L2_PIX_FMT_CPIA1    v4l2_fourcc('C', 'P', 'I', 'A') /* cpia1 YUV */
 -- 
 2.16.4
 

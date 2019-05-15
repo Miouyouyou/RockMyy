@@ -1,7 +1,12 @@
-From 1b59759efd99c1636159185213a8041c953573fb Mon Sep 17 00:00:00 2001
+From 0f77d64f09d7dee414f27deb00a8b32600662289 Mon Sep 17 00:00:00 2001
 From: "Miouyouyou (Myy)" <myy@miouyouyou.fr>
-Date: Tue, 14 May 2019 22:07:07 +0200
-Subject: [PATCH 06/12] Rockchip RK3288 clock modifications
+Date: Wed, 15 May 2019 20:26:11 +0200
+Subject: [PATCH 6/8] RK3288: Clock fixes.
+
+Taken from bbrazillon rk-vpu1-h264 (WIP draft branch)
+https://github.com/bbrezillon/linux/commits/rk-vpu1-h264
+
+Patch butchered by myself.
 
 Signed-off-by: Miouyouyou (Myy) <myy@miouyouyou.fr>
 ---

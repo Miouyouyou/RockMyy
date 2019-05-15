@@ -1,7 +1,7 @@
-From 6c85d120380dacb1201a1cf187d387134c12110e Mon Sep 17 00:00:00 2001
+From ea283476b803c5c84bb9da181600b08cab321128 Mon Sep 17 00:00:00 2001
 From: "Miouyouyou (Myy)" <myy@miouyouyou.fr>
-Date: Tue, 14 May 2019 22:15:29 +0200
-Subject: [PATCH 12/12] RK3399 changes
+Date: Wed, 15 May 2019 20:33:47 +0200
+Subject: [PATCH 8/8] DTS: RK3399: Add VPU definitions.
 
 Signed-off-by: Miouyouyou (Myy) <myy@miouyouyou.fr>
 ---

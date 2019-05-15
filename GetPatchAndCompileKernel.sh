@@ -69,19 +69,14 @@ export KERNEL_PATCHES="
 "
 
 export KERNEL_VPU_PATCHES="
-0001-Rockchip-VPU-H264-Beta-and-MPEG2-support.patch
-0002-V4L2-and-Rockchip-H264-VP8-headers-and-export-Powerd.patch
-0003-UAPI-changes.patch
-0004-sort_r-Added-for-Rockchip-H264-support.patch
-0005-Rockchip-VPU-changes.patch
-0006-Rockchip-RK3288-clock-modifications.patch
-0007-Videobuf2-Removing-REQUEUING.patch
-0008-V4L2-New-formats-functions-and-structures.patch
-0009-Export-rockchip_pmu_idle_request.patch
-0010-Very-minor-modification.patch
-0011-The-CX2341X-driver.-I-don-t-know-if-s-useful.patch
-0012-RK3399-changes.patch
-0013-Referenced-in-some-files.patch
+0001-lib-Add-sort_r-for-the-Rockchip-H264-driver.patch
+0002-soc-rockchip-pmu-export-rockchip_pmu_idle_request.patch
+0003-include-V4L2-Add-new-pixel-and-frames-formats.patch
+0004-V4L2-device-management-fixes.patch
+0005-Videobuf2-Removing-REQUEUING-state-and-replacing-som.patch
+0006-RK3288-Clock-fixes.patch
+0007-staging-rockchip-vpu-Add-MPEG-2-and-H264-Alpha-state.patch
+0008-DTS-RK3399-Add-VPU-definitions.patch
 "
 
 export KERNEL_DTS_PATCHES="

@@ -1,0 +1,301 @@
+From 5821463349107eb23dee0925957ed4b3adcafefd Mon Sep 17 00:00:00 2001
+From: "Miouyouyou (Myy)" <myy@miouyouyou.fr>
+Date: Wed, 15 May 2019 20:25:27 +0200
+Subject: [PATCH 5/8] Videobuf2: Removing REQUEUING state and replacing some
+ error codes.
+
+Taken from bbrazillon rk-vpu1-h264 (WIP draft branch)
+https://github.com/bbrezillon/linux/commits/rk-vpu1-h264
+
+Patch butchered by myself.
+
+Signed-off-by: Miouyouyou (Myy) <myy@miouyouyou.fr>
+---
+ drivers/media/common/videobuf2/videobuf2-core.c    | 24 +++++++++++-----------
+ drivers/media/common/videobuf2/videobuf2-v4l2.c    |  7 +++++--
+ drivers/media/common/videobuf2/videobuf2-vmalloc.c | 10 ++++-----
+ include/media/media-entity.h                       | 24 ----------------------
+ include/media/media-request.h                      |  4 ++--
+ include/media/videobuf2-core.h                     | 24 ++++++++--------------
+ 6 files changed, 33 insertions(+), 60 deletions(-)
+
+diff --git a/drivers/media/common/videobuf2/videobuf2-core.c b/drivers/media/common/videobuf2/videobuf2-core.c
+index 15b6b9c0a..b98ec6e1a 100644
+--- a/drivers/media/common/videobuf2/videobuf2-core.c
++++ b/drivers/media/common/videobuf2/videobuf2-core.c
+@@ -915,8 +915,7 @@ void vb2_buffer_done(struct vb2_buffer *vb, enum vb2_buffer_state state)
+ 
+ 	if (WARN_ON(state != VB2_BUF_STATE_DONE &&
+ 		    state != VB2_BUF_STATE_ERROR &&
+-		    state != VB2_BUF_STATE_QUEUED &&
+-		    state != VB2_BUF_STATE_REQUEUEING))
++		    state != VB2_BUF_STATE_QUEUED))
+ 		state = VB2_BUF_STATE_ERROR;
+ 
+ #ifdef CONFIG_VIDEO_ADV_DEBUG
+@@ -929,8 +928,7 @@ void vb2_buffer_done(struct vb2_buffer *vb, enum vb2_buffer_state state)
+ 	dprintk(4, "done processing on buffer %d, state: %d\n",
+ 			vb->index, state);
+ 
+-	if (state != VB2_BUF_STATE_QUEUED &&
+-	    state != VB2_BUF_STATE_REQUEUEING) {
++	if (state != VB2_BUF_STATE_QUEUED) {
+ 		/* sync buffers */
+ 		for (plane = 0; plane < vb->num_planes; ++plane)
+ 			call_void_memop(vb, finish, vb->planes[plane].mem_priv);
+@@ -938,8 +936,7 @@ void vb2_buffer_done(struct vb2_buffer *vb, enum vb2_buffer_state state)
+ 	}
+ 
+ 	spin_lock_irqsave(&q->done_lock, flags);
+-	if (state == VB2_BUF_STATE_QUEUED ||
+-	    state == VB2_BUF_STATE_REQUEUEING) {
++	if (state == VB2_BUF_STATE_QUEUED) {
+ 		vb->state = VB2_BUF_STATE_QUEUED;
+ 	} else {
+ 		/* Add the buffer to the done buffers list */
+@@ -949,8 +946,6 @@ void vb2_buffer_done(struct vb2_buffer *vb, enum vb2_buffer_state state)
+ 	atomic_dec(&q->owned_by_drv_count);
+ 
+ 	if (state != VB2_BUF_STATE_QUEUED && vb->req_obj.req) {
+-		/* This is not supported at the moment */
+-		WARN_ON(state == VB2_BUF_STATE_REQUEUEING);
+ 		media_request_object_unbind(&vb->req_obj);
+ 		media_request_object_put(&vb->req_obj);
+ 	}
+@@ -962,10 +957,6 @@ void vb2_buffer_done(struct vb2_buffer *vb, enum vb2_buffer_state state)
+ 	switch (state) {
+ 	case VB2_BUF_STATE_QUEUED:
+ 		return;
+-	case VB2_BUF_STATE_REQUEUEING:
+-		if (q->start_streaming_called)
+-			__enqueue_in_driver(vb);
+-		return;
+ 	default:
+ 		/* Inform any processes that may be waiting for buffers */
+ 		wake_up(&q->done_wq);
+@@ -1516,6 +1507,12 @@ int vb2_core_qbuf(struct vb2_queue *q, unsigned int index, void *pb,
+ 
+ 	vb = q->bufs[index];
+ 
++	if (!req && vb->state != VB2_BUF_STATE_IN_REQUEST &&
++	    q->requires_requests) {
++		dprintk(1, "qbuf requires a request\n");
++		return -EBADR;
++	}
++
+ 	if ((req && q->uses_qbuf) ||
+ 	    (!req && vb->state != VB2_BUF_STATE_IN_REQUEST &&
+ 	     q->uses_requests)) {
+@@ -2247,6 +2244,9 @@ int vb2_core_queue_init(struct vb2_queue *q)
+ 	    WARN_ON(!q->ops->buf_queue))
+ 		return -EINVAL;
+ 
++	if (WARN_ON(q->requires_requests && !q->supports_requests))
++		return -EINVAL;
++
+ 	INIT_LIST_HEAD(&q->queued_list);
+ 	INIT_LIST_HEAD(&q->done_list);
+ 	spin_lock_init(&q->done_lock);
+diff --git a/drivers/media/common/videobuf2/videobuf2-v4l2.c b/drivers/media/common/videobuf2/videobuf2-v4l2.c
+index d09dee20e..b11a779e9 100644
+--- a/drivers/media/common/videobuf2/videobuf2-v4l2.c
++++ b/drivers/media/common/videobuf2/videobuf2-v4l2.c
+@@ -381,6 +381,10 @@ static int vb2_queue_or_prepare_buf(struct vb2_queue *q, struct media_device *md
+ 		return 0;
+ 
+ 	if (!(b->flags & V4L2_BUF_FLAG_REQUEST_FD)) {
++		if (q->requires_requests) {
++			dprintk(1, "%s: queue requires requests\n", opname);
++			return -EBADR;
++		}
+ 		if (q->uses_requests) {
+ 			dprintk(1, "%s: queue uses requests\n", opname);
+ 			return -EBUSY;
+@@ -388,7 +392,7 @@ static int vb2_queue_or_prepare_buf(struct vb2_queue *q, struct media_device *md
+ 		return 0;
+ 	} else if (!q->supports_requests) {
+ 		dprintk(1, "%s: queue does not support requests\n", opname);
+-		return -EACCES;
++		return -EBADR;
+ 	} else if (q->uses_qbuf) {
+ 		dprintk(1, "%s: queue does not use requests\n", opname);
+ 		return -EBUSY;
+@@ -543,7 +547,6 @@ static void __fill_v4l2_buffer(struct vb2_buffer *vb, void *pb)
+ 		break;
+ 	case VB2_BUF_STATE_PREPARING:
+ 	case VB2_BUF_STATE_DEQUEUED:
+-	case VB2_BUF_STATE_REQUEUEING:
+ 		/* nothing */
+ 		break;
+ 	}
+diff --git a/drivers/media/common/videobuf2/videobuf2-vmalloc.c b/drivers/media/common/videobuf2/videobuf2-vmalloc.c
+index 6dfbd5b05..1c6659f7c 100644
+--- a/drivers/media/common/videobuf2/videobuf2-vmalloc.c
++++ b/drivers/media/common/videobuf2/videobuf2-vmalloc.c
+@@ -46,17 +46,17 @@ static void *vb2_vmalloc_alloc(struct device *dev, unsigned long attrs,
+ 
+ 	buf->size = size;
+ 	buf->vaddr = vmalloc_user(buf->size);
+-	buf->dma_dir = dma_dir;
+-	buf->handler.refcount = &buf->refcount;
+-	buf->handler.put = vb2_vmalloc_put;
+-	buf->handler.arg = buf;
+-
+ 	if (!buf->vaddr) {
+ 		pr_debug("vmalloc of size %ld failed\n", buf->size);
+ 		kfree(buf);
+ 		return ERR_PTR(-ENOMEM);
+ 	}
+ 
++	buf->dma_dir = dma_dir;
++	buf->handler.refcount = &buf->refcount;
++	buf->handler.put = vb2_vmalloc_put;
++	buf->handler.arg = buf;
++
+ 	refcount_set(&buf->refcount, 1);
+ 	return buf;
+ }
+diff --git a/include/media/media-entity.h b/include/media/media-entity.h
+index e5f6960d9..3cbad42e3 100644
+--- a/include/media/media-entity.h
++++ b/include/media/media-entity.h
+@@ -864,19 +864,6 @@ struct media_link *media_entity_find_link(struct media_pad *source,
+  */
+ struct media_pad *media_entity_remote_pad(const struct media_pad *pad);
+ 
+-/**
+- * media_entity_get - Get a reference to the parent module
+- *
+- * @entity: The entity
+- *
+- * Get a reference to the parent media device module.
+- *
+- * The function will return immediately if @entity is %NULL.
+- *
+- * Return: returns a pointer to the entity on success or %NULL on failure.
+- */
+-struct media_entity *media_entity_get(struct media_entity *entity);
+-
+ /**
+  * media_entity_get_fwnode_pad - Get pad number from fwnode
+  *
+@@ -916,17 +903,6 @@ __must_check int media_graph_walk_init(
+  */
+ void media_graph_walk_cleanup(struct media_graph *graph);
+ 
+-/**
+- * media_entity_put - Release the reference to the parent module
+- *
+- * @entity: The entity
+- *
+- * Release the reference count acquired by media_entity_get().
+- *
+- * The function will return immediately if @entity is %NULL.
+- */
+-void media_entity_put(struct media_entity *entity);
+-
+ /**
+  * media_graph_walk_start - Start walking the media graph at a
+  *	given entity
+diff --git a/include/media/media-request.h b/include/media/media-request.h
+index bd36d7431..3cd25a271 100644
+--- a/include/media/media-request.h
++++ b/include/media/media-request.h
+@@ -198,7 +198,7 @@ void media_request_put(struct media_request *req);
+  * Get the request represented by @request_fd that is owned
+  * by the media device.
+  *
+- * Return a -EACCES error pointer if requests are not supported
++ * Return a -EBADR error pointer if requests are not supported
+  * by this driver. Return -EINVAL if the request was not found.
+  * Return the pointer to the request if found: the caller will
+  * have to call @media_request_put when it finished using the
+@@ -231,7 +231,7 @@ static inline void media_request_put(struct media_request *req)
+ static inline struct media_request *
+ media_request_get_by_fd(struct media_device *mdev, int request_fd)
+ {
+-	return ERR_PTR(-EACCES);
++	return ERR_PTR(-EBADR);
+ }
+ 
+ #endif
+diff --git a/include/media/videobuf2-core.h b/include/media/videobuf2-core.h
+index 910f3d469..fe010ad62 100644
+--- a/include/media/videobuf2-core.h
++++ b/include/media/videobuf2-core.h
+@@ -207,7 +207,6 @@ enum vb2_io_modes {
+  * @VB2_BUF_STATE_IN_REQUEST:	buffer is queued in media request.
+  * @VB2_BUF_STATE_PREPARING:	buffer is being prepared in videobuf.
+  * @VB2_BUF_STATE_QUEUED:	buffer queued in videobuf, but not in driver.
+- * @VB2_BUF_STATE_REQUEUEING:	re-queue a buffer to the driver.
+  * @VB2_BUF_STATE_ACTIVE:	buffer queued in driver and possibly used
+  *				in a hardware operation.
+  * @VB2_BUF_STATE_DONE:		buffer returned from driver to videobuf, but
+@@ -221,7 +220,6 @@ enum vb2_buffer_state {
+ 	VB2_BUF_STATE_IN_REQUEST,
+ 	VB2_BUF_STATE_PREPARING,
+ 	VB2_BUF_STATE_QUEUED,
+-	VB2_BUF_STATE_REQUEUEING,
+ 	VB2_BUF_STATE_ACTIVE,
+ 	VB2_BUF_STATE_DONE,
+ 	VB2_BUF_STATE_ERROR,
+@@ -384,10 +382,10 @@ struct vb2_buffer {
+  *			driver can return an error if hardware fails, in that
+  *			case all buffers that have been already given by
+  *			the @buf_queue callback are to be returned by the driver
+- *			by calling vb2_buffer_done() with %VB2_BUF_STATE_QUEUED
+- *			or %VB2_BUF_STATE_REQUEUEING. If you need a minimum
+- *			number of buffers before you can start streaming, then
+- *			set &vb2_queue->min_buffers_needed. If that is non-zero
++ *			by calling vb2_buffer_done() with %VB2_BUF_STATE_QUEUED.
++ *			If you need a minimum number of buffers before you can
++ *			start streaming, then set
++ *			&vb2_queue->min_buffers_needed. If that is non-zero
+  *			then @start_streaming won't be called until at least
+  *			that many buffers have been queued up by userspace.
+  * @stop_streaming:	called when 'streaming' state must be disabled; driver
+@@ -484,6 +482,8 @@ struct vb2_buf_ops {
+  *              has not been called. This is a vb1 idiom that has been adopted
+  *              also by vb2.
+  * @supports_requests: this queue supports the Request API.
++ * @requires_requests: this queue requires the Request API. If this is set to 1,
++ *		then supports_requests must be set to 1 as well.
+  * @uses_qbuf:	qbuf was used directly for this queue. Set to 1 the first
+  *		time this is called. Set to 0 when the queue is canceled.
+  *		If this is 1, then you cannot queue buffers from a request.
+@@ -558,6 +558,7 @@ struct vb2_queue {
+ 	unsigned			allow_zero_bytesused:1;
+ 	unsigned		   quirk_poll_must_check_waiting_for_buffers:1;
+ 	unsigned			supports_requests:1;
++	unsigned			requires_requests:1;
+ 	unsigned			uses_qbuf:1;
+ 	unsigned			uses_requests:1;
+ 
+@@ -648,9 +649,7 @@ void *vb2_plane_cookie(struct vb2_buffer *vb, unsigned int plane_no);
+  * @state:	state of the buffer, as defined by &enum vb2_buffer_state.
+  *		Either %VB2_BUF_STATE_DONE if the operation finished
+  *		successfully, %VB2_BUF_STATE_ERROR if the operation finished
+- *		with an error or any of %VB2_BUF_STATE_QUEUED or
+- *		%VB2_BUF_STATE_REQUEUEING if the driver wants to
+- *		requeue buffers (see below).
++ *		with an error or %VB2_BUF_STATE_QUEUED.
+  *
+  * This function should be called by the driver after a hardware operation on
+  * a buffer is finished and the buffer may be returned to userspace. The driver
+@@ -661,12 +660,7 @@ void *vb2_plane_cookie(struct vb2_buffer *vb, unsigned int plane_no);
+  * While streaming a buffer can only be returned in state DONE or ERROR.
+  * The &vb2_ops->start_streaming op can also return them in case the DMA engine
+  * cannot be started for some reason. In that case the buffers should be
+- * returned with state QUEUED or REQUEUEING to put them back into the queue.
+- *
+- * %VB2_BUF_STATE_REQUEUEING is like %VB2_BUF_STATE_QUEUED, but it also calls
+- * &vb2_ops->buf_queue to queue buffers back to the driver. Note that calling
+- * vb2_buffer_done(..., VB2_BUF_STATE_REQUEUEING) from interrupt context will
+- * result in &vb2_ops->buf_queue being called in interrupt context as well.
++ * returned with state QUEUED to put them back into the queue.
+  */
+ void vb2_buffer_done(struct vb2_buffer *vb, enum vb2_buffer_state state);
+ 
+-- 
+2.16.4
+
