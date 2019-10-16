@@ -7,8 +7,8 @@ if [ -z ${MAKEOPTS+x} ]; then
 	export MAKEOPTS=-j16
 fi
 
-export KERNEL_SERIES=v5.1
-export KERNEL_BRANCH=v5.1
+export KERNEL_SERIES=v5.4
+export KERNEL_BRANCH=v5.4-rc1
 export LOCALVERSION=-RockMyy32-Blobby
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
@@ -19,7 +19,6 @@ export GIT_BRANCH=master
 export DTB_FILES="
 rk3288-evb-act8846.dtb
 rk3288-evb-rk808.dtb
-rk3288-fennec.dtb
 rk3288-firefly-beta.dtb
 rk3288-firefly-reload.dtb
 rk3288-firefly.dtb
@@ -59,11 +58,9 @@ export KERNEL_PATCHES="
 0004-Remove-the-dependency-to-the-clk_mali-symbol.patch
 0005-drivers-mmc-dw-mci-rockchip-Handle-ASUS-Tinkerboard.patch
 0007-drivers-wifi-ath9k-reverse-do-not-use-bulk-on-EP3-and-EP4.patch
-0008-clk-rockchip-rk3288-Support-for-dedicating-NPLL-to-a.patch
 0010-block-partitions-efi-Ignore-GPT-flags-on-Veyron-Chro.patch
 0011-block-partitions-efi-Ignore-bizarre-Chromebook-GPT-p.patch
 0012-mmc-Added-a-flag-to-disable-cache-flush-during-reset.patch
-0013-spi-Added-support-for-Tinkerboard-s-SPI-interface.patch
 "
 
 export KERNEL_VPU_PATCHES="
@@ -196,14 +193,14 @@ if [ ! -e "PATCHED" ]; then
 		download_and_apply_patches $KERNEL_DTS_PATCHES_DIR_URL $KERNEL_DTS_PATCHES
 		#download_and_apply_patches $KERNEL_DOCUMENTATION_PATCHES_DIR_URL $KERNEL_DOCUMENTATION_PATCHES
 		download_and_apply_patches $MALI_PATCHES_DIR_URL $MALI_PATCHES
-		download_and_apply_patches $KERNEL_VPU_PATCHES_DIR_URL $KERNEL_VPU_PATCHES
+		#download_and_apply_patches $KERNEL_VPU_PATCHES_DIR_URL $KERNEL_VPU_PATCHES
 	else
 		copy_and_apply_patches ../$KERNEL_PATCHES_DIR $KERNEL_PATCHES
 		copy_and_apply_patches ../$KERNEL_PATCHES_DTS_DIR $KERNEL_DTS_PATCHES
 		#copy_and_apply_patches ../$KERNEL_DOCUMENTATION_PATCHES_DIR $KERNEL_DOCUMENTATION_PATCHES
 		copy_and_apply_patches ../$MALI_PATCHES_DIR $MALI_PATCHES
 		echo "${KERNEL_PATCHES_VPU_DIR}"
-		copy_and_apply_patches ../$KERNEL_PATCHES_VPU_DIR $KERNEL_VPU_PATCHES
+		#copy_and_apply_patches ../$KERNEL_PATCHES_VPU_DIR $KERNEL_VPU_PATCHES
 	fi
 
 

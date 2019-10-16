@@ -1,0 +1,35 @@
+From d8df90981755cffdcc0683cf7106a1a0e7699dcc Mon Sep 17 00:00:00 2001
+From: "Miouyouyou (Myy)" <myy@miouyouyou.fr>
+Date: Tue, 30 Oct 2018 22:44:54 +0100
+Subject: [PATCH] mmc: Added a flag to disable cache flush during reset
+
+The ASUS Chromebook suffer from 10 minutes long hang, when trying
+to flush the cache of the eMMC, in order to recover from eMMC init
+issues when booting the system.
+
+A new flag "no-recovery-cache-flush" whose purpose is to disable
+cache flush during recovery reset, has been added.
+
+This work is adapted from @SolidHal work, which is available here :
+https://github.com/SolidHal/PrawnOS/blob/develop-4.19/resources/BuildResources/patches-tested/kernel/Don-t-try-to-flush-cache-on-reset.patch
+
+Signed-off-by: Miouyouyou (Myy) <myy@miouyouyou.fr>
+---
+ include/linux/mmc/host.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
+index ba703384b..84ce2adfb 100644
+--- a/include/linux/mmc/host.h
++++ b/include/linux/mmc/host.h
+@@ -369,6 +369,7 @@ struct mmc_host {
+ #define MMC_CAP2_CQE_DCMD	(1 << 24)	/* CQE can issue a direct command */
+ #define MMC_CAP2_AVOID_3_3V	(1 << 25)	/* Host must negotiate down from 3.3V */
+ #define MMC_CAP2_MERGE_CAPABLE	(1 << 26)	/* Host can merge a segment over the segment size */
++#define MMC_CAP2_NO_RECOVERY_CACHE_FLUSH	(1 << 27)	/* Do not flush the device cache when recovering */
+ 
+ 	int			fixed_drv_type;	/* fixed driver type for non-removable media */
+ 
+-- 
+2.21.0
+

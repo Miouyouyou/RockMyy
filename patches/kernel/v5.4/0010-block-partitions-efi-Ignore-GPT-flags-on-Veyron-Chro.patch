@@ -1,0 +1,69 @@
+From dbf5008c041568043e6911f5b6176b8be7d00b1f Mon Sep 17 00:00:00 2001
+From: "Miouyouyou (Myy)" <myy@miouyouyou.fr>
+Date: Tue, 9 Oct 2018 21:52:22 +0200
+Subject: [PATCH 10/11] block: partitions: efi: Ignore GPT flags on Veyron
+ Chromebook
+
+This patch is based on @SolidHal work here :
+https://github.com/SolidHal/PrawnOS/blob/master/resources/BuildResources/patches-tested/kernel/0002-Do-not-force-GUID-partition-with-gpt-command-line-op.patch
+
+Heavy modifications were done by me to only focus on Chromebook
+systems.
+
+It seems that yet another ASUS RK3288 based product needs bizarre
+hacks to boot correctly.
+
+Turns out that in some boot partitions, there's a "force_gpt" flag
+passed to the kernel. However, this flag is stupid since forcing
+GPT make the system unable to scan the non-GPT partition table
+correctly.
+
+This... is untested. I don't own any Chromebook.
+So if you got one, booted a kernel with this patch and the Chromebook
+broke and went on fire, please provide the dmesg logs recovered by
+your Forensics team.
+
+Signed-off-by: Miouyouyou (Myy) <myy@miouyouyou.fr>
+---
+ block/partitions/efi.c | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/block/partitions/efi.c b/block/partitions/efi.c
+index 39f70d968..366349718 100644
+--- a/block/partitions/efi.c
++++ b/block/partitions/efi.c
+@@ -104,6 +104,9 @@
+ #include "check.h"
+ #include "efi.h"
+ 
++// Ugly Asus Chromebook hack
++#include <linux/of.h>
++
+ /* This allows a kernel command line option 'gpt' to override
+  * the test for invalid PMBR.  Not __initdata because reloading
+  * the partition tables happens after init too.
+@@ -112,7 +115,20 @@ static int force_gpt;
+ static int __init
+ force_gpt_fn(char *str)
+ {
+-	force_gpt = 1;
++	/* ASUS Chromebook hacks.. Why do I feel like evey ASUS
++	 * product needs awful hacks to work correctly */
++	if (of_machine_is_compatible("google,veyron") == 0) {
++		force_gpt = 1;
++	}
++	else {
++		/* Do not force GPT even if 'gpt' command line option is
++		 * specified for ChromeOS kernel.
++		 */
++		force_gpt = 0;
++		pr_warn(
++			"Not forcing GPT even though 'force_gpt=1' "
++			"specified on cmd line.\n");
++	}
+ 	return 1;
+ }
+ __setup("gpt", force_gpt_fn);
+-- 
+2.16.4
+

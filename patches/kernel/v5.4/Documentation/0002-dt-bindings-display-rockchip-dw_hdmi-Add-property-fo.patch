@@ -1,0 +1,37 @@
+From d18094027325dfda3882be28d0778010a507aee2 Mon Sep 17 00:00:00 2001
+From: "Miouyouyou (Myy)" <myy@miouyouyou.fr>
+Date: Sat, 29 Sep 2018 02:39:41 +0200
+Subject: [PATCH 2/6] dt-bindings: display/rockchip: dw_hdmi: Add property for
+ HDMI frequency list
+
+This patch is taken from Urja Rannikko ( @urjaman ) patchset here :
+https://github.com/urjaman/arch-c201/blob/master/linux-c201/0020-RK3288-HDMI-clock-hacks-combined.patch
+https://www.spinics.net/lists/arm-kernel/msg673156.html
+
+This patch adds some documentation about a new DW HDMI property :
+"rockchip,hdmi-rates-hz". This property defines specific clocks
+frequencies for the HDMI subsystem, inside the DTS file.
+
+This property is used by a patched Rockchip DW HDMI driver
+(dw_hdmi-rockchip.c).
+
+Signed-off-by: Miouyouyou (Myy) <myy@miouyouyou.fr>
+---
+ Documentation/devicetree/bindings/display/rockchip/dw_hdmi-rockchip.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/display/rockchip/dw_hdmi-rockchip.txt b/Documentation/devicetree/bindings/display/rockchip/dw_hdmi-rockchip.txt
+index adc94fc3c..edeacbbc4 100644
+--- a/Documentation/devicetree/bindings/display/rockchip/dw_hdmi-rockchip.txt
++++ b/Documentation/devicetree/bindings/display/rockchip/dw_hdmi-rockchip.txt
+@@ -34,6 +34,7 @@ Optional properties
+ - clock-names: May contain "cec" as defined in dw_hdmi.txt.
+ - clock-names: May contain "grf", power for grf io.
+ - clock-names: May contain "vpll", external clock for some hdmi phy.
++- rockchip,hdmi-rates-hz: List of allowed HDMI frequencies in Hz.
+ 
+ Example:
+ 
+-- 
+2.16.4
+
