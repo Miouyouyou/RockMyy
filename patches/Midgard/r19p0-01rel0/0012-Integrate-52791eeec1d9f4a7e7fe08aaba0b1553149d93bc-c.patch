@@ -1,0 +1,175 @@
+From 445d8e712bcfa4acc66c5142bf208947b85e820e Mon Sep 17 00:00:00 2001
+From: "Miouyouyou (Myy)" <myy@miouyouyou.fr>
+Date: Thu, 17 Oct 2019 02:17:43 +0200
+Subject: [PATCH] Integrate 52791eeec1d9f4a7e7fe08aaba0b1553149d93bc changes
+
+* Renamed struct reservation_object references to struct dma_resv
+* Renamed linux/reservation.h references to linux/dma-resv.h
+
+Signed-off-by: Miouyouyou (Myy) <myy@miouyouyou.fr>
+---
+ .../gpu/arm/midgard/mali_kbase_dma_fence.c    | 22 +++++++++----------
+ .../gpu/arm/midgard/mali_kbase_dma_fence.h    | 10 ++++-----
+ drivers/gpu/arm/midgard/mali_kbase_jd.c       |  4 ++--
+ 3 files changed, 18 insertions(+), 18 deletions(-)
+
+diff --git a/drivers/gpu/arm/midgard/mali_kbase_dma_fence.c b/drivers/gpu/arm/midgard/mali_kbase_dma_fence.c
+index a65a1fa18..9adaddef1 100644
+--- a/drivers/gpu/arm/midgard/mali_kbase_dma_fence.c
++++ b/drivers/gpu/arm/midgard/mali_kbase_dma_fence.c
+@@ -25,7 +25,7 @@
+ #include <linux/list.h>
+ #include <linux/lockdep.h>
+ #include <linux/mutex.h>
+-#include <linux/reservation.h>
++#include <linux/dma-resv.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/workqueue.h>
+@@ -54,7 +54,7 @@ static int
+ kbase_dma_fence_lock_reservations(struct kbase_dma_fence_resv_info *info,
+ 				  struct ww_acquire_ctx *ctx)
+ {
+-	struct reservation_object *content_res = NULL;
++	struct dma_resv *content_res = NULL;
+ 	unsigned int content_res_idx = 0;
+ 	unsigned int r;
+ 	int err = 0;
+@@ -220,7 +220,7 @@ kbase_dma_fence_cb(struct dma_fence *fence, struct dma_fence_cb *cb)
+ 
+ static int
+ kbase_dma_fence_add_reservation_callback(struct kbase_jd_atom *katom,
+-					 struct reservation_object *resv,
++					 struct dma_resv *resv,
+ 					 bool exclusive)
+ {
+ #if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0))
+@@ -233,7 +233,7 @@ kbase_dma_fence_add_reservation_callback(struct kbase_jd_atom *katom,
+ 	unsigned int shared_count = 0;
+ 	int err, i;
+ 
+-	err = reservation_object_get_fences_rcu(resv,
++	err = dma_resv_get_fences_rcu(resv,
+ 						&excl_fence,
+ 						&shared_count,
+ 						&shared_fences);
+@@ -245,7 +245,7 @@ kbase_dma_fence_add_reservation_callback(struct kbase_jd_atom *katom,
+ 						excl_fence,
+ 						kbase_dma_fence_cb);
+ 
+-		/* Release our reference, taken by reservation_object_get_fences_rcu(),
++		/* Release our reference, taken by dma_resv_get_fences_rcu(),
+ 		 * to the fence. We have set up our callback (if that was possible),
+ 		 * and it's the fence's owner is responsible for singling the fence
+ 		 * before allowing it to disappear.
+@@ -267,7 +267,7 @@ kbase_dma_fence_add_reservation_callback(struct kbase_jd_atom *katom,
+ 	}
+ 
+ 	/* Release all our references to the shared fences, taken by
+-	 * reservation_object_get_fences_rcu(). We have set up our callback (if
++	 * dma_resv_get_fences_rcu(). We have set up our callback (if
+ 	 * that was possible), and it's the fence's owner is responsible for
+ 	 * signaling the fence before allowing it to disappear.
+ 	 */
+@@ -287,7 +287,7 @@ kbase_dma_fence_add_reservation_callback(struct kbase_jd_atom *katom,
+ 	return err;
+ }
+ 
+-void kbase_dma_fence_add_reservation(struct reservation_object *resv,
++void kbase_dma_fence_add_reservation(struct dma_resv *resv,
+ 				     struct kbase_dma_fence_resv_info *info,
+ 				     bool exclusive)
+ {
+@@ -339,10 +339,10 @@ int kbase_dma_fence_wait(struct kbase_jd_atom *katom,
+ 	}
+ 
+ 	for (i = 0; i < info->dma_fence_resv_count; i++) {
+-		struct reservation_object *obj = info->resv_objs[i];
++		struct dma_resv *obj = info->resv_objs[i];
+ 
+ 		if (!test_bit(i, info->dma_fence_excl_bitmap)) {
+-			err = reservation_object_reserve_shared(obj, 1);
++			err = dma_resv_reserve_shared(obj, 1);
+ 			if (err) {
+ 				dev_err(katom->kctx->kbdev->dev,
+ 					"Error %d reserving space for shared fence.\n", err);
+@@ -356,7 +356,7 @@ int kbase_dma_fence_wait(struct kbase_jd_atom *katom,
+ 				goto end;
+ 			}
+ 
+-			reservation_object_add_shared_fence(obj, fence);
++			dma_resv_add_shared_fence(obj, fence);
+ 		} else {
+ 			err = kbase_dma_fence_add_reservation_callback(katom, obj, true);
+ 			if (err) {
+@@ -365,7 +365,7 @@ int kbase_dma_fence_wait(struct kbase_jd_atom *katom,
+ 				goto end;
+ 			}
+ 
+-			reservation_object_add_excl_fence(obj, fence);
++			dma_resv_add_excl_fence(obj, fence);
+ 		}
+ 	}
+ 
+diff --git a/drivers/gpu/arm/midgard/mali_kbase_dma_fence.h b/drivers/gpu/arm/midgard/mali_kbase_dma_fence.h
+index c9ab40350..2624a3a03 100644
+--- a/drivers/gpu/arm/midgard/mali_kbase_dma_fence.h
++++ b/drivers/gpu/arm/midgard/mali_kbase_dma_fence.h
+@@ -21,7 +21,7 @@
+ #ifdef CONFIG_MALI_DMA_FENCE
+ 
+ #include <linux/list.h>
+-#include <linux/reservation.h>
++#include <linux/dma-resv.h>
+ #include <mali_kbase_fence.h>
+ 
+ 
+@@ -40,7 +40,7 @@ struct kbase_context;
+  * reservation objects.
+  */
+ struct kbase_dma_fence_resv_info {
+-	struct reservation_object **resv_objs;
++	struct dma_resv **resv_objs;
+ 	unsigned int dma_fence_resv_count;
+ 	unsigned long *dma_fence_excl_bitmap;
+ };
+@@ -51,11 +51,11 @@ struct kbase_dma_fence_resv_info {
+  * @info:      Pointer to struct with current reservation info
+  * @exclusive: Boolean indicating if exclusive access is needed
+  *
+- * The function adds a new reservation_object to an existing array of
+- * reservation_objects. At the same time keeps track of which objects require
++ * The function adds a new dma_resv to an existing array of
++ * dma_resvs. At the same time keeps track of which objects require
+  * exclusive access in dma_fence_excl_bitmap.
+  */
+-void kbase_dma_fence_add_reservation(struct reservation_object *resv,
++void kbase_dma_fence_add_reservation(struct dma_resv *resv,
+ 				     struct kbase_dma_fence_resv_info *info,
+ 				     bool exclusive);
+ 
+diff --git a/drivers/gpu/arm/midgard/mali_kbase_jd.c b/drivers/gpu/arm/midgard/mali_kbase_jd.c
+index 15ed06132..bcdf4f8b3 100644
+--- a/drivers/gpu/arm/midgard/mali_kbase_jd.c
++++ b/drivers/gpu/arm/midgard/mali_kbase_jd.c
+@@ -355,7 +355,7 @@ static int kbase_jd_pre_external_resources(struct kbase_jd_atom *katom, const st
+ #ifdef CONFIG_MALI_DMA_FENCE
+ 	if (implicit_sync) {
+ 		info.resv_objs = kmalloc_array(katom->nr_extres,
+-					sizeof(struct reservation_object *),
++					sizeof(struct dma_resv *),
+ 					GFP_KERNEL);
+ 		if (!info.resv_objs) {
+ 			err_ret_val = -ENOMEM;
+@@ -415,7 +415,7 @@ static int kbase_jd_pre_external_resources(struct kbase_jd_atom *katom, const st
+ #ifdef CONFIG_MALI_DMA_FENCE
+ 		if (implicit_sync &&
+ 		    reg->gpu_alloc->type == KBASE_MEM_TYPE_IMPORTED_UMM) {
+-			struct reservation_object *resv;
++			struct dma_resv *resv;
+ 
+ 			resv = reg->gpu_alloc->imported.umm.dma_buf->resv;
+ 			if (resv)
+-- 
+2.21.0
+

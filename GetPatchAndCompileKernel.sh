@@ -8,7 +8,7 @@ if [ -z ${MAKEOPTS+x} ]; then
 fi
 
 export KERNEL_SERIES=v5.4
-export KERNEL_BRANCH=v5.4-rc1
+export KERNEL_BRANCH=v5.4-rc2
 export LOCALVERSION=-RockMyy32-Blobby
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
@@ -109,6 +109,7 @@ export MALI_PATCHES="
 0009-GPU-ARM-Midgard-Adapt-to-the-new-mmap-call-checks.patch
 0010-GPU-Mali-Midgard-remove-rcu_read_lock-references.patch
 0011-mali-kbase-v4.20-to-v5.0-rc2-changes.patch
+0012-Integrate-52791eeec1d9f4a7e7fe08aaba0b1553149d93bc-c.patch
 "
 
 # -- Helper functions
