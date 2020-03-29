@@ -1,0 +1,41 @@
+From e14ed2c699685c6edf49497a460c66ec5a546403 Mon Sep 17 00:00:00 2001
+From: "Miouyouyou (Myy)" <myy@miouyouyou.fr>
+Date: Sun, 29 Mar 2020 09:57:05 +0200
+Subject: [PATCH] arm: dtsi: rk3288-tinker: Added flags for reboot support
+
+I still think that "CantRebootBoard" or "Br0kenBr0d" would be a better
+name for this thing.
+
+Signed-off-by: Miouyouyou (Myy) <myy@miouyouyou.fr>
+---
+ arch/arm/boot/dts/rk3288-tinker.dtsi | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/arch/arm/boot/dts/rk3288-tinker.dtsi b/arch/arm/boot/dts/rk3288-tinker.dtsi
+index 312582c1b..2daa28fd4 100644
+--- a/arch/arm/boot/dts/rk3288-tinker.dtsi
++++ b/arch/arm/boot/dts/rk3288-tinker.dtsi
+@@ -276,6 +276,7 @@ regulator-state-mem {
+ 			};
+ 
+ 			vccio_sd: LDO_REG5 {
++				regulator-always-on;
+ 				regulator-boot-on;
+ 				regulator-min-microvolt = <1800000>;
+ 				regulator-max-microvolt = <3300000>;
+@@ -461,7 +462,12 @@ &sdmmc {
+ 	disable-wp;			/* wp not hooked up */
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&sdmmc_clk &sdmmc_cmd &sdmmc_cd &sdmmc_bus4>;
++	sd-uhs-sdr12;
++	sd-uhs-sdr25;
++	sd-uhs-sdr50;
++	sd-uhs-sdr104;
+ 	status = "okay";
++	supports-sd;
+ 	vmmc-supply = <&vcc33_sd>;
+ 	vqmmc-supply = <&vccio_sd>;
+ };
+-- 
+2.26.0
+

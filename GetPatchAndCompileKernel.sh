@@ -60,6 +60,7 @@ export KERNEL_PATCHES="
 
 export KERNEL_DTS_PATCHES="
 0001-dts-rk3288-miqi-Enabling-the-Mali-GPU-node.patch
+0002-arm-dtsi-rk3288-tinker-Added-flags-for-reboot-suppor.patch
 "
 
 export KERNEL_DOCUMENTATION_PATCHES="
