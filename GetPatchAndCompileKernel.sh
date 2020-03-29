@@ -53,47 +53,13 @@ export MALI_PATCHES_DIR_URL=$BASE_FILES_URL/$MALI_PATCHES_DIR
 export CONFIG_FILE_URL=$BASE_FILES_URL/config/$KERNEL_SERIES/config-latest
 
 export KERNEL_PATCHES="
-0001-drivers-Integrating-Mali-Midgard-video-and-gpu-drive.patch
-0002-clk-rockchip-add-all-known-operating-points-to-the-a.patch
-0004-Remove-the-dependency-to-the-clk_mali-symbol.patch
-0005-drivers-mmc-dw-mci-rockchip-Handle-ASUS-Tinkerboard.patch
-0007-drivers-wifi-ath9k-reverse-do-not-use-bulk-on-EP3-and-EP4.patch
-0010-block-partitions-efi-Ignore-GPT-flags-on-Veyron-Chro.patch
-0011-block-partitions-efi-Ignore-bizarre-Chromebook-GPT-p.patch
-0012-mmc-Added-a-flag-to-disable-cache-flush-during-reset.patch
-"
-
-export KERNEL_VPU_PATCHES="
-0001-lib-Add-sort_r-for-the-Rockchip-H264-driver.patch
-0002-soc-rockchip-pmu-export-rockchip_pmu_idle_request.patch
-0003-include-V4L2-Add-new-pixel-and-frames-formats.patch
-0004-V4L2-device-management-fixes.patch
-0005-Videobuf2-Removing-REQUEUING-state-and-replacing-som.patch
-0006-RK3288-Clock-fixes.patch
-0007-staging-rockchip-vpu-Add-MPEG-2-and-H264-Alpha-state.patch
-0008-DTS-RK3399-Add-VPU-definitions.patch
+0001-drivers-mmc-dw-mci-rockchip-Handle-ASUS-Tinkerboard.patch
+0002-block-partitions-efi-Ignore-GPT-flags-on-Veyron-Chro.patch
+0003-block-partitions-efi-Ignore-bizarre-Chromebook-GPT-p.patch
 "
 
 export KERNEL_DTS_PATCHES="
 0001-dts-rk3288-miqi-Enabling-the-Mali-GPU-node.patch
-0002-ARM-dts-rockchip-fix-the-regulator-s-voltage-range-o.patch
-0003-ARM-dts-rockchip-add-the-MiQi-board-s-fan-definition.patch
-0004-ARM-dts-rockchip-add-support-for-1800-MHz-operation-.patch
-0005-Readapt-ARM-dts-rockchip-miqi-add-turbo-mode-operati.patch
-0006-ARM-DTSI-rk3288-Missing-GRF-handles.patch
-0007-RK3288-DTSI-rk3288-Add-missing-SPI2-pinctrl.patch
-0009-ARM-DTSI-rk3288-Adding-cells-addresses-and-size.patch
-0010-ARM-DTSI-rk3288-Adding-missing-EDP-power-domain.patch
-0011-ARM-DTSI-rk3288-Adding-missing-VOPB-registers.patch
-0012-ARM-DTSI-rk3288-Fixed-the-SPDIF-node-address.patch
-0013-ARM-DTS-rk3288-tinker-Enabling-SDIO-and-Wifi.patch
-0014-ARM-DTS-rk3288-tinker-Setup-the-Bluetooth-UART-pins.patch
-0015-ARM-DTSI-rk3288-tinker-Improving-the-CPU-max-voltage.patch
-0017-ARM-DTS-rk3288-tinker-Defined-the-I2C-interfaces.patch
-0018-ARM-DTS-rk3288-tinker-Defining-the-SPI-interface.patch
-0019-ARM-DTSI-rk3288-tinker-Defining-SDMMC-properties.patch
-0023-dts-rk3288-support-for-dedicating-npll-to-a-vop.patch
-0024-arm-dts-veyron-Added-a-flag-to-disable-cache-flush-d.patch
 "
 
 export KERNEL_DOCUMENTATION_PATCHES="
@@ -189,19 +155,19 @@ if [ ! -e "PATCHED" ]; then
 	#rm -r TX011-SW-99002-$MALI_VERSION TX011-SW-99002-$MALI_VERSION.tgz
 
 	# Download and apply the various kernel and Mali kernel-space driver patches
-	#if [ ! -d "../patches" ]; then
-		#download_and_apply_patches $KERNEL_PATCHES_DIR_URL $KERNEL_PATCHES
-		#download_and_apply_patches $KERNEL_DTS_PATCHES_DIR_URL $KERNEL_DTS_PATCHES
+	if [ ! -d "../patches" ]; then
+		download_and_apply_patches $KERNEL_PATCHES_DIR_URL $KERNEL_PATCHES
+		download_and_apply_patches $KERNEL_DTS_PATCHES_DIR_URL $KERNEL_DTS_PATCHES
 		#download_and_apply_patches $KERNEL_DOCUMENTATION_PATCHES_DIR_URL $KERNEL_DOCUMENTATION_PATCHES
 		#download_and_apply_patches $MALI_PATCHES_DIR_URL $MALI_PATCHES
 		#download_and_apply_patches $KERNEL_VPU_PATCHES_DIR_URL $KERNEL_VPU_PATCHES
-	#else
-		#copy_and_apply_patches ../$KERNEL_PATCHES_DIR $KERNEL_PATCHES
-		#copy_and_apply_patches ../$KERNEL_PATCHES_DTS_DIR $KERNEL_DTS_PATCHES
+	else
+		copy_and_apply_patches ../$KERNEL_PATCHES_DIR $KERNEL_PATCHES
+		copy_and_apply_patches ../$KERNEL_PATCHES_DTS_DIR $KERNEL_DTS_PATCHES
 		#copy_and_apply_patches ../$KERNEL_DOCUMENTATION_PATCHES_DIR $KERNEL_DOCUMENTATION_PATCHES
 		#copy_and_apply_patches ../$MALI_PATCHES_DIR $MALI_PATCHES
 		#copy_and_apply_patches ../$KERNEL_PATCHES_VPU_DIR $KERNEL_VPU_PATCHES
-	#fi
+	fi
 
 
 	# Cleanup, get the configuration file and mark the tree as patched
