@@ -1,0 +1,37 @@
+From b4b6238f4a523ad5015b8a0c04388c9975ee25f6 Mon Sep 17 00:00:00 2001
+From: "Miouyouyou (Myy)" <myy@miouyouyou.fr>
+Date: Sat, 29 Sep 2018 02:25:35 +0200
+Subject: [PATCH 1/6] dt-bindings: clock: rk3288-cru: Add property to dedicate
+ NPLL for VOPx
+
+This is patch taken from Urja Rannikko ( @urjaman ) patchset here :
+https://github.com/urjaman/arch-c201/blob/master/linux-c201/0020-RK3288-HDMI-clock-hacks-combined.patch
+https://www.spinics.net/lists/arm-kernel/msg673156.html
+
+This adds documentation about a new hdmi property
+"rockchip,npll-for-vop", which is used by a patched RK3288's clock
+driver (clk-rk3288.c) to assume that special clocks for the HDMI
+subsystem are defined in the DTS file and should be parsed carefully.
+
+Signed-off-by: Miouyouyou (Myy) <myy@miouyouyou.fr>
+---
+ Documentation/devicetree/bindings/clock/rockchip,rk3288-cru.txt | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/clock/rockchip,rk3288-cru.txt b/Documentation/devicetree/bindings/clock/rockchip,rk3288-cru.txt
+index 8cb47c39b..20724584e 100644
+--- a/Documentation/devicetree/bindings/clock/rockchip,rk3288-cru.txt
++++ b/Documentation/devicetree/bindings/clock/rockchip,rk3288-cru.txt
+@@ -16,6 +16,9 @@ Optional Properties:
+ 
+ - rockchip,grf: phandle to the syscon managing the "general register files"
+   If missing pll rates are not changeable, due to the missing pll lock status.
++- rockchip,npll-for-vop: u32 0 or 1, dedicates NPLL to a VOP output unit for
++  more frequency flexibility for the selected VOP output at a cost of
++  flexibility for other devices. Disabled if not present or -1.
+ 
+ Each clock is assigned an identifier and client nodes can use this identifier
+ to specify the clock which they consume. All available clocks are defined as
+-- 
+2.16.4
+

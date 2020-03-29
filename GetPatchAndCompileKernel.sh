@@ -7,9 +7,9 @@ if [ -z ${MAKEOPTS+x} ]; then
 	export MAKEOPTS=-j16
 fi
 
-export KERNEL_SERIES=v5.4
-export KERNEL_BRANCH=v5.4-rc2
-export LOCALVERSION=-RockMyy32-Blobby
+export KERNEL_SERIES=v5.6
+export KERNEL_BRANCH=v5.6-rc7
+export LOCALVERSION=-RockMyy32-Nothing
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
 
@@ -177,32 +177,31 @@ if [ ! -e "PATCHED" ]; then
 	# Download, prepare and copy the Mali Kernel-Space drivers.
 	# Some TGZ are AWFULLY packaged with everything having 0777 rights.
 
-	wget "$MALI_BASE_URL/TX011-SW-99002-$MALI_VERSION.tgz" &&
-	tar zxvf TX011-SW-99002-$MALI_VERSION.tgz &&
-	cd TX011-SW-99002-$MALI_VERSION &&
-	find . -type 'f' -exec chmod 0644 {} ';' && # Every file   should have -rw-r--r-- rights
-	find . -type 'd' -exec chmod 0755 {} ';' && # Every folder should have drwxr-xr-x rights
-	find . -name 'sconscript' -exec rm {} ';' && # Remove sconscript files. Useless.
-	cd driver/product/kernel &&
-	cp -r drivers/gpu/arm  $SRC_DIR/drivers/gpu/ && # Copy the Midgard code
-	cd $SRC_DIR &&
-	rm -r TX011-SW-99002-$MALI_VERSION TX011-SW-99002-$MALI_VERSION.tgz
+	#wget "$MALI_BASE_URL/TX011-SW-99002-$MALI_VERSION.tgz" &&
+	#tar zxvf TX011-SW-99002-$MALI_VERSION.tgz &&
+	#cd TX011-SW-99002-$MALI_VERSION &&
+	#find . -type 'f' -exec chmod 0644 {} ';' && # Every file   should have -rw-r--r-- rights
+	#find . -type 'd' -exec chmod 0755 {} ';' && # Every folder should have drwxr-xr-x rights
+	#find . -name 'sconscript' -exec rm {} ';' && # Remove sconscript files. Useless.
+	#cd driver/product/kernel &&
+	#cp -r drivers/gpu/arm  $SRC_DIR/drivers/gpu/ && # Copy the Midgard code
+	#cd $SRC_DIR &&
+	#rm -r TX011-SW-99002-$MALI_VERSION TX011-SW-99002-$MALI_VERSION.tgz
 
 	# Download and apply the various kernel and Mali kernel-space driver patches
-	if [ ! -d "../patches" ]; then
-		download_and_apply_patches $KERNEL_PATCHES_DIR_URL $KERNEL_PATCHES
-		download_and_apply_patches $KERNEL_DTS_PATCHES_DIR_URL $KERNEL_DTS_PATCHES
+	#if [ ! -d "../patches" ]; then
+		#download_and_apply_patches $KERNEL_PATCHES_DIR_URL $KERNEL_PATCHES
+		#download_and_apply_patches $KERNEL_DTS_PATCHES_DIR_URL $KERNEL_DTS_PATCHES
 		#download_and_apply_patches $KERNEL_DOCUMENTATION_PATCHES_DIR_URL $KERNEL_DOCUMENTATION_PATCHES
-		download_and_apply_patches $MALI_PATCHES_DIR_URL $MALI_PATCHES
+		#download_and_apply_patches $MALI_PATCHES_DIR_URL $MALI_PATCHES
 		#download_and_apply_patches $KERNEL_VPU_PATCHES_DIR_URL $KERNEL_VPU_PATCHES
-	else
-		copy_and_apply_patches ../$KERNEL_PATCHES_DIR $KERNEL_PATCHES
-		copy_and_apply_patches ../$KERNEL_PATCHES_DTS_DIR $KERNEL_DTS_PATCHES
+	#else
+		#copy_and_apply_patches ../$KERNEL_PATCHES_DIR $KERNEL_PATCHES
+		#copy_and_apply_patches ../$KERNEL_PATCHES_DTS_DIR $KERNEL_DTS_PATCHES
 		#copy_and_apply_patches ../$KERNEL_DOCUMENTATION_PATCHES_DIR $KERNEL_DOCUMENTATION_PATCHES
-		copy_and_apply_patches ../$MALI_PATCHES_DIR $MALI_PATCHES
-		echo "${KERNEL_PATCHES_VPU_DIR}"
+		#copy_and_apply_patches ../$MALI_PATCHES_DIR $MALI_PATCHES
 		#copy_and_apply_patches ../$KERNEL_PATCHES_VPU_DIR $KERNEL_VPU_PATCHES
-	fi
+	#fi
 
 
 	# Cleanup, get the configuration file and mark the tree as patched
