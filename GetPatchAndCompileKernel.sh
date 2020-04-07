@@ -8,8 +8,8 @@ if [ -z ${MAKEOPTS+x} ]; then
 fi
 
 export KERNEL_SERIES=v5.6
-export KERNEL_BRANCH=v5.6-rc7
-export LOCALVERSION=-RockMyy32-Nothing
+export KERNEL_BRANCH=v5.6
+export LOCALVERSION=-RockMyy32-Frosty
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
 
@@ -56,6 +56,7 @@ export KERNEL_PATCHES="
 0001-drivers-mmc-dw-mci-rockchip-Handle-ASUS-Tinkerboard.patch
 0002-block-partitions-efi-Ignore-GPT-flags-on-Veyron-Chro.patch
 0003-block-partitions-efi-Ignore-bizarre-Chromebook-GPT-p.patch
+0004-mimick-phy-rockchip-inno-hdmi-Support-more-pre-pll-c.patch
 "
 
 export KERNEL_DTS_PATCHES="
