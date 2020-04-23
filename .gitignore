@@ -10,4 +10,5 @@ linux/
 rockchip-vcodec/
 install_script.sh
 linux.*
-
+build/
+sources/
