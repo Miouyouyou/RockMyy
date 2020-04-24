@@ -9,6 +9,6 @@ services:
       CROSS_COMPILE: arm-linux-gnueabi-
     volumes:
     - "./build:/tmp/RockMyy-Build"
-    - "./sources:/usr/src"
+    - "./:/usr/src"
 
 
