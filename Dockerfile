@@ -1,7 +1,7 @@
 FROM ubuntu
 
 RUN apt -y update
-RUN apt -y install gcc make automake bison flex bc pkg-config wget git ncurses-dev gcc-arm-linux-gnueabi libssl-dev
+RUN apt -y install gcc make automake bison flex bc pkg-config wget git ncurses-dev gcc-arm-linux-gnueabi libssl-dev cpio rsync
 
 COPY GetPatchAndCompileKernel.sh /GetPatchAndCompileKernel.sh
 COPY docker/build.sh /entrypoint.sh
