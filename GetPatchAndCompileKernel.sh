@@ -55,11 +55,22 @@ export KERNEL_DOCUMENTATION_PATCHES_DIR_URL=$BASE_FILES_URL/$KERNEL_DOCUMENTATIO
 export MALI_PATCHES_DIR_URL=$BASE_FILES_URL/$MALI_PATCHES_DIR
 export CONFIG_FILE_URL=$BASE_FILES_URL/config/$KERNEL_SERIES/config-latest
 
+#0004-mimick-phy-rockchip-inno-hdmi-Support-more-pre-pll-c.patch
+
 export KERNEL_PATCHES="
 0001-drivers-mmc-dw-mci-rockchip-Handle-ASUS-Tinkerboard.patch
 0002-block-partitions-efi-Ignore-GPT-flags-on-Veyron-Chro.patch
 0003-block-partitions-efi-Ignore-bizarre-Chromebook-GPT-p.patch
-0004-mimick-phy-rockchip-inno-hdmi-Support-more-pre-pll-c.patch
+0005-drm-rockchip-vop-filter-modes-outside-0.5-pixel-cloc.patch
+0006-drm-rockchip-dw_hdmi-Set-cur_ctr-to-0-always.patch
+0007-drm-rockchip-dw_hdmi-adjust-cklvl-txlvl-for-RF-EMI.patch
+0008-drm-rockchip-dw_hdmi-Use-auto-generated-tables.patch
+0009-drm-rockchip-dw_hdmi-add-default-594Mhz-clk-for-4K-6.patch
+0010-drm-rockchip-dw-hdmi-limit-tmds-to-340mhz.patch
+0011-HACK-drm-rockchip-vop-limit-resolution-to-3840x2160.patch
+0012-MINIARM-set-npll-be-used-for-hdmi-only.patch
+0013-clk-rockchip-rk3288-use-npll-table-to-to-improve-HDM.patch
+0014-clk-rockchip-rk3288-add-more-npll-clocks.patch
 "
 
 export KERNEL_DTS_PATCHES="
