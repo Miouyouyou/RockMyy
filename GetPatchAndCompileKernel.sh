@@ -71,6 +71,8 @@ export KERNEL_PATCHES="
 0012-MINIARM-set-npll-be-used-for-hdmi-only.patch
 0013-clk-rockchip-rk3288-use-npll-table-to-to-improve-HDM.patch
 0014-clk-rockchip-rk3288-add-more-npll-clocks.patch
+0015-Use-340000-as-fallback-max_tmds_clock.patch
+0016-FIXME-Don-t-use-vop_crtc_mode_valid.patch
 "
 
 export KERNEL_DTS_PATCHES="
