@@ -58,7 +58,7 @@ export CONFIG_FILE_URL=$BASE_FILES_URL/config/$KERNEL_SERIES/config-latest
 #0004-mimick-phy-rockchip-inno-hdmi-Support-more-pre-pll-c.patch
 
 export KERNEL_PATCHES="
-0001-drivers-mmc-dw-mci-rockchip-Handle-ASUS-Tinkerboard.patch
+0001-drivers-mmc-dw-mci-rockchip-Handle-ASUS-Tinkerboard-.patch
 0002-block-partitions-efi-Ignore-GPT-flags-on-Veyron-Chro.patch
 0003-block-partitions-efi-Ignore-bizarre-Chromebook-GPT-p.patch
 0005-drm-rockchip-vop-filter-modes-outside-0.5-pixel-cloc.patch
@@ -73,6 +73,7 @@ export KERNEL_PATCHES="
 0014-clk-rockchip-rk3288-add-more-npll-clocks.patch
 0015-Use-340000-as-fallback-max_tmds_clock.patch
 0016-FIXME-Don-t-use-vop_crtc_mode_valid.patch
+0017-dma-fence-Reducing-DMA_FENCE_TRACE-to-debug.patch
 "
 
 export KERNEL_DTS_PATCHES="
