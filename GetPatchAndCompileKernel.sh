@@ -10,8 +10,8 @@ if [ -z ${MAKEOPTS+x} ]; then
 	export MAKEOPTS=-j16
 fi
 
-export KERNEL_SERIES=v5.6
-export KERNEL_BRANCH=v5.6
+export KERNEL_SERIES=v5.7
+export KERNEL_BRANCH=v5.7-rc4
 export LOCALVERSION=-RockMyy32-Frosty
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu

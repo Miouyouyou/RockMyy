@@ -1,0 +1,34 @@
+From cf4f0c3cbd384e4453d8d2b491ab0daba41a529c Mon Sep 17 00:00:00 2001
+From: "Miouyouyou (Myy)" <myy@miouyouyou.fr>
+Date: Sun, 10 May 2020 23:06:56 +0200
+Subject: [PATCH] dma-fence: Reducing DMA_FENCE_TRACE to debug
+
+With info level, the logs are spammed with pretty much useless
+information, from the Panfrost driver.
+
+The message "signaled from irq context" is repeated all over
+again, without any useful information about how much importance
+we should give to this, nor what we can do, nor the level impact
+this has.
+
+Signed-off-by: Miouyouyou (Myy) <myy@miouyouyou.fr>
+---
+ include/linux/dma-fence.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/linux/dma-fence.h b/include/linux/dma-fence.h
+index 3347c54f3..c53546442 100644
+--- a/include/linux/dma-fence.h
++++ b/include/linux/dma-fence.h
+@@ -577,7 +577,7 @@ u64 dma_fence_context_alloc(unsigned num);
+ 	do {								\
+ 		struct dma_fence *__ff = (f);				\
+ 		if (IS_ENABLED(CONFIG_DMA_FENCE_TRACE))			\
+-			pr_info("f %llu#%llu: " fmt,			\
++			pr_debug("f %llu#%llu: " fmt,			\
+ 				__ff->context, __ff->seqno, ##args);	\
+ 	} while (0)
+ 
+-- 
+2.26.2
+
