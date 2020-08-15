@@ -10,8 +10,8 @@ if [ -z ${MAKEOPTS+x} ]; then
 	export MAKEOPTS=-j16
 fi
 
-export KERNEL_SERIES=v5.7
-export KERNEL_BRANCH=v5.7-rc4
+export KERNEL_SERIES=v5.8
+export KERNEL_BRANCH=v5.8
 export LOCALVERSION=-RockMyy32-Frosty
 export MALI_VERSION=r19p0-01rel0
 export MALI_BASE_URL=https://developer.arm.com/-/media/Files/downloads/mali-drivers/kernel/mali-midgard-gpu
@@ -42,59 +42,37 @@ rk3288-veyron-speedy.dtb
 export PATCHES_DIR=patches
 export KERNEL_PATCHES_DIR=$PATCHES_DIR/kernel/$KERNEL_SERIES
 export KERNEL_PATCHES_DTS_DIR=$KERNEL_PATCHES_DIR/DTS
-export KERNEL_PATCHES_VPU_DIR=$KERNEL_PATCHES_DIR/VPU
-export MALI_PATCHES_DIR=$PATCHES_DIR/Midgard/$MALI_VERSION
-export KERNEL_DOCUMENTATION_PATCHES_DIR=$KERNEL_PATCHES_DIR/Documentation
 export CONFIG_FILE_PATH=config/$KERNEL_SERIES/config-latest
 
 export BASE_FILES_URL=https://raw.githubusercontent.com/$GITHUB_REPO/$GIT_BRANCH
 export KERNEL_PATCHES_DIR_URL=$BASE_FILES_URL/$KERNEL_PATCHES_DIR
 export KERNEL_DTS_PATCHES_DIR_URL=$BASE_FILES_URL/$KERNEL_PATCHES_DTS_DIR
-export KERNEL_VPU_PATCHES_DIR_URL=$BASE_FILES_URL/$KERNEL_PATCHES_VPU_DIR
-export KERNEL_DOCUMENTATION_PATCHES_DIR_URL=$BASE_FILES_URL/$KERNEL_DOCUMENTATION_PATCHES_DIR
-export MALI_PATCHES_DIR_URL=$BASE_FILES_URL/$MALI_PATCHES_DIR
 export CONFIG_FILE_URL=$BASE_FILES_URL/config/$KERNEL_SERIES/config-latest
-
-#0004-mimick-phy-rockchip-inno-hdmi-Support-more-pre-pll-c.patch
 
 export KERNEL_PATCHES="
 0001-drivers-mmc-dw-mci-rockchip-Handle-ASUS-Tinkerboard-.patch
 0002-block-partitions-efi-Ignore-GPT-flags-on-Veyron-Chro.patch
 0003-block-partitions-efi-Ignore-bizarre-Chromebook-GPT-p.patch
-0005-drm-rockchip-vop-filter-modes-outside-0.5-pixel-cloc.patch
-0006-drm-rockchip-dw_hdmi-Set-cur_ctr-to-0-always.patch
-0007-drm-rockchip-dw_hdmi-adjust-cklvl-txlvl-for-RF-EMI.patch
-0008-drm-rockchip-dw_hdmi-Use-auto-generated-tables.patch
-0009-drm-rockchip-dw_hdmi-add-default-594Mhz-clk-for-4K-6.patch
-0010-drm-rockchip-dw-hdmi-limit-tmds-to-340mhz.patch
-0011-HACK-drm-rockchip-vop-limit-resolution-to-3840x2160.patch
-0012-MINIARM-set-npll-be-used-for-hdmi-only.patch
-0013-clk-rockchip-rk3288-use-npll-table-to-to-improve-HDM.patch
-0014-clk-rockchip-rk3288-add-more-npll-clocks.patch
-0015-Use-340000-as-fallback-max_tmds_clock.patch
-0016-FIXME-Don-t-use-vop_crtc_mode_valid.patch
-0017-dma-fence-Reducing-DMA_FENCE_TRACE-to-debug.patch
+0004-mimick-phy-rockchip-inno-hdmi-Support-more-pre-pll-c.patch
+0006-drm-rockchip-vop-filter-modes-outside-0.5-pixel-cloc.patch
+0007-drm-rockchip-dw_hdmi-Set-cur_ctr-to-0-always.patch
+0008-drm-rockchip-dw_hdmi-adjust-cklvl-txlvl-for-RF-EMI.patch
+0009-drm-rockchip-dw_hdmi-Use-auto-generated-tables.patch
+0010-drm-rockchip-dw_hdmi-add-default-594Mhz-clk-for-4K-6.patch
+0011-drm-rockchip-dw-hdmi-limit-tmds-to-340mhz.patch
+0012-HACK-drm-rockchip-vop-limit-resolution-to-3840x2160.patch
+0013-MINIARM-set-npll-be-used-for-hdmi-only.patch
+0014-clk-rockchip-rk3288-use-npll-table-to-to-improve-HDM.patch
+0015-clk-rockchip-rk3288-add-more-npll-clocks.patch
+0016-Use-340000-as-fallback-max_tmds_clock.patch
+0017-FIXME-Don-t-use-vop_crtc_mode_valid.patch
+0018-dma-fence-Reducing-DMA_FENCE_TRACE-to-debug.patch
 "
 
 export KERNEL_DTS_PATCHES="
 0001-dts-rk3288-miqi-Enabling-the-Mali-GPU-node.patch
 0002-arm-dtsi-rk3288-tinker-Added-flags-for-reboot-suppor.patch
-"
-
-export KERNEL_DOCUMENTATION_PATCHES="
-"
-
-export MALI_PATCHES="
-0001-Mali-midgard-r19p0-fixes-for-4.13-kernels.patch
-0004-Don-t-be-TOO-severe-when-looking-for-the-IRQ-names.patch
-0005-Added-the-new-compatible-list-mainly-used-by-Rockchi.patch
-0006-gpu-arm-Midgard-setup_timer-timer_setup.patch
-0007-drivers-gpu-Arm-Midgard-Replace-ACCESS_ONCE-by-READ_.patch
-0008-gpu-arm-midgard-Remove-sys_close-references.patch
-0009-GPU-ARM-Midgard-Adapt-to-the-new-mmap-call-checks.patch
-0010-GPU-Mali-Midgard-remove-rcu_read_lock-references.patch
-0011-mali-kbase-v4.20-to-v5.0-rc2-changes.patch
-0012-Integrate-52791eeec1d9f4a7e7fe08aaba0b1553149d93bc-c.patch
+0003-arm-dtsi-rk3288-add-GPU-500-Mhz-OPP-again.patch
 "
 
 # -- Helper functions
@@ -159,33 +137,13 @@ if [ ! -e "PATCHED" ]; then
 	# Rewind modified files to their initial state.
 	git checkout -- .
 
-	# Download, prepare and copy the Mali Kernel-Space drivers.
-	# Some TGZ are AWFULLY packaged with everything having 0777 rights.
-
-	#wget "$MALI_BASE_URL/TX011-SW-99002-$MALI_VERSION.tgz" &&
-	#tar zxvf TX011-SW-99002-$MALI_VERSION.tgz &&
-	#cd TX011-SW-99002-$MALI_VERSION &&
-	#find . -type 'f' -exec chmod 0644 {} ';' && # Every file   should have -rw-r--r-- rights
-	#find . -type 'd' -exec chmod 0755 {} ';' && # Every folder should have drwxr-xr-x rights
-	#find . -name 'sconscript' -exec rm {} ';' && # Remove sconscript files. Useless.
-	#cd driver/product/kernel &&
-	#cp -r drivers/gpu/arm  $SRC_DIR/drivers/gpu/ && # Copy the Midgard code
-	#cd $SRC_DIR &&
-	#rm -r TX011-SW-99002-$MALI_VERSION TX011-SW-99002-$MALI_VERSION.tgz
-
 	# Download and apply the various kernel and Mali kernel-space driver patches
 	if [ ! -d "../patches" ]; then
 		download_and_apply_patches $KERNEL_PATCHES_DIR_URL $KERNEL_PATCHES
 		download_and_apply_patches $KERNEL_DTS_PATCHES_DIR_URL $KERNEL_DTS_PATCHES
-		#download_and_apply_patches $KERNEL_DOCUMENTATION_PATCHES_DIR_URL $KERNEL_DOCUMENTATION_PATCHES
-		#download_and_apply_patches $MALI_PATCHES_DIR_URL $MALI_PATCHES
-		#download_and_apply_patches $KERNEL_VPU_PATCHES_DIR_URL $KERNEL_VPU_PATCHES
 	else
 		copy_and_apply_patches ../$KERNEL_PATCHES_DIR $KERNEL_PATCHES
 		copy_and_apply_patches ../$KERNEL_PATCHES_DTS_DIR $KERNEL_DTS_PATCHES
-		#copy_and_apply_patches ../$KERNEL_DOCUMENTATION_PATCHES_DIR $KERNEL_DOCUMENTATION_PATCHES
-		#copy_and_apply_patches ../$MALI_PATCHES_DIR $MALI_PATCHES
-		#copy_and_apply_patches ../$KERNEL_PATCHES_VPU_DIR $KERNEL_VPU_PATCHES
 	fi
 
 

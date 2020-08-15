@@ -1,18 +1,22 @@
-From 13fe05c1a6a0b7b81d7c6768eef9fbc618b75f30 Mon Sep 17 00:00:00 2001
-From: Jonas Karlman <jonas@kwiboo.se>
-Date: Sun, 3 May 2020 17:09:41 +0000
-Subject: [PATCH 10/14] drm/rockchip: dw-hdmi: limit tmds to 340mhz
+From d6ea81ca4167fb5dcc5258e612d605efe5486c73 Mon Sep 17 00:00:00 2001
+From: "Miouyouyou (Myy)" <myy@miouyouyou.fr>
+Date: Wed, 12 Aug 2020 10:51:19 +0200
+Subject: [PATCH] drm/rockchip: dw-hdmi: limit tmds to 340mhz
 
-Signed-off-by: Jonas Karlman <jonas@kwiboo.se>
+Rework of an old patch created by Jonas Karlman <jonas@kwiboo.se>
+
+No commit message was present on that patch.
+
+Signed-off-by: Miouyouyou (Myy) <myy@miouyouyou.fr>
 ---
  drivers/gpu/drm/rockchip/dw_hdmi-rockchip.c | 23 ++++++++++-----------
  1 file changed, 11 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/gpu/drm/rockchip/dw_hdmi-rockchip.c b/drivers/gpu/drm/rockchip/dw_hdmi-rockchip.c
-index 1a047f9d0..955fc3cf4 100644
+index fe9357f8e..350cedd4a 100644
 --- a/drivers/gpu/drm/rockchip/dw_hdmi-rockchip.c
 +++ b/drivers/gpu/drm/rockchip/dw_hdmi-rockchip.c
-@@ -219,19 +219,18 @@ static enum drm_mode_status
+@@ -220,19 +220,18 @@ static enum drm_mode_status
  dw_hdmi_rockchip_mode_valid(struct drm_connector *connector,
  			    const struct drm_display_mode *mode)
  {
@@ -42,7 +46,7 @@ index 1a047f9d0..955fc3cf4 100644
 +	return MODE_OK;
  }
  
- static const struct drm_encoder_funcs dw_hdmi_rockchip_encoder_funcs = {
+ static void dw_hdmi_rockchip_encoder_disable(struct drm_encoder *encoder)
 -- 
-2.26.2
+2.28.0
 
